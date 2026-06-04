@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/config/api_config.dart';
 import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../widgets/barter_appbar.dart';
@@ -61,10 +60,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     }
   }
 
-  void _continueMock(AppRole role) {
-    context.go(role == AppRole.brand ? '/brand/onboarding' : '/creator/onboarding?step=0');
-  }
-
   @override
   Widget build(BuildContext context) {
     final bc = context.barter;
@@ -90,9 +85,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                ApiConfig.useMockData
-                    ? 'Mock mode: explore UI without the API.'
-                    : 'Connect to ${ApiConfig.baseUrl}',
+                'Connect to the Barter API',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: bc.onSurfaceVariant,
                     ),
@@ -105,7 +98,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 ),
               ],
               const SizedBox(height: 24),
-              if (!ApiConfig.useMockData) ...[
+              ...[
                 BarterLabeledField(
                   controller: _email,
                   label: 'Email',
@@ -162,25 +155,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                         : 'Need an account? Register',
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 16),
               ],
-              Text(
-                'Explore without API',
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              const SizedBox(height: 12),
-              BarterPrimaryButton(
-                label: 'Continue as Creator (mock)',
-                onPressed: () => _continueMock(AppRole.creator),
-              ),
-              const SizedBox(height: 12),
-              BarterPrimaryButton(
-                label: 'Continue as Brand (mock)',
-                inverted: true,
-                onPressed: () => _continueMock(AppRole.brand),
-              ),
             ],
           ),
         ),

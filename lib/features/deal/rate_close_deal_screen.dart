@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../../core/config/api_config.dart';
 import '../../core/routing/deal_route.dart';
 import '../../providers/api_providers.dart';
 import '../../theme/barter_colors.dart';
@@ -129,7 +128,7 @@ class _RateCloseDealScreenState extends ConsumerState<RateCloseDealScreen> {
               bc: bc,
               onSubmit: () async {
                 final dealId = dealIdFromRoute(context);
-                if (dealId != null && !ApiConfig.useMockData) {
+                if (dealId != null) {
                   await ref.read(dealRepositoryProvider).rateDeal(dealId, {
                     'stars': _rating,
                     'review_text': _reviewController.text.trim(),

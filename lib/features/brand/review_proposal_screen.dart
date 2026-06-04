@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/config/api_config.dart';
 import '../../data/dto/proposal_dto.dart';
 import '../../providers/api_providers.dart';
 import '../../providers/app_providers.dart';
@@ -27,25 +26,23 @@ class ReviewProposalScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
         data: (List<ProposalListItemDto> proposals) {
-          if (proposals.isEmpty && !ApiConfig.useMockData) {
+          if (proposals.isEmpty) {
             return const Center(child: Text('No proposals yet'));
           }
-          final items = proposals.isEmpty
-              ? _mockCards(bc)
-              : proposals
-                  .map((p) => _ProposalCard(
-                        proposalId: p.id,
-                        creatorName: p.creatorUsername,
-                        creatorHandle: '@${p.creatorUsername}',
-                        campaign: p.offerTitle,
-                        proposalTitle: p.offerTitle,
-                        description: 'Status: ${p.status} · Round ${p.roundNumber}',
-                        deliverables: const ['See proposal detail'],
-                        estimatedValue: '—',
-                        avatarUrl: '',
-                        bc: bc,
-                      ))
-                  .toList();
+          final items = proposals
+              .map((p) => _ProposalCard(
+                    proposalId: p.id,
+                    creatorName: p.creatorUsername,
+                    creatorHandle: '@${p.creatorUsername}',
+                    campaign: p.offerTitle,
+                    proposalTitle: p.offerTitle,
+                    description: 'Status: ${p.status} · Round ${p.roundNumber}',
+                    deliverables: const ['See proposal detail'],
+                    estimatedValue: '—',
+                    avatarUrl: '',
+                    bc: bc,
+                  ))
+              .toList();
 
           return SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
@@ -78,24 +75,6 @@ class ReviewProposalScreen extends ConsumerWidget {
     );
   }
 
-  List<Widget> _mockCards(BarterColors bc) {
-    return [
-      _ProposalCard(
-        proposalId: 'mock-1',
-        creatorName: 'Sarah Chen',
-        creatorHandle: '@sarahcreates',
-        campaign: 'Summer Drops 2024',
-        proposalTitle: 'Premium skincare routine video',
-        description:
-            'I would love to create a comprehensive skincare routine video featuring your Premium Skincare line.',
-        deliverables: const ['IG Reel', 'Story Series'],
-        estimatedValue: '4200',
-        avatarUrl:
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
-        bc: bc,
-      ),
-    ];
-  }
 }
 
 class _ProposalCard extends ConsumerWidget {
@@ -124,18 +103,14 @@ class _ProposalCard extends ConsumerWidget {
   final BarterColors bc;
 
   Future<void> _accept(BuildContext context, WidgetRef ref) async {
-    if (!ApiConfig.useMockData) {
-      await ref.read(proposalRepositoryProvider).acceptProposal(proposalId);
-      ref.invalidate(proposalsListProvider);
-    }
+    await ref.read(proposalRepositoryProvider).acceptProposal(proposalId);
+    ref.invalidate(proposalsListProvider);
     if (context.mounted) context.pop();
   }
 
   Future<void> _decline(BuildContext context, WidgetRef ref) async {
-    if (!ApiConfig.useMockData) {
-      await ref.read(proposalRepositoryProvider).declineProposal(proposalId);
-      ref.invalidate(proposalsListProvider);
-    }
+    await ref.read(proposalRepositoryProvider).declineProposal(proposalId);
+    ref.invalidate(proposalsListProvider);
     if (context.mounted) context.pop();
   }
 

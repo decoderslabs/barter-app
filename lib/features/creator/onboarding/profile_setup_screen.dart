@@ -1,53 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../../../data/mock_json_bundle.dart';
 import '../../../data/models/onboarding_config.dart';
+import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
 import '../../../widgets/barter_image_picker.dart';
 
-class ProfileSetupScreen extends StatefulWidget {
+class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
 
   @override
-  State<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
+  ConsumerState<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
 }
 
-class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
+class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final TextEditingController _displayNameController = TextEditingController();
   final TextEditingController _handleController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  CreatorProfileConfig? _creatorConfig;
-  bool _isLoading = true;
   XFile? _pickedAvatar;
 
   // Validation errors
   String? _displayNameError;
   String? _handleError;
   String? _bioError;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadMockData();
-  }
-
-  Future<void> _loadMockData() async {
-    try {
-      final onboarding = await MockJsonBundle.instance.loadOnboarding();
-      setState(() {
-        _creatorConfig = onboarding.creatorProfile;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-    }
-  }
 
   @override
   void dispose() {
@@ -147,8 +128,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final bc = context.barter;
+    final configAsync = ref.watch(onboardingConfigProvider);
+    final creatorConfig = configAsync.valueOrNull?.creatorProfile;
 
-    if (_isLoading) {
+    if (configAsync.isLoading) {
       return Scaffold(
         backgroundColor: bc.background,
         body: Center(
@@ -199,9 +182,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               const SizedBox(height: 48),
               _ProfilePhotoSection(
                 bc: bc,
-                avatarUrl: _pickedAvatar?.path ?? _creatorConfig?.defaultAvatar ?? '',
+                avatarUrl: _pickedAvatar?.path ?? creatorConfig?.defaultAvatar ?? '',
                 displayName: _displayNameController.text.isEmpty
-                    ? (_creatorConfig?.suggestedName ?? 'Creator')
+                    ? (creatorConfig?.suggestedName ?? 'Creator')
                     : _displayNameController.text,
                 onImagePicked: (file) => setState(() => _pickedAvatar = file),
               ),
@@ -211,7 +194,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 controller: _displayNameController,
                 errorText: _displayNameError,
                 onChanged: (_) => setState(() => _displayNameError = null),
-                suggestedName: _creatorConfig?.suggestedName,
+                suggestedName: creatorConfig?.suggestedName,
               ),
               const SizedBox(height: 24),
               _HandleInput(
@@ -219,7 +202,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 controller: _handleController,
                 errorText: _handleError,
                 onChanged: (_) => setState(() => _handleError = null),
-                suggestedHandle: _creatorConfig?.suggestedHandle,
+                suggestedHandle: creatorConfig?.suggestedHandle,
               ),
               const SizedBox(height: 24),
               _BioInput(
@@ -227,13 +210,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 controller: _bioController,
                 errorText: _bioError,
                 onChanged: (_) => setState(() => _bioError = null),
-                suggestedBio: _creatorConfig?.suggestedBio,
+                suggestedBio: creatorConfig?.suggestedBio,
               ),
               const SizedBox(height: 24),
               _LocationInput(
                 bc: bc,
                 controller: _locationController,
-                suggestedLocation: _creatorConfig?.suggestedLocation,
+                suggestedLocation: creatorConfig?.suggestedLocation,
               ),
               const SizedBox(height: 48),
               _ActionButtons(

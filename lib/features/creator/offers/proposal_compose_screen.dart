@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../data/models/offer_model.dart';
-import '../../../core/config/api_config.dart';
 import '../../../providers/api_providers.dart';
 import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
@@ -60,21 +59,19 @@ class _ProposalComposeScreenState extends ConsumerState<ProposalComposeScreen> {
   }
 
   Future<void> _sendProposal(BuildContext context) async {
-    if (!ApiConfig.useMockData) {
-      final repo = ref.read(proposalRepositoryProvider);
-      final timeline =
-          '${_deliveryDate.year}-${_deliveryDate.month.toString().padLeft(2, '0')}-${_deliveryDate.day.toString().padLeft(2, '0')}';
-      await repo.createProposal(
-        offerId: widget.offerId,
-        pitch: _pitch.text.trim(),
-        deliverables: {
-          'types': ['reel', 'story'],
-          'platforms': _selectedPlatforms.map((p) => p.toLowerCase()).toList(),
-          'count': 1,
-        },
-        timelineIsoDate: timeline,
-      );
-    }
+    final repo = ref.read(proposalRepositoryProvider);
+    final timeline =
+        '${_deliveryDate.year}-${_deliveryDate.month.toString().padLeft(2, '0')}-${_deliveryDate.day.toString().padLeft(2, '0')}';
+    await repo.createProposal(
+      offerId: widget.offerId,
+      pitch: _pitch.text.trim(),
+      deliverables: {
+        'types': ['reel', 'story'],
+        'platforms': _selectedPlatforms.map((p) => p.toLowerCase()).toList(),
+        'count': 1,
+      },
+      timelineIsoDate: timeline,
+    );
     if (!context.mounted) return;
     context.go('/creator/offers/${widget.offerId}/proposal/sent');
   }

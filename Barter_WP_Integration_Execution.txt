@@ -1,0 +1,1047 @@
+================================================================================
+BARTER — WORDPRESS INTEGRATION EXECUTION DOC
+Code review + dead code removal + file-by-file integration with WP mock backend
+Base URL: http://backend-barter.local/wp-json/barter/v1
+Login URL: http://backend-barter.local/wp-json/jwt-auth/v1/token
+================================================================================
+
+CODE REVIEW — WHAT TO DELETE BEFORE STARTING
+===============================================
+
+DELETE THESE FILES (confirmed dead code):
+  lib/data/services/api_client.dart
+    → Reason: Old singleton Dio client hardcoded to localhost:8000,
+      uses wrong storage keys (access_token vs barter_access_token),
+      not referenced by any provider. Fully replaced by BarterApiClient.
+
+  lib/data/services/api_service.dart
+    → Reason: Wraps the deleted ApiClient. Duplicates all endpoint
+      logic now in repositories. Not referenced by any provider.
+
+  lib/data/services/ (entire folder if empty after above)
+
+  assets/mock/ folder contents
+    → Reason: ApiConfig.useMockData is false by default.
+      Mock bypass buttons in sign_in_screen will be removed.
+      Mock assets are dead weight.
+
+DO NOT DELETE:
+  lib/data/dto/           → All 9 DTOs are actively used by repositories
+  lib/data/models/        → All 8 models are used by providers + screens
+  lib/data/mappers/       → Keep (maps DTOs to models)
+  lib/core/network/       → BarterApiClient is the correct client
+  lib/core/auth/          → TokenStorage is correct
+
+CHANGES TO EXISTING FILES:
+  lib/core/config/api_config.dart
+    → Remove useMockData entirely (WP is real data, not mock)
+    → Change defaultValue to WP URL
+
+  lib/features/auth/sign_in_screen.dart
+    → Remove mock bypass buttons ("Continue as Creator/Brand (mock)")
+    → Remove useMockData conditionals
+    → Form fields always rendered
+
+  lib/features/creator/offers/proposal_compose_screen.dart
+    → Remove if (!ApiConfig.useMockData) guard — always call real API
+
+================================================================================
+SPRINT 1 — INFRASTRUCTURE + AUTH
+Stories: Register, Login, Token storage, Routing after auth
+================================================================================
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S1.1 — Delete dead code + update config
+--------------------------------------------------------------------------------
+"""
+In the Flutter barter_app, do the following in order:
+
+1. DELETE these files entirely:
+   - lib/data/services/api_client.dart
+   - lib/data/services/api_service.dart
+
+2. DELETE the lib/data/services/ folder if now empty.
+
+3. DELETE everything inside assets/mock/ folder.
+
+4. REPLACE lib/core/config/api_config.dart with:
+
+   class ApiConfig {
+     ApiConfig._();
+
+     static const String baseUrl = String.fromEnvironment(
+       'API_BASE_URL',
+       defaultValue: 'http://backend-barter.local/wp-json/barter/v1',
+     );
+
+     // WordPress JWT login is at a different path
+     static const String loginUrl = String.fromEnvironment(
+       'LOGIN_URL',
+       defaultValue: 'http://backend-barter.local/wp-json/jwt-auth/v1/token',
+     );
+
+     static String apiPath(String path) {
+       final normalized = path.startsWith('/') ? path : '/$path';
+       return '$baseUrl$normalized';
+     }
+   }
+
+   Note: useMockData is REMOVED entirely.
+
+5. In lib/core/network/barter_api_client.dart, find the _refreshTokens method.
+   The WordPress JWT plugin does NOT have a refresh endpoint.
+   Replace _refreshTokens with:
+
+   Future<void> _refreshTokens() async {
+     // WordPress JWT tokens do not refresh — clear and redirect to login
+     await _tokenStorage.clear();
+     throw ApiException('Session expired. Please sign in again.', statusCode: 401);
+   }
+
+   Note: WP JWT tokens are long-lived (default 7 days configurable in WP).
+   On Django cutover this method will be restored to call /api/auth/token/refresh/
+
+6. Run: flutter pub get
+   Confirm no compile errors.
+"""
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S1.2 — Fix AuthRepository for WordPress
+--------------------------------------------------------------------------------
+"""
+Update lib/data/repositories/auth_repository.dart to work with WordPress.
+
+WordPress differences from Django:
+  - Login endpoint: POST {loginUrl} (not /api/auth/login/)
+    Body: {username: email, password: password}
+    Response: {token: "...", user_email: "...", user_nicename: "..."}
+    The token field is the access_token. There is no refresh_token.
+    Save token as BOTH access and refresh key in TokenStorage for compatibility.
+
+  - Register endpoint: POST /register (same as Django shape)
+    Response: {access_token, refresh_token, user}
+
+  - All other endpoints: same paths, same response shapes.
+
+Tasks:
+1. In AuthRepository.login(), change to:
+   - POST to ApiConfig.loginUrl (not ApiConfig.baseUrl + /auth/login/)
+   - Body: {username: email, password: password}
+   - Parse response: token field → save as access AND refresh via tokenStorage.saveTokens(access: token, refresh: token)
+   - Then call getMe() to get full user object
+   - Return UserDto from getMe()
+
+2. In AuthRepository.register(), keep calling POST /register
+   - Response shape already matches: {access_token, refresh_token, user}
+   - No change needed here
+
+3. In AuthRepository.logout():
+   - WordPress has no server-side logout endpoint
+   - Just call tokenStorage.clear() directly, skip the POST
+   - No change to interface
+
+4. Add to AuthRepository:
+   Future<void> saveFcmToken(String token) async {
+     await _client.postJson('/users/me/fcm-token', body: {'token': token});
+   }
+
+5. In AuthRepository.updateCreatorProfile():
+   - WordPress custom endpoint uses POST not PATCH
+   - Change method to postJson (not patchJson) for /users/me/creator-profile
+   - Same for updateBrandProfile() → postJson to /users/me/brand-profile
+
+   Note: on Django cutover change back to patchJson.
+
+Confirm: compile with no errors.
+"""
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S1.3 — Fix AuthNotifier + routing
+--------------------------------------------------------------------------------
+"""
+Update lib/providers/app_providers.dart — AuthNotifier section only.
+
+Current issues:
+  - _bootstrap() calls getMe() but WP returns token in login response,
+    not as a separate bootstrap call. Keep _bootstrap() as-is — it checks
+    hasTokens then calls getMe() which is correct.
+  - _navigateAfterAuth in sign_in_screen uses hardcoded paths — verify
+    routing is correct.
+
+Tasks:
+1. In AuthNotifier.login():
+   Current: calls authRepository.login() → updates state
+   Verify it sets state correctly:
+     state = state.copyWith(
+       user: user,
+       isLoading: false,
+       isAuthenticated: true,
+       role: user.role == 'brand' ? AppRole.brand : AppRole.creator,
+     )
+   If not structured this way, fix it to be.
+
+2. In AuthNotifier.register():
+   Accept: email, password, name, role (String: 'brand' or 'creator')
+   Call authRepository.register(email, password, name, role)
+   On success: same state update as login
+
+3. In SessionNotifier.persistCreatorOnboarding():
+   This calls auth.updateCreatorProfile() — verify it passes:
+     niches: List<String> from selectedNiches
+     content_types: List<String> from selectedContentTypes
+   If not, fix to pass correct keys matching WP endpoint.
+
+4. Update lib/features/auth/sign_in_screen.dart:
+   a. Remove the mock bypass section entirely:
+      Delete: "Continue as Creator (mock)" button
+      Delete: "Continue as Brand (mock)" button
+      Delete: any if (ApiConfig.useMockData) blocks
+   b. Form fields should always render (remove any useMockData conditionals)
+   c. _navigateAfterAuth() should remain:
+      if role == brand → context.go('/brand/dashboard')
+      else → context.go('/creator/feed')
+   d. In _submit() for register: pass name field value and selected role string
+
+5. In lib/router/app_router.dart:
+   Splash screen redirect logic — verify:
+   - Reads authProvider state
+   - If isAuthenticated and role==brand → redirect to /brand/dashboard
+   - If isAuthenticated and role==creator → redirect to /creator/feed
+   - If not authenticated → redirect to /welcome
+   If this logic is missing or broken, add a redirect callback to GoRouter.
+"""
+
+================================================================================
+SPRINT 2 — OFFER FEED + OFFER DETAIL
+Stories: US-C02 (Browse Offers), Offer Detail + Value Engine
+================================================================================
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S2.1 — Wire offer feed to real API
+--------------------------------------------------------------------------------
+"""
+Wire lib/features/creator/offers/offer_feed_screen.dart to live data.
+
+Current state: StatelessWidget, all data hardcoded, no provider wiring.
+Target: reads from offersProvider, shows real offers from WordPress.
+
+First, check lib/data/dto/offer_dto.dart — it must have:
+  OfferListItemDto with fromJson that handles these WP response fields:
+  {id, type, title, description, estimated_value, currency,
+   quantity_remaining, content_ask (map), kpi_preferences (map),
+   rights_tier, shipping_required, brand: {id, name, logo_url, is_verified},
+   created_at}
+
+  If fromJson does not handle these field names, update it to match
+  the WP response shape exactly.
+
+Then update offer_feed_screen.dart:
+1. Convert to ConsumerWidget (or ConsumerStatefulWidget for filter state)
+
+2. Add filter state: selectedType (String?), selectedNiche (String?),
+   selectedMarket (String?) — use local StatefulWidget state
+
+3. Replace hardcoded offers list with:
+   final offersAsync = ref.watch(offersProvider);
+   offersAsync.when(
+     loading: () => skeleton loading cards (3 shimmer cards),
+     error: (e, _) => error widget with retry button,
+     data: (payload) => real offer cards,
+   )
+
+4. The existing _OfferCard private widget takes hardcoded data.
+   Update it to accept an OfferModel:
+   _OfferCard({required OfferModel offer})
+   Map fields:
+     offer.title → offer title text
+     offer.brand.name → brand name
+     offer.brand.logoUrl → brand logo (use BarterNetworkImage widget)
+     offer.estimatedValue + offer.currency → value chip
+     offer.type → type badge colour (saas=blue, physical=green,
+                   event_pass=purple, experience=amber, etc.)
+     offer.contentAsk → "Looking for" tags
+     offer.shippingRequired → show shipping chip if true
+
+5. "View Offer" button: navigate to /creator/offers/${offer.id}
+   (currently hardcodes offer_001 — fix this)
+
+6. _DropCard: for now keep as UI placeholder.
+   We will wire Drops in Sprint 5.
+   Just remove any hardcoded onTap navigation that would crash.
+
+7. Pull-to-refresh:
+   Wrap SliverList in RefreshIndicator equivalent.
+   On refresh: ref.invalidate(offersProvider)
+
+8. Filter chips (_FilterChips widget):
+   On tap: update local filter state → pass to offersProvider query params.
+   offersProvider needs to accept filters — update in api_providers.dart:
+   final offersProvider = FutureProvider.family<OffersPayload, Map<String,String>>(...) 
+   OR use a StateProvider for filters + a FutureProvider that watches it.
+   Simpler for MVP: use StateProvider<Map<String,String>> offerFiltersProvider
+   and have offersProvider watch it.
+
+9. Search bar: on submit → update offerFiltersProvider with {search: query}
+"""
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S2.2 — Wire offer detail + value engine
+--------------------------------------------------------------------------------
+"""
+Wire lib/features/creator/offers/offer_detail_screen.dart to live data.
+
+Current issues:
+  - Reads offersProvider then finds by id (works if feed is loaded)
+  - Match score hardcoded at 92%
+  - Gallery images hardcoded
+  - Description hardcoded
+
+Tasks:
+1. Add offerDetailProvider to lib/providers/app_providers.dart:
+   final offerDetailProvider = FutureProvider.family<OfferModel, String>((ref, id) async {
+     final repo = ref.read(offerRepositoryProvider);
+     return repo.getOffer(id);  // calls GET /offers/{id}
+   });
+
+   In OfferRepository, add getOffer(String id):
+   GET /offers/{id} → OfferMapper.fromDetail(dto)
+
+2. In offer_detail_screen.dart:
+   Replace: ref.watch(offersProvider).value?.offers.firstWhere(...)
+   With: ref.watch(offerDetailProvider(offerId))
+   Handle loading + error states.
+
+3. Add valueEngineProvider to app_providers.dart:
+   final valueEngineProvider = FutureProvider.family<Map<String,dynamic>, String>((ref, id) async {
+     return ref.read(offerRepositoryProvider).getValueEngine(id);
+   });
+   OfferRepository.getValueEngine already calls GET /offers/{id}/value-engine/
+   Response: {recommended_tier, message, match_score}
+
+4. In _MatchScoreWidget: replace hardcoded 92% with:
+   ref.watch(valueEngineProvider(offerId)).when(
+     data: (engine) {
+       final score = engine['match_score'] as String? ?? 'good';
+       // strong → green, good → amber, low → grey
+       // Show engine['message'] as subtitle
+     },
+     loading: () => shimmer,
+     error: (_, __) => const SizedBox.shrink(),
+   )
+
+5. Map all offer fields to UI:
+   _BrandIdentitySection: use offer.brand.name, offer.brand.logoUrl
+   _DescriptionSection: use offer.description (currently hardcoded)
+   _WantsCard: use offer.contentAsk map fields
+   _KpiPreferencesCard: use offer.kpiPreferences map fields
+   _RightsAndFeesSection: use offer.rightsTier (map to plain English:
+     none="No additional rights", standard="Brand can repost 6 months",
+     extended="Paid ads use 12 months", buyout="Full ownership")
+   _GallerySection: if offer has no images → hide section entirely
+
+6. Membership gate (already implemented in offer_detail_screen):
+   showMembershipGate is called when membershipProvider returns pro_active=false
+   Verify membershipProvider maps WP response correctly:
+   WP /membership/status returns: {pro_active, pro_expires_at, total_points,
+   points_to_next_milestone, tier}
+   MembershipStatus model must have proActive bool field.
+   If field name mismatch, fix the fromJson in membership_dto.dart.
+"""
+
+================================================================================
+SPRINT 3 — PROPOSALS
+Stories: US-C03 (Send Proposal), US-B04 (Review Proposals), Counter-offer
+================================================================================
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S3.1 — Fix ProposalRepository + DTOs for WordPress
+--------------------------------------------------------------------------------
+"""
+Check and fix lib/data/dto/proposal_dto.dart and
+lib/data/repositories/ (proposal repository — find it in the repo).
+
+WordPress proposal response shape:
+  {id, offer_id, creator_id, pitch, deliverables (JSON array or object),
+   timeline, round, status, created_at}
+
+Tasks:
+1. In proposal_dto.dart, verify ProposalDto.fromJson handles:
+   - id as int (WP post ID) — convert to String for consistency
+   - offer_id as int
+   - deliverables as dynamic (could be JSON string or map — WP stores as JSON string)
+     Add safe parse: if deliverables is String → json.decode(deliverables)
+   - status: pending | countered | accepted | declined | expired
+
+2. Find ProposalRepository (check lib/data/repositories/).
+   If missing, create lib/data/repositories/proposal_repository.dart:
+
+   class ProposalRepository {
+     ProposalRepository(this._client);
+     final BarterApiClient _client;
+
+     Future<void> createProposal({
+       required String offerId,
+       required String pitch,
+       required Map<String,dynamic> deliverables,
+       required String timeline,
+     }) async {
+       await _client.postJson(
+         '/offers/$offerId/proposals',
+         body: {
+           'pitch': pitch,
+           'deliverables': deliverables,
+           'timeline': timeline,
+         },
+       );
+     }
+
+     Future<List<ProposalDto>> getProposals() async {
+       final list = await _client.getJsonList('/proposals');
+       return list.map((e) => ProposalDto.fromJson(e as Map<String,dynamic>)).toList();
+     }
+
+     Future<void> acceptProposal(String proposalId) async {
+       await _client.postJson('/proposals/$proposalId/accept');
+     }
+
+     Future<void> declineProposal(String proposalId) async {
+       await _client.postJson('/proposals/$proposalId/decline');
+     }
+
+     Future<void> counterProposal({
+       required String proposalId,
+       required Map<String,dynamic> deliverables,
+       required String timeline,
+       required String note,
+     }) async {
+       await _client.postJson('/proposals/$proposalId/counter', body: {
+         'deliverables': deliverables,
+         'timeline': timeline,
+         'note': note,
+       });
+     }
+   }
+
+3. Add proposalRepositoryProvider to api_providers.dart if missing:
+   final proposalRepositoryProvider = Provider<ProposalRepository>((ref) =>
+     ProposalRepository(ref.read(apiClientProvider)));
+
+4. Add to app_providers.dart:
+   final proposalsListProvider = FutureProvider<List<ProposalDto>>((ref) =>
+     ref.read(proposalRepositoryProvider).getProposals());
+"""
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S3.2 — Wire proposal_compose_screen
+--------------------------------------------------------------------------------
+"""
+Fix lib/features/creator/offers/proposal_compose_screen.dart
+
+Current issues:
+  - _sendProposal() has if (!ApiConfig.useMockData) guard — remove this
+  - Calls proposalRepositoryProvider.createProposal — verify this exists
+  - Deliverables section is hardcoded tiles — needs to read from offer
+
+Tasks:
+1. Remove the if (!ApiConfig.useMockData) check in _sendProposal().
+   Always call the real API.
+
+2. _sendProposal() should:
+   a. Validate: pitch not empty, deliveryDate selected
+   b. Show loading state (disable button, show CircularProgressIndicator)
+   c. Call:
+      ref.read(proposalRepositoryProvider).createProposal(
+        offerId: widget.offerId,
+        pitch: _pitch.text.trim(),
+        deliverables: {
+          'platforms': _selectedPlatforms.toList(),
+          'date': _deliveryDate?.toIso8601String() ?? '',
+        },
+        timeline: _deliveryDate?.toIso8601String() ?? '',
+      )
+   d. On success: context.go('/creator/offers/${widget.offerId}/proposal/sent')
+   e. On ApiException: show SnackBar with error message
+      Special case 400 with message containing 'limit':
+      Show: "You've reached your proposal limit. Complete a deal to send more."
+
+3. Remove "Preview Proposal" button entirely.
+   It navigates to /creator/proposal/sample/preview which is a dead route.
+
+4. The KPI projection card (_kpiToggle section):
+   Keep the UI toggle but make it always show real data from authProvider:
+   ref.watch(authProvider).user?.creatorProfile?.socialAccounts
+   If no social accounts connected yet: show "Connect your socials in profile
+   to show your stats to brands" placeholder instead of empty card.
+
+5. Deliverables section:
+   Pre-fill from the offer's contentAsk if available via offerDetailProvider.
+   If not loaded yet: show the hardcoded tiles as fallback (acceptable for now).
+   Add offerId param check — if offerId is empty string, show error and pop.
+"""
+
+================================================================================
+SPRINT 4 — DEAL ROOM
+Stories: US-C05 (Deal Room), US-B06 (Review Content)
+================================================================================
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S4.1 — Fix DealRepository for WordPress
+--------------------------------------------------------------------------------
+"""
+Update lib/data/repositories/deal_repository.dart for WordPress.
+
+WordPress differences:
+  - Messages endpoint: GET+POST /deals/{id}/messages (not /messages/send/)
+  - POST body for messages: {body: "text"} (not message or content)
+  - deal_room response includes deal + messages in two separate calls
+  - No contract PDF endpoint in WP mock — skip for now
+
+Tasks:
+1. In DealRepository.getDealRoom(id):
+   Current: calls GET /deals/{id}/ AND GET /deals/{id}/messages/
+   Change message path from /deals/{id}/messages/ to /deals/{id}/messages
+   (WP endpoint has no trailing slash)
+
+2. In DealRepository.sendMessage(id, body):
+   POST to /deals/{id}/messages (not /messages/send/)
+   Body: {body: body}
+
+3. In deal_dto.dart / DealMapper — verify DealRoomModel maps correctly:
+   WP deal response:
+   {id, status, deal_fee, currency, agreed_terms (map or JSON string),
+    deadline, offer (nested offer object), brand (nested user),
+    creator (nested user), messages (array), created_at}
+
+   agreed_terms may come as JSON string from WP — add safe parse:
+   if agreedTerms is String → json.decode(agreedTerms)
+
+4. Add DealRepository.approveDelivery(String dealId):
+   POST /deals/{dealId}/approve → returns {status: 'complete'}
+
+5. Add DealRepository.requestRevision(String dealId, String reason):
+   POST /deals/{dealId}/request-revision → body: {reason: reason}
+   (WP endpoint exists at /deals/{id}/request-revision — add this to
+   the WordPress plugin too — see WP fix below)
+
+6. Verify DealRepository.deliverContent() posts to /deals/{id}/deliver
+   with body: {post_urls: [], notes: ''} matching WP endpoint.
+
+WP PLUGIN FIX (add this endpoint to barter-api.php):
+  register_rest_route('barter/v1', '/deals/(?P<id>\d+)/request-revision', [
+    'methods' => 'POST',
+    'callback' => function($request) {
+      $deal_id = (int)$request['id'];
+      $params = $request->get_json_params();
+      update_field('status', 'revision_requested', $deal_id);
+      update_post_meta($deal_id, 'revision_reason', sanitize_textarea_field($params['reason'] ?? ''));
+      return rest_ensure_response(['status' => 'revision_requested']);
+    },
+    'permission_callback' => 'barter_is_authenticated',
+  ]);
+"""
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S4.2 — Wire deal_room_screen
+--------------------------------------------------------------------------------
+"""
+Wire lib/features/deal/deal_room_screen.dart to live data.
+
+Current state:
+  - Reads dealRoomProvider(dealId) — already wired to repo
+  - SUBMIT DELIVERY button navigates to /deal/review (hardcoded)
+  - Composer bar text field has no send logic
+  - Message polling not implemented
+
+Tasks:
+1. Verify dealRoomProvider in app_providers.dart:
+   final dealRoomProvider = FutureProvider.family<DealRoomModel, String>((ref, id) async {
+     return ref.read(dealRepositoryProvider).getDealRoom(id);
+   });
+   If missing or different shape, fix it.
+
+2. Map DealRoomModel fields to UI:
+   BarterEditorialTermsCard:
+     - deal.agreedTerms map → deliverables list
+     - deal.deadline → deadline display
+     - deal.status → status chip colour
+   Message bubbles:
+     - deal.messages list → DealMessageModel list
+     - sender_id matches current user id → right-aligned (creator style)
+     - else → left-aligned (brand style)
+     - Use authProvider to get current user id
+
+3. Wire composer bar send button:
+   Current: mic icon with no onTap
+   Change mic icon to send icon (Icons.send_rounded)
+   On tap:
+     a. Get text from composer text controller
+     b. If empty: do nothing
+     c. Call ref.read(dealRepositoryProvider).sendMessage(dealId, text)
+     d. Clear text field
+     e. Refresh deal room: ref.invalidate(dealRoomProvider(dealId))
+   Show loading indicator on send button while posting.
+
+4. Poll for new messages every 15 seconds (simple MVP approach):
+   Convert _DealRoomBody to StatefulWidget
+   In initState: start Timer.periodic(Duration(seconds: 15), (_) {
+     ref.invalidate(dealRoomProvider(dealId));
+   })
+   In dispose: cancel timer
+
+5. SUBMIT DELIVERY button:
+   Current: navigates to /deal/review (correct route for brand review)
+   This is the CREATOR submitting delivery — should open a bottom sheet:
+   ModalBottomSheet with:
+     - URL text field (paste live post link) — required
+     - Notes text field — optional
+     - "Submit" button → calls DealRepository.deliverContent(
+         dealId: dealId,
+         files: [],
+         postUrls: [urlController.text],
+         notes: notesController.text,
+       )
+     - On success: close sheet, invalidate dealRoomProvider, show snackbar
+
+   Check current user role: if brand → show Approve/Reject actions instead.
+   if (ref.read(authProvider).role == AppRole.brand) → show brand actions
+   else → show SUBMIT DELIVERY button
+
+6. Brand actions (when user is brand):
+   Show two buttons: "Approve Content" and "Request Revision"
+   Approve → ref.read(dealRepositoryProvider).approveDelivery(dealId)
+            → navigate to /deal/{dealId}/rate-close
+   Revision → navigate to /deal/{dealId}/revision (request_revision_screen)
+
+7. request_revision_screen.dart — wire if not already:
+   Text field for reason → calls DealRepository.requestRevision(dealId, reason)
+   On success: pop screen, show snackbar "Revision requested"
+"""
+
+================================================================================
+SPRINT 5 — MEMBERSHIP CLAIM (US-C07)
+================================================================================
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S5.1 — Verify + fix membership DTOs for WordPress
+--------------------------------------------------------------------------------
+"""
+Check lib/data/dto/membership_dto.dart and lib/data/models/membership_model.dart
+
+WordPress membership/tasks response per task:
+  {id (int), brand_name, brand_logo_url, title, platform,
+   points_value (int), required_tags (array of strings),
+   is_featured (bool), is_completed_this_period (bool)}
+
+WordPress membership/status response:
+  {pro_active (bool), pro_expires_at (string or null),
+   total_points (int), points_to_next_milestone (int), tier (string)}
+
+Tasks:
+1. In MembershipTask.fromJson (in membership_dto.dart or model):
+   - id: parse as int, convert to String
+   - requiredTags: handle both List<String> and comma-separated String
+     (WP returns array, but be safe)
+   - isCompletedThisPeriod: default to false if missing
+   - availableAgainAt: may be missing — default to null
+
+2. In MembershipStatus.fromJson:
+   - proActive: field is 'pro_active' (snake_case from WP)
+   - proExpiresAt: field is 'pro_expires_at', nullable
+   - totalPoints: field is 'total_points'
+   - pointsToNextMilestone: field is 'points_to_next_milestone'
+
+3. In MembershipPayload (holds tasks + status):
+   WP returns tasks and status from SEPARATE endpoints.
+   membershipProvider likely calls both and combines.
+   Check app_providers.dart membershipProvider — verify it calls:
+     a. GET /membership/tasks  (returns list of tasks)
+     b. GET /membership/status (returns status object)
+   And combines into MembershipPayload.
+   If not, update to do this.
+
+4. In MembershipRepository, verify or add:
+   Future<void> submitTask(String taskId, String postUrl, String note) async {
+     await _client.postJson('/membership/submissions', body: {
+       'task_id': int.parse(taskId), // WP expects int post ID
+       'post_url': postUrl,
+       'note': note,
+     });
+   }
+"""
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S5.2 — Wire earn_membership_screen + submit_task_screen
+--------------------------------------------------------------------------------
+"""
+The earn_membership_screen.dart is already well-structured.
+Wire the remaining unconnected parts.
+
+Current state:
+  - Reads membershipProvider ✓
+  - _TaskCard "Submit Task" button navigates to /creator/membership/submit/${task.id} ✓
+  - _BottomSummary "Confirm selected tasks" button navigates to submit screen ✓
+  - showTaskBrief() shows bottom sheet with brief content
+
+Issues to fix:
+1. showTaskBrief() shows task.whatToCreate, task.keyMessages, task.donts, task.requiredTags
+   These fields come from MembershipTaskBrief (fetched via GET /membership/tasks/{id}/brief)
+   Add to MembershipRepository:
+   Future<MembershipTaskBrief> getTaskBrief(String taskId) async {
+     final json = await _client.getJson('/membership/tasks/$taskId/brief');
+     return MembershipTaskBrief.fromJson(json);
+   }
+
+   In earn_membership_screen, showTaskBrief() currently takes a MembershipTask.
+   Update to:
+     - Show loading state in bottom sheet while fetching brief
+     - Call ref.read(membershipRepositoryProvider).getTaskBrief(task.id)
+     - Render the brief content once loaded
+
+   WP brief response: {brief_richtext (HTML string), required_tags (array)}
+   brief_richtext is HTML — render with flutter_widget_from_html or just strip
+   HTML tags and show as plain text for MVP (use a simple regex or htmlUnescape).
+   Add to pubspec.yaml: html: ^0.15.4 (for parseFragment text extraction)
+
+2. submit_task_screen.dart — verify it exists and wire it:
+   If it exists, check what it currently does.
+   It should:
+   a. Show which task is being submitted (pass task object or load by id)
+   b. URL paste field with basic validation:
+      Must start with https://www.instagram.com/ or https://www.tiktok.com/
+      Show inline error if invalid
+   c. Optional note field
+   d. "Submit for Review" CTA → calls MembershipRepository.submitTask(taskId, url, note)
+   e. On success: navigate to a success screen or pop with success state
+      Show: "Submitted! We'll review within 48 hours."
+      Show pending points: "You'll earn ${task.pointsValue} points on approval"
+   f. On error: show SnackBar with error message
+
+3. After successful submission: invalidate membershipProvider
+   so earn_membership_screen reflects the new pending state.
+
+4. Membership gate in offer_detail_screen.dart:
+   The showMembershipGate function is called when pro_active is false.
+   Verify this function shows a bottom sheet with:
+   - "Earn your free Pro membership" heading
+   - "See the tasks" button → context.push('/creator/membership/earn')
+   - "Maybe later" button → Navigator.pop(context)
+   If the function doesn't do this, implement it now in offer_detail_screen.dart
+   or as a shared widget in lib/widgets/.
+"""
+
+================================================================================
+SPRINT 6 — NOTIFICATIONS
+Stories: US-D05 (Notifications)
+================================================================================
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S6.1 — Wire notifications
+--------------------------------------------------------------------------------
+"""
+Wire notifications to live WordPress API.
+
+lib/data/dto/notification_dto.dart — check it has:
+  {id, type, title, body, deep_link (nullable), read (bool), created_at}
+
+If not matching WP response shape, fix fromJson:
+  WP returns: {id (int), type, title, body, deep_link (nullable), read (bool), created_at}
+
+Tasks:
+1. In NotificationRepository (find or create):
+   Future<List<NotificationDto>> getNotifications() async {
+     final list = await _client.getJsonList('/notifications');
+     return list.map((e) => NotificationDto.fromJson(e as Map<String,dynamic>)).toList();
+   }
+
+   Future<int> getUnreadCount() async {
+     final json = await _client.getJson('/notifications/unread-count');
+     return (json['count'] as num).toInt();
+   }
+
+   Future<void> markRead(String notificationId) async {
+     await _client.patchJson('/notifications/$notificationId/read');
+   }
+
+2. Add to app_providers.dart:
+   final notificationsProvider = FutureProvider<List<NotificationDto>>((ref) =>
+     ref.read(notificationRepositoryProvider).getNotifications());
+
+   final unreadCountProvider = FutureProvider<int>((ref) =>
+     ref.read(notificationRepositoryProvider).getUnreadCount());
+
+3. Find the notifications screen (check router for /notifications/center).
+   Wire it to notificationsProvider:
+   - List of notification cards: icon by type, title, body, timestamp
+   - Unread dot: show if !notification.read
+   - Pull to refresh: ref.invalidate(notificationsProvider)
+   - Tap: mark as read → ref.read(notificationRepositoryProvider).markRead(id)
+           then navigate based on deep_link if present
+
+4. Nav badge: wherever the notification bell icon appears in the app
+   (check BrandShell and CreatorShell navigation),
+   wrap with a Badge widget showing unreadCountProvider value.
+   Only show badge if count > 0.
+   Poll unreadCountProvider every 60 seconds using Timer in shell widget.
+
+5. WordPress does not push real notifications.
+   For testing: manually add notifications via WP Admin or WP-CLI:
+   wp post meta update {user_id} notifications '[{"id":1,"type":"proposal_received","title":"New proposal","body":"A creator applied to your offer","deep_link":"/creator/deals","read":false,"created_at":"2024-03-01 10:00:00"}]'
+   (Run in LocalWP site shell)
+"""
+
+================================================================================
+SPRINT 7 — BRAND FLOW WIRING
+Stories: US-B01 (Onboarding), US-B02 (Create Offer), US-B05 (Pipeline)
+================================================================================
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S7.1 — Wire brand onboarding
+--------------------------------------------------------------------------------
+"""
+Wire the brand onboarding flow to the API.
+Screens: brand_onboarding_screen.dart, brand_identity_screen.dart,
+offer_types_screen.dart, content_rights_screen.dart
+
+Tasks:
+1. brand_identity_screen.dart:
+   Fields: company name, website, industry (dropdown from onboardingConfigProvider)
+   On Next/Save: call ref.read(authRepositoryProvider).updateBrandProfile({
+     company_name: ..., website: ..., industry: ...
+   })
+   Show loading state. On success: navigate to next onboarding step.
+
+2. offer_types_screen.dart (onboarding step):
+   This is informational — shows what offer types exist.
+   Read from onboardingConfigProvider.offerTypes
+   No API call needed — just display and navigate to next step.
+
+3. content_rights_screen.dart (onboarding step):
+   Informational — shows rights options.
+   No API call — display and navigate.
+
+4. After all onboarding steps: navigate to /brand/dashboard
+   Update AuthNotifier or SessionNotifier to mark onboarding complete:
+   Add hasCompletedOnboarding to AuthState, set true after profile update.
+"""
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S7.2 — Wire create offer flow
+--------------------------------------------------------------------------------
+"""
+Wire the create offer flow.
+Screens: create_offer_details_screen.dart, create_offer_requirements_screen.dart,
+create_offer_rights_screen.dart
+
+Tasks:
+1. Create a CreateOfferState in a new StateNotifierProvider:
+   In lib/providers/app_providers.dart add:
+
+   class CreateOfferState {
+     final String? type;
+     final String? title;
+     final String? description;
+     final double? estimatedValue;
+     final String currency;
+     final int quantity;
+     final Map<String,dynamic> contentAsk;
+     final Map<String,dynamic> kpiPreferences;
+     final String rightsTier;
+     final bool rawFilesRequired;
+     final String exclusivity;
+     final bool shippingRequired;
+     const CreateOfferState({...defaults...});
+     CreateOfferState copyWith({...});
+   }
+
+   class CreateOfferNotifier extends StateNotifier<CreateOfferState> {
+     CreateOfferNotifier(this._offerRepo) : super(const CreateOfferState());
+     final OfferRepository _offerRepo;
+     void updateStep1(Map<String,dynamic> data) => state = state.copyWith(...);
+     void updateStep2(Map<String,dynamic> data) => state = state.copyWith(...);
+     void updateStep3(Map<String,dynamic> data) => state = state.copyWith(...);
+     Future<void> submit() async {
+       await _offerRepo.createOffer(state.toJson());
+     }
+   }
+   final createOfferProvider = StateNotifierProvider.autoDispose<...>(...);
+
+2. create_offer_details_screen.dart (Step 1):
+   Wire: type selector (chips from onboardingConfigProvider.offerTypes),
+   title field, description field, value + currency,
+   quantity slider or number field.
+   On Next: ref.read(createOfferProvider.notifier).updateStep1(...)
+   Navigate to step 2.
+
+3. create_offer_requirements_screen.dart (Step 2):
+   Wire: content_ask (content type multi-select + count),
+   kpi_preferences (min followers number field, min engagement,
+   niche multi-select from onboardingConfigProvider.niches).
+   On Next: updateStep2() → navigate to step 3.
+
+4. create_offer_rights_screen.dart (Step 3):
+   Wire: rights_tier (4 option cards with plain English descriptions),
+   raw_files_required toggle, exclusivity selector,
+   shipping_required toggle.
+   On Publish: ref.read(createOfferProvider.notifier).submit()
+   Show loading. On success: invalidate offersProvider,
+   context.go('/brand/dashboard'), show success snackbar.
+   On error: show error snackbar.
+
+5. In OfferRepository.createOffer(Map body):
+   POST /offers with full body.
+   WP createOffer returns the created offer object.
+   Return OfferModel from response for confirmation.
+"""
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S7.3 — Wire deal pipeline
+--------------------------------------------------------------------------------
+"""
+Wire deal_pipeline_screen.dart (brand Kanban view).
+
+Tasks:
+1. Add to app_providers.dart:
+   final pipelineProvider = FutureProvider<List<DealListItemDto>>((ref) async {
+     return ref.read(dealRepositoryProvider).listDeals();
+   });
+
+   DealRepository.listDeals() → GET /deals → returns list of deals
+   with status for Kanban grouping.
+
+2. In deal_pipeline_screen.dart:
+   ref.watch(pipelineProvider).when(
+     data: (deals) → group by status into columns:
+       active → "Active Deals"
+       delivered → "Delivered"
+       revision_requested → "Revision Requested"
+       complete → "Completed"
+     loading: → shimmer columns,
+     error: → error + retry
+   )
+
+3. Each deal card (PipelineCardModel):
+   Show: creator name + avatar, offer title, status chip,
+   deal_fee formatted (₹1,499 etc.), days since created.
+   Tap: context.push('/deal/${deal.id}')
+
+4. proposal_inbox_screen.dart (brand):
+   Wire to proposalsListProvider:
+   Shows proposals for brand's offers.
+   Each card: creator stats (from proposal.statsSnapshot),
+   pitch preview, status chip.
+   Accept button → ref.read(proposalRepositoryProvider).acceptProposal(id)
+                 → invalidate pipelineProvider + proposalsListProvider
+   Decline → same pattern with declineProposal
+   Counter → navigate to counter_offer_screen with proposalId
+
+5. counter_offer_screen.dart:
+   Needs proposalId param. Check router for this route.
+   Fields: deliverables text/chips, timeline date picker, note.
+   Submit → proposalRepositoryProvider.counterProposal(...)
+   Show round indicator: "Round X of 3"
+   If round == 3 show warning: "This is your final round"
+"""
+
+================================================================================
+SPRINT 8 — SOCIAL CONNECT (STUB FOR WP)
+================================================================================
+
+--------------------------------------------------------------------------------
+WINDSURF PROMPT S8.1 — Social connect screens (manual entry for WP)
+--------------------------------------------------------------------------------
+"""
+WordPress does not support OAuth — implement manual KPI entry as fallback.
+This is the WP testing version. OAuth will replace this on Django cutover.
+
+In lib/features/creator/onboarding/connect_socials_screen.dart (step 3 of onboarding):
+
+Current state: _SocialConnectionCard has isConnected, isSyncing, isAction states.
+
+Tasks:
+1. Replace OAuth connect flow with manual entry bottom sheet:
+   When creator taps "Connect" on a platform card:
+   Show bottom sheet with fields:
+     - Handle / username (text field)
+     - Followers (number field)
+     - Engagement rate (number field, e.g. 4.5 for 4.5%)
+     - Avg views (number field)
+   "Save" button → call a new endpoint: POST /users/me/social-accounts
+   Body: {platform, handle, followers, engagement_rate, avg_views}
+
+2. Add to WordPress plugin (barter-api.php):
+   register_rest_route('barter/v1', '/users/me/social-accounts', [
+     'methods' => 'POST',
+     'callback' => function($request) {
+       $user_id = get_current_user_id();
+       $params = $request->get_json_params();
+       $accounts = json_decode(get_user_meta($user_id, 'social_accounts', true) ?: '[]', true);
+       // Remove existing entry for this platform
+       $accounts = array_filter($accounts, fn($a) => $a['platform'] !== $params['platform']);
+       $accounts[] = [
+         'platform' => sanitize_text_field($params['platform']),
+         'handle' => sanitize_text_field($params['handle']),
+         'followers' => (int)$params['followers'],
+         'engagement_rate' => (float)$params['engagement_rate'],
+         'avg_views' => (int)$params['avg_views'],
+         'last_synced' => current_time('mysql'),
+       ];
+       update_user_meta($user_id, 'social_accounts', json_encode(array_values($accounts)));
+       return rest_ensure_response(end($accounts));
+     },
+     'permission_callback' => 'barter_is_authenticated',
+   ]);
+
+3. Add to AuthRepository:
+   Future<void> addSocialAccount(Map<String,dynamic> accountData) async {
+     await _client.postJson('/users/me/social-accounts', body: accountData);
+   }
+
+4. After saving: update _SocialConnectionCard to show connected state.
+   Mark the platform as connected with the handle shown.
+   Refresh authProvider user data: ref.read(authProvider.notifier).refreshUser()
+"""
+
+================================================================================
+FINAL — CUTOVER CHECKLIST (Django → replace WP)
+================================================================================
+
+When Django backend is ready on Railway, do ONLY these changes:
+
+FILE: lib/core/config/api_config.dart
+  Change defaultValue of baseUrl to Railway URL
+  Change loginUrl defaultValue to Railway URL + /api/auth/login/
+
+FILE: lib/data/repositories/auth_repository.dart
+  login(): change POST target back to /auth/login/ (not loginUrl separately)
+  Response parse: {access_token, refresh_token, user} (not {token})
+  updateCreatorProfile: change postJson back to patchJson
+  updateBrandProfile: change postJson back to patchJson
+
+FILE: lib/core/network/barter_api_client.dart
+  _refreshTokens(): restore to POST /api/auth/token/refresh/ with refresh token
+
+FILE: lib/data/repositories/social_auth (when OAuth sprints run):
+  Replace manual entry with OAuth flow per platform
+
+EVERYTHING ELSE: zero changes needed.
+Response shapes match. All endpoints match. Routing is the same.
+
+================================================================================
+QUICK REFERENCE — SPRINT ORDER
+================================================================================
+
+Sprint 1: S1.1 + S1.2 + S1.3  (config, auth, routing)
+Sprint 2: S2.1 + S2.2          (offer feed, offer detail)
+Sprint 3: S3.1 + S3.2          (proposals)
+Sprint 4: S4.1 + S4.2          (deal room)
+Sprint 5: S5.1 + S5.2          (membership)
+Sprint 6: S6.1                 (notifications)
+Sprint 7: S7.1 + S7.2 + S7.3  (brand flow)
+Sprint 8: S8.1                 (social stubs)
+
+Run each prompt in Windsurf. Test on device before moving to next sprint.
+Use LocalWP site shell for any WP data fixes.
+
+================================================================================
+END
+================================================================================

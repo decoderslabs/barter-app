@@ -61,7 +61,8 @@ class MembershipTaskDto {
   final bool isFeatured;
 
   factory MembershipTaskDto.fromJson(Map<String, dynamic> json) => MembershipTaskDto(
-        id: json['id'] as String,
+        id: json['id']?.toString() ?? '',
+        // WP returns int post IDs — convert to String for consistency
         brandName: json['brand_name'] as String? ?? '',
         brandLogoUrl: json['brand_logo_url'] as String? ?? '',
         title: json['title'] as String? ?? '',
@@ -70,5 +71,26 @@ class MembershipTaskDto {
         briefRichtext: json['brief_richtext'] as String? ?? '',
         requiredTags: List<String>.from(json['required_tags'] as List? ?? const []),
         isFeatured: json['is_featured'] as bool? ?? false,
+      );
+}
+
+class MembershipTaskBriefDto {
+  const MembershipTaskBriefDto({
+    this.briefRichtext = '',
+    this.requiredTags = const [],
+  });
+
+  final String briefRichtext;
+  final List<String> requiredTags;
+
+  factory MembershipTaskBriefDto.fromJson(Map<String, dynamic> json) =>
+      MembershipTaskBriefDto(
+        briefRichtext: json['brief_richtext'] as String? ?? '',
+        requiredTags: (() {
+          final tags = json['required_tags'];
+          if (tags is List) return List<String>.from(tags);
+          if (tags is String && tags.isNotEmpty) return tags.split(',').map((t) => t.trim()).toList();
+          return <String>[];
+        })(),
       );
 }

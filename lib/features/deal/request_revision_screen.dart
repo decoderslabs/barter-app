@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../../core/config/api_config.dart';
 import '../../core/routing/deal_route.dart';
 import '../../providers/api_providers.dart';
 import '../../theme/barter_colors.dart';
@@ -95,7 +94,7 @@ class _RequestRevisionScreenState extends ConsumerState<RequestRevisionScreen> {
               bc: bc,
               onSend: (reason) async {
                 final dealId = dealIdFromRoute(context);
-                if (dealId != null && !ApiConfig.useMockData) {
+                if (dealId != null) {
                   await ref
                       .read(dealRepositoryProvider)
                       .requestRevision(dealId, reason);

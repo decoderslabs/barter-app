@@ -112,19 +112,11 @@ class BarterApiClient {
   }
 
   Future<void> _refreshTokens() async {
-    final refresh = await _tokenStorage.refreshToken;
-    if (refresh == null || refresh.isEmpty) {
-      throw ApiException('No refresh token');
-    }
-    final response = await Dio(BaseOptions(baseUrl: ApiConfig.baseUrl)).post<dynamic>(
-      '/api/auth/token/refresh/',
-      data: {'refresh': refresh},
-    );
-    final data = response.data as Map<String, dynamic>;
-    final access = data['access'] as String?;
-    if (access == null) throw ApiException('Refresh failed');
-    final newRefresh = data['refresh'] as String? ?? refresh;
-    await _tokenStorage.saveTokens(access: access, refresh: newRefresh);
+    // WordPress JWT tokens do not have a refresh endpoint.
+    // On expiry, clear tokens and force re-login.
+    // TODO(django-cutover): restore POST /api/auth/token/refresh/ logic here.
+    await _tokenStorage.clear();
+    throw ApiException('Session expired. Please sign in again.', statusCode: 401);
   }
 }
 

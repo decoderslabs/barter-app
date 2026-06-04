@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../data/models/membership_model.dart';
-import '../../../core/config/api_config.dart';
 import '../../../providers/api_providers.dart';
 import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
@@ -155,15 +154,13 @@ class _SubmitTaskScreenState extends ConsumerState<SubmitTaskScreen> {
   }
 
   Future<void> _submit(BuildContext context, BarterColors bc) async {
-    if (!ApiConfig.useMockData) {
-      final repo = ref.read(membershipRepositoryProvider);
-      await repo.submitTask(
-        taskId: widget.taskId,
-        postUrl: _url.text.trim(),
-        note: _note.text.trim(),
-      );
-      ref.invalidate(membershipProvider);
-    }
+    final repo = ref.read(membershipRepositoryProvider);
+    await repo.submitTask(
+      taskId: widget.taskId,
+      postUrl: _url.text.trim(),
+      note: _note.text.trim(),
+    );
+    ref.invalidate(membershipProvider);
     if (!context.mounted) return;
     _showSubmitted(context, bc);
   }

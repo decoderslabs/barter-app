@@ -1,9 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/config/api_config.dart';
 import '../data/dto/notification_dto.dart';
 import '../data/dto/user_dto.dart';
-import '../data/mock_json_bundle.dart';
 import '../data/models/analytics_model.dart';
 import '../data/models/deal_room_model.dart';
 import '../data/models/membership_model.dart';
@@ -28,12 +26,7 @@ final offerDetailProvider = FutureProvider.family<OfferModel, String>((ref, id) 
 final dealRoomProvider = FutureProvider.family<DealRoomModel, String?>((ref, dealId) async {
   final repo = ref.watch(dealRepositoryProvider);
   final id = dealId ?? await repo.firstDealId();
-  if (id == null && ApiConfig.useMockData) {
-    return MockJsonBundle.instance.loadDealRoom();
-  }
-  if (id == null) {
-    throw Exception('No active deals');
-  }
+  if (id == null) throw Exception('No active deals');
   return repo.getDealRoom(id);
 });
 
@@ -83,7 +76,6 @@ final proposalsListProvider = FutureProvider((ref) async {
 });
 
 final notificationsProvider = FutureProvider<List<NotificationDto>>((ref) async {
-  if (ApiConfig.useMockData) return const [];
   final repo = ref.watch(notificationRepositoryProvider);
   return repo.listNotifications();
 });
@@ -131,7 +123,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _auth;
 
   Future<void> _bootstrap() async {
-    if (ApiConfig.useMockData) return;
     if (!await _auth.isLoggedIn) return;
     state = state.copyWith(isLoading: true);
     try {
@@ -249,7 +240,6 @@ class SessionNotifier extends StateNotifier<SessionState> {
   }
 
   Future<void> persistCreatorOnboarding() async {
-    if (ApiConfig.useMockData) return;
     await _auth.updateCreatorProfile(
       niches: state.selectedNiches.toList(),
       contentTypes: state.selectedContentTypes.toList(),

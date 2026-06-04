@@ -1,11 +1,9 @@
-import '../../core/config/api_config.dart';
 import '../../core/network/barter_api_client.dart';
 import '../dto/analytics_dto.dart';
 import '../dto/paginated_response.dart';
 import '../dto/user_dto.dart';
 import '../mappers/analytics_mapper.dart';
 import '../mappers/brand_dashboard_mapper.dart';
-import '../mock_json_bundle.dart';
 import '../models/analytics_model.dart';
 import '../models/brand_dashboard_model.dart';
 import '../models/brand_profile_model.dart';
@@ -36,15 +34,13 @@ class BrandRepository {
   final DealRepository _deals;
 
   Future<BrandDashboardData> loadDashboard() async {
-    if (ApiConfig.useMockData) return MockJsonBundle.instance.loadBrandDashboard();
-
     final user = await _auth.getMe();
     final offers = await _offers.myOffers();
     final proposals = await _proposals.listProposals();
     final deals = await _deals.listDeals();
     DealsAnalyticsDto? analytics;
     try {
-      final a = await _client.getJson('/api/analytics/deals/');
+      final a = await _client.getJson('/analytics/deals');
       analytics = DealsAnalyticsDto.fromJson(a);
     } catch (_) {}
 
@@ -58,16 +54,12 @@ class BrandRepository {
   }
 
   Future<BrandDiscoveryData> loadDiscovery() async {
-    if (ApiConfig.useMockData) return MockJsonBundle.instance.loadBrandDiscovery();
-
-    final data = await _client.getJson('/api/users/creators/');
+    final data = await _client.getJson('/users/creators');
     final creators = PaginatedResponse.fromJson(data, UserDto.fromJson).results;
     return BrandDashboardMapper.fromCreators(creators);
   }
 
   Future<BrandProfile> loadBrandProfile() async {
-    if (ApiConfig.useMockData) return MockJsonBundle.instance.loadBrandProfile();
-
     final user = await _auth.getMe();
     final bp = user.brandProfile;
     final score = (user.barterScore is num)
@@ -112,15 +104,11 @@ class BrandRepository {
   }
 
   Future<AnalyticsPayload> loadAnalytics() async {
-    if (ApiConfig.useMockData) return MockJsonBundle.instance.loadAnalytics();
-
-    final data = await _client.getJson('/api/analytics/deals/');
+    final data = await _client.getJson('/analytics/deals');
     return AnalyticsMapper.fromDealsAnalytics(DealsAnalyticsDto.fromJson(data));
   }
 
   Future<PipelinePayload> loadPipeline() async {
-    if (ApiConfig.useMockData) return MockJsonBundle.instance.loadPipeline();
-
     final proposals = await _proposals.listProposals();
     final deals = await _deals.listDeals();
     return PipelineMapper.fromProposalsAndDeals(proposals, deals);
@@ -128,7 +116,7 @@ class BrandRepository {
 
   Future<List<Map<String, dynamic>>> loadInbox({String? status}) async {
     final data = await _client.getJson(
-      '/api/brands/inbox/',
+      '/brands/inbox',
       queryParameters: {if (status != null) 'status': status},
     );
     return (data['results'] as List).cast<Map<String, dynamic>>();
