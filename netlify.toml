@@ -1,6 +1,9 @@
 [build]
   publish = "build/web"
 
+[context.production]
+  environment = { SITE_ID = "4ac9bc8d-29db-49e7-9470-1a78deac1805" }
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
