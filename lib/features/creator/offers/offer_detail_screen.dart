@@ -18,7 +18,7 @@ class OfferDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
-    final offersAsync = ref.watch(offersProvider);
+    final offerAsync = ref.watch(offerDetailProvider(offerId));
     return Scaffold(
       backgroundColor: bc.background,
       appBar: BarterAppBar(
@@ -42,19 +42,10 @@ class OfferDetailScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: offersAsync.when(
+      body: offerAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
-        data: (OffersPayload payload) {
-          OfferModel? o;
-          for (final x in payload.offers) {
-            if (x.id == offerId) o = x;
-          }
-          o ??= payload.offers.isNotEmpty ? payload.offers.first : null;
-          if (o == null) {
-            return const Center(child: Text('Offer not found'));
-          }
-          final offer = o;
+        data: (OfferModel offer) {
           return SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 140),
             child: Column(
@@ -62,11 +53,13 @@ class OfferDetailScreen extends ConsumerWidget {
               children: [
                 _BrandIdentitySection(offer: offer, bc: bc),
                 const SizedBox(height: 48),
-                _MatchScoreWidget(bc: bc),
+                _MatchScoreWidget(offerId: offerId, bc: bc),
                 const SizedBox(height: 48),
-                _GallerySection(bc: bc),
-                const SizedBox(height: 48),
-                _DescriptionSection(bc: bc),
+                if (offer.heroImageUrl != null) ...[
+                  _GallerySection(heroImageUrl: offer.heroImageUrl!, bc: bc),
+                  const SizedBox(height: 48),
+                ],
+                _DescriptionSection(description: offer.heroSubtitle ?? offer.title, bc: bc),
                 const SizedBox(height: 48),
                 _TechnicalListsSection(offer: offer, bc: bc),
                 const SizedBox(height: 48),
@@ -156,14 +149,16 @@ class _BrandIdentitySection extends StatelessWidget {
                     Icon(Symbols.verified, color: bc.tertiary, size: 18, fill: 1),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'High-end sustainable skincare focused on botanical innovation and Parisian luxury aesthetics. Seeking creators for our Golden Hour campaign.',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: bc.onSurfaceVariant,
-                        height: 1.45,
-                      ),
-                ),
+                if (offer.heroSubtitle != null && offer.heroSubtitle!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    offer.heroSubtitle!,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: bc.onSurfaceVariant,
+                          height: 1.45,
+                        ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -173,80 +168,97 @@ class _BrandIdentitySection extends StatelessWidget {
   }
 }
 
-class _MatchScoreWidget extends StatelessWidget {
-  const _MatchScoreWidget({required this.bc});
+class _MatchScoreWidget extends ConsumerWidget {
+  const _MatchScoreWidget({required this.offerId, required this.bc});
 
+  final String offerId;
   final BarterColors bc;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: bc.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'YOUR MATCH SCORE',
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: bc.onSurfaceVariant,
-                  letterSpacing: 2,
-                  fontWeight: FontWeight.bold,
-                ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final engineAsync = ref.watch(valueEngineProvider(offerId));
+    return engineAsync.when(
+      loading: () => const SizedBox(height: 80, child: Center(child: CircularProgressIndicator())),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (engine) {
+        final scoreRaw = engine['match_score'] ?? engine['score'];
+        final scoreLabel = scoreRaw?.toString() ?? '--';
+        final message = engine['message'] as String? ?? '';
+        final tier = engine['recommended_tier'] as String?;
+        final Color scoreColor = scoreRaw == 'strong'
+            ? bc.primary
+            : scoreRaw == 'good'
+                ? bc.tertiary
+                : bc.outline;
+        return Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: bc.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(height: 8),
-          Text(
-            '92%',
-            style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                  color: bc.primary,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'YOUR MATCH SCORE',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: bc.onSurfaceVariant,
+                      letterSpacing: 2,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                scoreLabel,
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      color: scoreColor,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -2,
+                    ),
+              ),
+              if (tier != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  tier,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: bc.secondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Strong Strategic Alignment',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: bc.secondary,
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: bc.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              '"Your audience’s high engagement with premium wellness content matches our core demographic perfectly."',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: bc.onSurfaceVariant,
-                    fontStyle: FontStyle.italic,
+              ],
+              if (message.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: bc.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-            ),
+                  child: Text(
+                    '"$message"',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: bc.onSurfaceVariant,
+                          fontStyle: FontStyle.italic,
+                        ),
+                  ),
+                ),
+              ],
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
 class _GallerySection extends StatelessWidget {
-  const _GallerySection({required this.bc});
+  const _GallerySection({required this.heroImageUrl, required this.bc});
 
+  final String heroImageUrl;
   final BarterColors bc;
 
   @override
   Widget build(BuildContext context) {
-    final images = [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuARrwcwkXOlRng4RrGXMFrnZymuCEvmimuPvfMCJbi79Av6DzTO9ArAzqtJDPhFKplkaTf9SqA2VzRTWrH8lQQ-haqY6hrkxETFv2UAUAeHoc5BtZYvYghMR9lI7OUw4x4m6T1qLxsF6TU0DXhdxhAGeIyOxNoVJ6Iw8We9v9Fd2dNppv-L4ba5NmWwTNVU06Ziz2SrtCfaqhThaKLqy02E1SqmoDX67ToN0htyh5rqNyQOhyedJxduIJBpN1Sqz99W3vjEPyad06I',
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuAvJy-cSV8idnIdCZLvpQlQdvSK7hhAQ8JEk9AbGh0DsZ2wV-Y6_49hJWdywX36FlXS1ayZDCUs5qIeEp0B49EgUuhSFQsZOJ0RlIBhSJ9J2BEdm8I-UlLC-FUfNvHN_d_NdQO_Ti9wvPrTAa8TmReTHkrxDf4ZYapaBuDzBPpGef9ZlFwjyXXH60C-PUONZkwycVVmBK9CkYGiGxYX0y16h7tWBxV857TCv_njCMVxSURrmitRI9DeYgDPYkcmwzW3J7bFUYjKv3k',
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCJLC5Cs7N5Ax4d9ula20F8WZvRAXbIgmMZEP1VlzJLPGV3o1cZ7keY8ewHmVKvwzQzsXPgINhJmqKr6__-meW-BeQu1b3MydRlyEH_n5PML7yqG-XFpt712R-CGg4WsGnb4yCtmuqj22YC14HWtuDouzUPEq6mwH4Lm5eXgWrJuVttMRJD4KLmpygK_A0XaLe5d0NVFByvv0PdlOBjWlUn5PH2xZnoLvv4It4mJKFrt1coMN0CdX7UcqaXyKg0_23-wik5Pwq7m4k',
-    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -264,42 +276,9 @@ class _GallerySection extends StatelessWidget {
         const SizedBox(height: 24),
         SizedBox(
           height: 280,
-          child: Row(
-            children: [
-              Expanded(flex: 2, child: _GalleryImage(url: images[0], bc: bc)),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  children: [
-                    Expanded(child: _GalleryImage(url: images[1], bc: bc)),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          _GalleryImage(url: images[2], bc: bc),
-                          DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                '+3',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: BarterNetworkImage(url: heroImageUrl, fit: BoxFit.cover),
           ),
         ),
       ],
@@ -307,31 +286,15 @@ class _GallerySection extends StatelessWidget {
   }
 }
 
-class _GalleryImage extends StatelessWidget {
-  const _GalleryImage({required this.url, required this.bc});
-
-  final String url;
-  final BarterColors bc;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        color: bc.surfaceContainerHighest,
-        child: BarterNetworkImage(url: url),
-      ),
-    );
-  }
-}
-
 class _DescriptionSection extends StatelessWidget {
-  const _DescriptionSection({required this.bc});
+  const _DescriptionSection({required this.description, required this.bc});
 
+  final String description;
   final BarterColors bc;
 
   @override
   Widget build(BuildContext context) {
+    if (description.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -343,15 +306,7 @@ class _DescriptionSection extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          'We are launching our signature Vérité Serum and looking for creators who embody effortless elegance. The goal is to create organic, editorial-style content focused on morning routines and glow from within.',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: bc.onSurfaceVariant,
-                height: 1.7,
-              ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Successful applicants receive the full Botanical Glow set and ongoing partnership opportunities for the Q4 holiday season.',
+          description,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: bc.onSurfaceVariant,
                 height: 1.7,

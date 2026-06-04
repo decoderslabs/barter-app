@@ -29,6 +29,11 @@ final offerDetailProvider = FutureProvider.family<OfferModel, String>((ref, id) 
   return repo.getOffer(id);
 });
 
+final valueEngineProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
+  final repo = ref.watch(offerRepositoryProvider);
+  return repo.getValueEngine(id);
+});
+
 final dealRoomProvider = FutureProvider.family<DealRoomModel, String?>((ref, dealId) async {
   final repo = ref.watch(dealRepositoryProvider);
   final id = dealId ?? await repo.firstDealId();
