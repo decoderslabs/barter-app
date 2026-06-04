@@ -33,11 +33,11 @@ class UserDto {
 
   factory UserDto.fromJson(Map<String, dynamic> json) {
     return UserDto(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      role: json['role'] as String,
-      name: json['name'] as String,
-      username: json['username'] as String,
+      id: json['id']?.toString() ?? '',
+      email: json['email'] as String? ?? '',
+      role: json['role'] as String? ?? 'creator',
+      name: json['name'] as String? ?? '',
+      username: json['username'] as String? ?? '',
       bio: json['bio'] as String?,
       locationCity: json['location_city'] as String?,
       locationCountry: json['location_country'] as String?,
@@ -75,7 +75,7 @@ class BrandProfileDto {
   final bool domainVerified;
 
   factory BrandProfileDto.fromJson(Map<String, dynamic> json) => BrandProfileDto(
-        id: json['id'] as String,
+        id: json['id']?.toString() ?? '',
         companyName: json['company_name'] as String?,
         website: json['website'] as String?,
         industry: json['industry'] as String?,
@@ -98,7 +98,7 @@ class CreatorProfileDto {
   final String tier;
 
   factory CreatorProfileDto.fromJson(Map<String, dynamic> json) => CreatorProfileDto(
-        id: json['id'] as String,
+        id: json['id']?.toString() ?? '',
         niches: List<String>.from(json['niches'] as List? ?? const []),
         contentTypes: List<String>.from(json['content_types'] as List? ?? const []),
         tier: json['tier'] as String? ?? 'nano',
@@ -121,9 +121,9 @@ class SocialAccountDto {
   final double? engagementRate;
 
   factory SocialAccountDto.fromJson(Map<String, dynamic> json) => SocialAccountDto(
-        id: json['id'] as String,
-        platform: json['platform'] as String,
-        handle: json['handle'] as String,
+        id: json['id']?.toString() ?? '',
+        platform: json['platform'] as String? ?? '',
+        handle: json['handle'] as String? ?? '',
         followers: _parseInt(json['followers']),
         engagementRate: _parseDouble(json['engagement_rate']),
       );

@@ -22,11 +22,11 @@ class DealListItemDto {
   final String? createdAt;
 
   factory DealListItemDto.fromJson(Map<String, dynamic> json) => DealListItemDto(
-        id: json['id'] as String,
+        id: json['id']?.toString() ?? '',
         offerTitle: json['offer_title'] as String? ?? '',
         brandUsername: json['brand_username'] as String? ?? '',
         creatorUsername: json['creator_username'] as String? ?? '',
-        status: json['status'] as String,
+        status: json['status'] as String? ?? '',
         dealFee: json['deal_fee']?.toString(),
         currency: json['currency'] as String?,
         deadline: json['deadline'] as String?,
@@ -66,8 +66,8 @@ class DealDetailDto {
   final String? contractUrl;
 
   factory DealDetailDto.fromJson(Map<String, dynamic> json) => DealDetailDto(
-        id: json['id'] as String,
-        status: json['status'] as String,
+        id: json['id']?.toString() ?? '',
+        status: json['status'] as String? ?? '',
         brandUsername: json['brand_username'] as String? ?? '',
         brandName: json['brand_name'] as String? ?? '',
         creatorUsername: json['creator_username'] as String? ?? '',
@@ -98,10 +98,10 @@ class DealMessageDto {
   final String createdAt;
 
   factory DealMessageDto.fromJson(Map<String, dynamic> json) => DealMessageDto(
-        id: json['id'] as String,
+        id: json['id']?.toString() ?? '',
         senderUsername: json['sender_username'] as String? ?? '',
         senderName: json['sender_name'] as String? ?? '',
-        body: json['body'] as String,
-        createdAt: json['created_at'] as String,
+        body: json['body'] as String? ?? '',
+        createdAt: json['created_at'] as String? ?? '',
       );
 }

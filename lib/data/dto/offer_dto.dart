@@ -26,15 +26,15 @@ class OfferListItemDto {
   final String? createdAt;
 
   factory OfferListItemDto.fromJson(Map<String, dynamic> json) => OfferListItemDto(
-        id: json['id'] as String,
+        id: json['id']?.toString() ?? '',
         brandUsername: json['brand_username'] as String? ?? '',
         brandName: json['brand_name'] as String? ?? '',
-        type: json['type'] as String,
-        title: json['title'] as String,
-        estimatedValue: json['estimated_value'].toString(),
+        type: json['type'] as String? ?? '',
+        title: json['title'] as String? ?? '',
+        estimatedValue: json['estimated_value']?.toString() ?? '0',
         currency: json['currency'] as String? ?? 'INR',
         quantityRemaining: _parseInt(json['quantity_remaining']),
-        status: json['status'] as String,
+        status: json['status'] as String? ?? '',
         contentAsk: Map<String, dynamic>.from(json['content_ask'] as Map? ?? const {}),
         createdAt: json['created_at'] as String?,
       );
@@ -77,15 +77,15 @@ class OfferDetailDto extends OfferListItemDto {
   final bool isDrops;
 
   factory OfferDetailDto.fromJson(Map<String, dynamic> json) => OfferDetailDto(
-        id: json['id'] as String,
+        id: json['id']?.toString() ?? '',
         brandUsername: json['brand_username'] as String? ?? '',
         brandName: json['brand_name'] as String? ?? '',
-        type: json['type'] as String,
-        title: json['title'] as String,
-        estimatedValue: json['estimated_value'].toString(),
+        type: json['type'] as String? ?? '',
+        title: json['title'] as String? ?? '',
+        estimatedValue: json['estimated_value']?.toString() ?? '0',
         currency: json['currency'] as String? ?? 'INR',
         quantityRemaining: OfferListItemDto._parseInt(json['quantity_remaining']),
-        status: json['status'] as String,
+        status: json['status'] as String? ?? '',
         contentAsk: Map<String, dynamic>.from(json['content_ask'] as Map? ?? const {}),
         createdAt: json['created_at'] as String?,
         description: json['description'] as String? ?? '',

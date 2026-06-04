@@ -20,12 +20,12 @@ class DropsCampaignDto {
   final int applicationCount;
 
   factory DropsCampaignDto.fromJson(Map<String, dynamic> json) => DropsCampaignDto(
-        id: json['id'] as String,
-        name: json['name'] as String,
+        id: json['id']?.toString() ?? '',
+        name: json['name'] as String? ?? '',
         goal: json['goal'] as String? ?? '',
         totalSlots: (json['total_slots'] as num?)?.toInt() ?? 0,
         filledSlots: (json['filled_slots'] as num?)?.toInt() ?? 0,
-        status: json['status'] as String,
+        status: json['status'] as String? ?? '',
         brandName: json['brand_name'] as String?,
         applicationCount: (json['application_count'] as num?)?.toInt() ?? 0,
       );
@@ -48,10 +48,10 @@ class DropsApplicationDto {
 
   factory DropsApplicationDto.fromJson(Map<String, dynamic> json) =>
       DropsApplicationDto(
-        id: json['id'] as String,
+        id: json['id']?.toString() ?? '',
         creatorUsername: json['creator_username'] as String? ?? '',
         creatorName: json['creator_name'] as String? ?? '',
-        status: json['status'] as String,
+        status: json['status'] as String? ?? '',
         pitch: json['pitch'] as String?,
       );
 }
