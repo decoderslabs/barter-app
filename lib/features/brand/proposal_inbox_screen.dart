@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../widgets/barter_network_image.dart';
 
-class ProposalInboxScreen extends StatelessWidget {
+class ProposalInboxScreen extends ConsumerWidget {
   const ProposalInboxScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
+    final inboxAsync = ref.watch(brandInboxProvider(null));
 
     return Scaffold(
       backgroundColor: bc.background,
@@ -33,65 +36,66 @@ class ProposalInboxScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
-            sliver: SliverToBoxAdapter(child: _EditorialHeader()),
-          ),
-          // Lazy-loaded proposals and declined cards
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            sliver: SliverList.separated(
-              itemCount: 3,
-              itemBuilder: (context, index) {
-                switch (index) {
-                  case 0:
-                    return _ProposalCard(
-                      name: 'Sienna Rivers',
-                      verified: true,
-                      badge: 'Pro Creator',
-                      badgePrimary: true,
-                      imageUrl:
-                          'https://lh3.googleusercontent.com/aida-public/AB6AXuDY6m5l8N-SiaAtzA03YxeMfciCKeLWy31oNacGMdSk1Cl5YgZUSv8cMwrbsOocRctHGi1iusEa5Xy1CSzyzL96oUurmqw3r0Ae-Jxu5bE9pZO9is6VvLTlpHzrNPj0oP4WPcmAzn-jveJtB1Ij28zmgOcelU5u8nHziUMA6RhA7miEGuD_mO9N0m_3zllAp2fehA4bK5YmttG4dWQlMVzzqR91qSYWqOHOkQ17FOdO2d3xzwxbWTlARiWMUV7QCayHTLRT8mDLWEs',
-                      stats: const [
-                        _StatItem(label: 'IG Followers', value: '245K', highlight: false),
-                        _StatItem(label: 'TikTok', value: '1.2M', highlight: false),
-                        _StatItem(label: 'Engagement', value: '8.4%', highlight: false),
-                        _StatItem(label: 'Barter Score', value: '98', highlight: true),
-                      ],
-                      rotate: 6,
-                    );
-                  case 1:
-                    return _ProposalCard(
-                      name: 'Marcus Tech',
-                      verified: false,
-                      badge: 'New Application',
-                      badgePrimary: false,
-                      imageUrl:
-                          'https://lh3.googleusercontent.com/aida-public/AB6AXuCWpYgBrARt-KWyMxVQzX12IoEjDZBhMtl8-0oJrqbqI8UxchD7jj9Ey9YziiLJgpoBuYPdl_0RZ_mzV4Tfpi80gGnJb8yV9dEE37NCR3KomIGWgwG3bxeRD1Kovn_pNCv9z8UmuUqgo0P8syq1y_zKzgvv9PI6ae79SjR9esgOvT8GGNWz4mkaxB48_qFktdDoegyCB_r6hw2OVTktoBAtVxf1XdKg7hVxKoqYZJrbABjqrioC-A81YuOQgasJ3c4pw1bZfcOChEk',
-                      stats: const [
-                        _StatItem(label: 'IG Followers', value: '12K', highlight: false),
-                        _StatItem(label: 'TikTok', value: '89K', highlight: false),
-                        _StatItem(label: 'Engagement', value: '12.1%', highlight: false),
-                        _StatItem(label: 'Barter Score', value: '82', highlight: true),
-                      ],
-                      rotate: -3,
-                    );
-                  default:
-                    return _DeclinedCard(
-                      name: 'Luna Gray',
-                      declinedAgo: 'Declined 2h ago',
-                      imageUrl:
-                          'https://lh3.googleusercontent.com/aida-public/AB6AXuDMD0K0D1JoWFINTBrYqJQdjiICmMxQW89gybIyKrB8HRpNkP4z0XXgdFQCCJov4Mr774_ENlJ361b6GOZVWFHwtfowExI0fOD4P3ybu1mojhWiNlPmZn8ppKzDiERPti1azVLeqzZUWwxrfoq3vdBRkuFw5e4R9s2rDYH5cw-WX5OPBXD-okUzZGHI4dOu-1UaVqMEmY9U86Mrme_vijrFuIgHU70oaJqreGfXWjzPlJzA3qRetWE2lWLv6xbbYg5pY8Cyx0I0lJI',
-                    );
-                }
-              },
-              separatorBuilder: (_, __) => const SizedBox(height: 48),
+      body: inboxAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('$e')),
+        data: (proposals) => CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+              sliver: SliverToBoxAdapter(child: _EditorialHeader()),
             ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 120)),
-        ],
+            if (proposals.isEmpty)
+              const SliverFillRemaining(
+                child: Center(child: Text('No proposals yet')),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                sliver: SliverList.separated(
+                  itemCount: proposals.length,
+                  itemBuilder: (context, index) {
+                    final p = proposals[index];
+                    final status = p['status'] as String? ?? 'pending';
+                    final name = p['creator_name'] as String? ??
+                        p['creator_username'] as String? ?? 'Creator';
+                    final imageUrl = p['creator_avatar_url'] as String? ?? '';
+                    final proposalId = p['id']?.toString() ?? '';
+                    final barterScore = p['barter_score']?.toString() ?? '--';
+                    final igFollowers = p['ig_followers']?.toString() ?? '--';
+                    final tiktokFollowers = p['tiktok_followers']?.toString() ?? '--';
+                    final engagement = p['engagement_rate']?.toString() ?? '--';
+                    final verified = p['is_verified'] as bool? ?? false;
+
+                    if (status == 'declined') {
+                      return _DeclinedCard(
+                        name: name,
+                        declinedAgo: p['declined_at'] as String? ?? 'Declined',
+                        imageUrl: imageUrl,
+                      );
+                    }
+                    return _ProposalCard(
+                      proposalId: proposalId,
+                      name: name,
+                      verified: verified,
+                      badge: status == 'pending' ? 'New Application' : status.toUpperCase(),
+                      badgePrimary: status == 'accepted',
+                      imageUrl: imageUrl,
+                      stats: [
+                        _StatItem(label: 'IG Followers', value: igFollowers, highlight: false),
+                        _StatItem(label: 'TikTok', value: tiktokFollowers, highlight: false),
+                        _StatItem(label: 'Engagement', value: engagement, highlight: false),
+                        _StatItem(label: 'Barter Score', value: barterScore, highlight: true),
+                      ],
+                      rotate: index.isEven ? 6.0 : -3.0,
+                    );
+                  },
+                  separatorBuilder: (_, __) => const SizedBox(height: 48),
+                ),
+              ),
+            const SliverToBoxAdapter(child: SizedBox(height: 120)),
+          ],
+        ),
       ),
     );
   }
@@ -143,6 +147,7 @@ class _StatItem {
 
 class _ProposalCard extends StatelessWidget {
   const _ProposalCard({
+    required this.proposalId,
     required this.name,
     required this.verified,
     required this.badge,
@@ -152,6 +157,7 @@ class _ProposalCard extends StatelessWidget {
     required this.rotate,
   });
 
+  final String proposalId;
   final String name;
   final bool verified;
   final String badge;
@@ -254,7 +260,7 @@ class _ProposalCard extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () => context.push('/deal/sample/review'),
+                    onPressed: () => context.push('/deal/$proposalId/review'),
                     icon: const Icon(Symbols.handshake, size: 20),
                     label: const Text('Accept Proposal'),
                     style: ElevatedButton.styleFrom(
@@ -277,7 +283,7 @@ class _ProposalCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => context.push('/deal/sample/counter-offer'),
+                        onPressed: () => context.push('/deal/$proposalId/counter-offer'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: bc.surfaceContainerHigh,
                           foregroundColor: bc.onBackground,

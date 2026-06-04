@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../data/dto/user_dto.dart';
 import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
 import '../../../theme/responsive_extension.dart';
@@ -70,7 +71,7 @@ class CreatorProfileScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _HeroSection(bc: bc),
+            _HeroSection(bc: bc, user: user),
             const SizedBox(height: 48),
             _KPIGrid(bc: bc),
             const SizedBox(height: 64),
@@ -84,9 +85,10 @@ class CreatorProfileScreen extends ConsumerWidget {
 }
 
 class _HeroSection extends StatelessWidget {
-  const _HeroSection({required this.bc});
+  const _HeroSection({required this.bc, required this.user});
 
   final BarterColors bc;
+  final UserDto? user;
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +119,7 @@ class _HeroSection extends StatelessWidget {
                     ),
                     child: ClipOval(
                       child: BarterNetworkImage(
-                        url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCHeYJCGsJh92o1tQtWI4nkcknCt5-VYNTTfjhOi32iLHDj65Z3VQwMrAXLQb_Dv2RH9khpvUR5m4eFoaruWst4A0P6PA0duZ8Znm4Cz9CQOL9V_YKYDgRtk0KZfkGSWaWFOMUezlgxy39fyr0Guy8aYDyntSvxh9dkhu2nZJdiFFH8T-pRGId4xhJnWjKl8vdZ9p2VGxBzCR_YLeusHALMQqs8zzaoYkk_CSVJ7NdHDGdKTHU3enX8OwnNwM5gNvq1wcqkcJ9DXno',
+                        url: user?.profilePhotoUrl ?? '',
                         fit: BoxFit.cover,
                         memCacheWidth: 256,
                         memCacheHeight: 256,
@@ -175,9 +177,9 @@ class _HeroSection extends StatelessWidget {
                               height: 1,
                             ),
                         children: [
-                          const TextSpan(text: 'Maya '),
+                          TextSpan(text: '${user?.name.split(' ').first ?? 'Creator'} '),
                           TextSpan(
-                            text: 'Sterling',
+                            text: user?.name.split(' ').skip(1).join(' ') ?? '',
                             style: TextStyle(color: bc.primary),
                           ),
                         ],
@@ -185,7 +187,7 @@ class _HeroSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Digital Storyteller & Tech Enthusiast',
+                      '@${user?.username ?? ''}',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: bc.secondary,
                             fontWeight: FontWeight.w500,
@@ -193,7 +195,7 @@ class _HeroSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Crafting high-end editorial content for brands that value authenticity and visual excellence. Specializing in lifestyle tech and sustainable fashion.',
+                      user?.bio ?? '',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: bc.onSurfaceVariant,
                             height: 1.6,
@@ -276,7 +278,7 @@ class _HeroSection extends StatelessWidget {
                   ),
                   child: ClipOval(
                     child: BarterNetworkImage(
-                      url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCHeYJCGsJh92o1tQtWI4nkcknCt5-VYNTTfjhOi32iLHDj65Z3VQwMrAXLQb_Dv2RH9khpvUR5m4eFoaruWst4A0P6PA0duZ8Znm4Cz9CQOL9V_YKYDgRtk0KZfkGSWaWFOMUezlgxy39fyr0Guy8aYDyntSvxh9dkhu2nZJdiFFH8T-pRGId4xhJnWjKl8vdZ9p2VGxBzCR_YLeusHALMQqs8zzaoYkk_CSVJ7NdHDGdKTHU3enX8OwnNwM5gNvq1wcqkcJ9DXno',
+                      url: user?.profilePhotoUrl ?? '',
                       fit: BoxFit.cover,
                       memCacheWidth: 256,
                       memCacheHeight: 256,
@@ -324,9 +326,9 @@ class _HeroSection extends StatelessWidget {
                             height: 1,
                           ),
                       children: [
-                        const TextSpan(text: 'Maya '),
+                        TextSpan(text: '${user?.name.split(' ').first ?? 'Creator'} '),
                         TextSpan(
-                          text: 'Sterling',
+                          text: user?.name.split(' ').skip(1).join(' ') ?? '',
                           style: TextStyle(color: bc.primary),
                         ),
                       ],
@@ -334,7 +336,7 @@ class _HeroSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Digital Storyteller & Tech Enthusiast',
+                    '@${user?.username ?? ''}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: bc.secondary,
                           fontWeight: FontWeight.w500,

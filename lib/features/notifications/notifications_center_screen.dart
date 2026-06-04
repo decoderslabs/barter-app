@@ -1,27 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../data/dto/notification_dto.dart';
+import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../widgets/barter_appbar.dart';
 import '../../widgets/barter_chips.dart';
 import '../../widgets/barter_text.dart';
 import '../../widgets/barter_network_image.dart';
 
-class NotificationsCenterScreen extends StatefulWidget {
+class NotificationsCenterScreen extends ConsumerStatefulWidget {
   const NotificationsCenterScreen({super.key});
 
   @override
-  State<NotificationsCenterScreen> createState() => _NotificationsCenterScreenState();
+  ConsumerState<NotificationsCenterScreen> createState() => _NotificationsCenterScreenState();
 }
 
-class _NotificationsCenterScreenState extends State<NotificationsCenterScreen> {
-  final List<String> _filters = ['All', 'Unread', 'Exchanges', 'Ratings'];
+class _NotificationsCenterScreenState extends ConsumerState<NotificationsCenterScreen> {
   String _selectedFilter = 'All';
 
   @override
   Widget build(BuildContext context) {
     final bc = context.barter;
+    final notificationsAsync = ref.watch(notificationsProvider);
     return Scaffold(
       backgroundColor: bc.surface,
       appBar: BarterAppBar(
@@ -32,221 +35,148 @@ class _NotificationsCenterScreenState extends State<NotificationsCenterScreen> {
           onPressed: () => context.pop(),
         ),
         actions: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: bc.primary,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              '4',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: bc.onPrimary,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 10,
-                  ),
-            ),
+          notificationsAsync.maybeWhen(
+            data: (items) {
+              final unread = items.where((n) => !n.read).length;
+              if (unread == 0) return const SizedBox.shrink();
+              return Container(
+                margin: const EdgeInsets.only(right: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: bc.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  unread > 99 ? '99+' : '$unread',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: bc.onPrimary,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 10,
+                      ),
+                ),
+              );
+            },
+            orElse: () => const SizedBox.shrink(),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
           IconButton(
             icon: Icon(Symbols.notifications, color: bc.primary),
             onPressed: () => context.push('/notifications/settings'),
           ),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-              child: Column(
-                children: [
-                  _FilterChips(bc: bc),
-                  const SizedBox(height: 24),
-                ],
+      body: notificationsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('$e')),
+        data: (items) {
+          final filtered = _selectedFilter == 'Unread'
+              ? items.where((n) => !n.read).toList()
+              : _selectedFilter == 'Exchanges'
+                  ? items.where((n) => n.type.contains('deal') || n.type.contains('proposal')).toList()
+                  : _selectedFilter == 'Ratings'
+                      ? items.where((n) => n.type.contains('rating')).toList()
+                      : items;
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                  child: Column(
+                    children: [
+                      _FilterChips(
+                        bc: bc,
+                        selected: _selectedFilter,
+                        onSelected: (f) => setState(() => _selectedFilter = f),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
-          // Lazy-loaded notification items
-          _NotificationItems(bc: bc),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const BarterSectionLabel(label: 'Earlier Today'),
-                  const SizedBox(height: 24),
-                  _FeaturedCard(bc: bc),
-                  const SizedBox(height: 120),
-                ],
+              if (filtered.isEmpty)
+                const SliverFillRemaining(
+                  child: Center(child: Text('No notifications')),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  sliver: SliverList.separated(
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 16),
+                    itemBuilder: (context, i) => _LiveNotificationCard(n: filtered[i], bc: bc),
+                  ),
+                ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const BarterSectionLabel(label: 'Earlier Today'),
+                      const SizedBox(height: 24),
+                      _FeaturedCard(bc: bc),
+                      const SizedBox(height: 120),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 }
 
 class _FilterChips extends StatelessWidget {
-  const _FilterChips({required this.bc});
+  const _FilterChips({required this.bc, required this.selected, required this.onSelected});
 
   final BarterColors bc;
+  final String selected;
+  final ValueChanged<String> onSelected;
 
   @override
   Widget build(BuildContext context) {
+    const filters = ['All', 'Unread', 'Exchanges', 'Ratings'];
     return SizedBox(
       height: 40,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        children: [
-          BarterChip(label: 'All', variant: BarterChipVariant.filter, selected: true),
-          const SizedBox(width: 8),
-          BarterChip(label: 'Unread', variant: BarterChipVariant.filter),
-          const SizedBox(width: 8),
-          BarterChip(label: 'Exchanges', variant: BarterChipVariant.filter),
-          const SizedBox(width: 8),
-          BarterChip(label: 'Ratings', variant: BarterChipVariant.filter),
-        ],
+        children: filters
+            .map((f) => Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: BarterChip(
+                    label: f,
+                    variant: BarterChipVariant.filter,
+                    selected: f == selected,
+                    onTap: () => onSelected(f),
+                  ),
+                ))
+            .toList(),
       ),
     );
   }
 }
 
-typedef _NotificationData = ({
-  String imageUrl,
-  IconData icon,
-  String title,
-  String time,
-  String actorName,
-  String bodyText,
-  String? boldItem,
-  bool isUnread,
-  double? rating,
-  bool isDeadline,
-});
+class _LiveNotificationCard extends StatelessWidget {
+  const _LiveNotificationCard({required this.n, required this.bc});
 
-class _NotificationItems extends StatelessWidget {
-  const _NotificationItems({required this.bc});
-
+  final NotificationDto n;
   final BarterColors bc;
 
-  static const _data = <_NotificationData>[
-    (
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM',
-      icon: Symbols.mail,
-      title: 'New Proposal Received',
-      time: '2m ago',
-      actorName: 'Priya',
-      bodyText: ' wants to exchange for ',
-      boldItem: 'Glow Lab Serum',
-      isUnread: true,
-      rating: null,
-      isDeadline: false,
-    ),
-    (
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDmT5qngLO9efHvFe6rAW1vRFHwfEulcqSq0Wf4zkvmKxNOeaGvI2d8MQK_gNB7K3tcJqypBkhf3OyhlchcAGpkCF0Z7BnMMKz6jfnZrwEIwyTfYj6D1mDQGlD0Hv3SO5nYpHdLYGPCyBVOJOuOWxj3qJ7-1zjJoL5F5yJuSRoqJhjTkEA-R6RYzjmywZCb9Tt3Ldl83v5mP5lv-C8-oD1qkIZC4Ddf2XAujjpiTHn0PLBK-6NSFzmpGku2iJOixeeXMZmLKmx5vWA',
-      icon: Symbols.handshake,
-      title: 'Deal Accepted',
-      time: '15m ago',
-      actorName: 'Arjun',
-      bodyText: ' accepted your terms for ',
-      boldItem: 'TaskFlow Pro',
-      isUnread: true,
-      rating: null,
-      isDeadline: false,
-    ),
-    (
-      imageUrl: '',
-      icon: Symbols.timer,
-      title: 'Deadline Reminder',
-      time: '1h ago',
-      actorName: '',
-      bodyText: '',
-      boldItem: null,
-      isUnread: false,
-      rating: null,
-      isDeadline: true,
-    ),
-    (
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCqu97dGCVC9axOWiYXMrjmkZa8RO6R8wuBXqxYz1MyF69kVCbx21FOn1FEPLxDuVUxlfm0m0riQZh0dXU0FLZbXLBVsD4935HiFzfR-BlmOmF-6UOnPIxoiB0IGK99eK-oCi-C3qqm2qSWcwCwMP_ERjFspzJyJU8hFrmmtnth0PX7eMWKkBhdkjCY6zoOOsV1W6iUB-tsHW5dp5GcOiTE-RtrLbLrhAteRtJ6cLRtXPAExOqTr-y9JBHeYyj3gaYYieNUZ16mPTI',
-      icon: Symbols.star,
-      title: 'Rating Received',
-      time: '3h ago',
-      actorName: 'Kabir Singh',
-      bodyText: ' left you a review:',
-      boldItem: null,
-      isUnread: false,
-      rating: 5.0,
-      isDeadline: false,
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      sliver: SliverList.separated(
-        itemCount: _data.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 16),
-        itemBuilder: (context, i) {
-          final d = _data[i];
-          if (d.isDeadline) return _DeadlineCard(bc: bc);
-          return _NotificationCard(
-            imageUrl: d.imageUrl,
-            icon: d.icon,
-            iconColor: d.icon == Symbols.handshake ? bc.tertiary : d.icon == Symbols.star ? bc.secondary : bc.primary,
-            title: d.title,
-            time: d.time,
-            message: _buildMessage(context, d),
-            isUnread: d.isUnread,
-            rating: d.rating,
-            bc: bc,
-          );
-        },
-      ),
-    );
+  IconData get _icon {
+    if (n.type.contains('proposal')) return Symbols.mail;
+    if (n.type.contains('deal') || n.type.contains('accept')) return Symbols.handshake;
+    if (n.type.contains('rating')) return Symbols.star;
+    if (n.type.contains('deadline') || n.type.contains('reminder')) return Symbols.timer;
+    return Symbols.notifications;
   }
 
-  Widget _buildMessage(BuildContext context, _NotificationData d) {
-    return RichText(
-      text: TextSpan(
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: bc.onSurfaceVariant),
-        children: [
-          TextSpan(text: d.actorName, style: TextStyle(color: bc.primary, fontWeight: FontWeight.bold)),
-          TextSpan(text: d.bodyText),
-          if (d.boldItem != null)
-            TextSpan(text: d.boldItem, style: const TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.w500)),
-          if (d.boldItem != null) const TextSpan(text: '.'),
-        ],
-      ),
-    );
+  Color _iconColor(BarterColors bc) {
+    if (n.type.contains('rating')) return bc.secondary;
+    if (n.type.contains('deal') || n.type.contains('accept')) return bc.tertiary;
+    return bc.primary;
   }
-}
-
-class _NotificationCard extends StatelessWidget {
-  const _NotificationCard({
-    required this.imageUrl,
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.time,
-    required this.message,
-    this.rating,
-    this.isUnread = false,
-    required this.bc,
-  });
-
-  final String imageUrl;
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String time;
-  final Widget message;
-  final double? rating;
-  final bool isUnread;
-  final BarterColors bc;
 
   @override
   Widget build(BuildContext context) {
@@ -255,7 +185,7 @@ class _NotificationCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: bc.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(32),
-        border: isUnread ? Border(left: BorderSide(color: bc.primary, width: 4)) : null,
+        border: !n.read ? Border(left: BorderSide(color: bc.primary, width: 4)) : null,
         boxShadow: [
           BoxShadow(
             color: bc.onBackground.withValues(alpha: 0.04),
@@ -266,33 +196,14 @@ class _NotificationCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: BarterNetworkImage(
-                  url: imageUrl,
-                  width: 56,
-                  height: 56,
-                  memCacheWidth: 112,
-                  memCacheHeight: 112,
-                ),
-              ),
-              Positioned(
-                bottom: -4,
-                right: -4,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: iconColor,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: bc.surfaceContainerLowest, width: 2),
-                  ),
-                  child: Icon(icon, color: bc.onPrimary, size: 14),
-                ),
-              ),
-            ],
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: _iconColor(bc).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(_icon, color: _iconColor(bc), size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -304,180 +215,53 @@ class _NotificationCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        title,
+                        n.title,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       ),
                     ),
-                    Text(
-                      time,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: bc.onSurfaceVariant.withValues(alpha: 0.6),
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
-                            fontSize: 10,
-                          ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                message,
-                if (rating != null) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      ...List.generate(5, (index) => Icon(
-                        Symbols.star,
-                        color: bc.primary,
-                        size: 16,
-                        fill: 1,
-                      )),
-                      const SizedBox(width: 4),
+                    if (n.createdAt != null)
                       Text(
-                        rating!.toStringAsFixed(1),
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              color: bc.onSurface,
-                              fontWeight: FontWeight.w900,
-                            ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-          if (isUnread) ...[
-            const SizedBox(width: 8),
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: bc.primary,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _DeadlineCard extends StatelessWidget {
-  const _DeadlineCard({required this.bc});
-
-  final BarterColors bc;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: bc.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(32),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -32,
-            right: -32,
-            child: Container(
-              width: 128,
-              height: 128,
-              decoration: BoxDecoration(
-                color: bc.primary.withValues(alpha: 0.03),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: bc.primaryFixedDim,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(Symbols.alarm, color: bc.primary, size: 32),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Deadline Approaching',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                        Text(
-                          '1h ago',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: bc.onSurfaceVariant.withValues(alpha: 0.6),
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.5,
-                                fontSize: 10,
-                              ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '1 DAY LEFT',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: bc.primary,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 2,
-                                fontSize: 10,
-                              ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Ship your assets for SoundWave VIP Pass to Rahul.',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: bc.onSurfaceVariant,
-                              ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton(
-                      onPressed: () => context.push('/deal/sample/shipping'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: bc.primary,
-                        foregroundColor: bc.onPrimary,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Action Now',
+                        _timeAgo(n.createdAt!),
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 2,
+                              color: bc.onSurfaceVariant.withValues(alpha: 0.6),
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.5,
                               fontSize: 10,
                             ),
                       ),
-                    ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  n.body,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: bc.onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ),
           ),
+          if (!n.read) ...[const SizedBox(width: 8), Container(width: 8, height: 8, decoration: BoxDecoration(color: bc.primary, shape: BoxShape.circle))],
         ],
       ),
     );
   }
+
+  String _timeAgo(String iso) {
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      final diff = DateTime.now().difference(dt);
+      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+      if (diff.inHours < 24) return '${diff.inHours}h ago';
+      return '${diff.inDays}d ago';
+    } catch (_) {
+      return '';
+    }
+  }
 }
+
 
 class _FeaturedCard extends StatelessWidget {
   const _FeaturedCard({required this.bc});
