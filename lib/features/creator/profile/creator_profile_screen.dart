@@ -1,29 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
 import '../../../theme/responsive_extension.dart';
 import '../../../widgets/barter_appbar.dart';
 import '../../../widgets/barter_network_image.dart';
 
-class CreatorProfileScreen extends StatelessWidget {
+class CreatorProfileScreen extends ConsumerWidget {
   const CreatorProfileScreen({super.key});
 
+  Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await ref.read(authProvider.notifier).logout();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Signed out successfully'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    context.go('/welcome');
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
+    final user = ref.watch(authProvider).user;
 
     return Scaffold(
       backgroundColor: bc.background,
       appBar: BarterAppBar(
         leading: BarterProfileAvatar(
-          imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCORePb5LyZV-YtOPRWKABI5q_JUG9VtLCu5L7bzca5WJUAAvr4VUKmGdwwWJr0xF4zM8DM-nhKwpkxHZJr5rrCBckmg1O4VpuU0IFZ84eOhyWvn5uGZSlP49RNqdfoxTlZmd1Fd69yXTOubLk4SbNw3IrWiwA0yeSpcu0-kSTQ6Q22962jcwVFO5Mar8Qhc9UkqhIjIQzOzeD2GxWlv1goUTuOHefrltFRraldUFs3DCi3_JQBe0lcRpj1gNKipdNS7VyvO1Y9pnE',
+          imageUrl: user?.profilePhotoUrl,
         ),
         actions: [
           IconButton(
             icon: Icon(Symbols.notifications, color: bc.onBackground),
             onPressed: () => context.push('/notifications/center'),
+          ),
+          IconButton(
+            icon: Icon(Symbols.logout, color: bc.onBackground),
+            tooltip: 'Sign out',
+            onPressed: () => _confirmLogout(context, ref),
           ),
         ],
       ),

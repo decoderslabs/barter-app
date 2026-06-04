@@ -1,18 +1,20 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
@@ -22,9 +24,32 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(milliseconds: 3500), () {
-      if (mounted) context.go('/welcome');
+    Timer(const Duration(milliseconds: 2000), () {
+      if (!mounted) return;
+      final auth = ref.read(authProvider);
+      if (auth.isLoading) {
+        // Bootstrap still in progress — wait for it to settle
+        ref.listenManual(authProvider, (_, next) {
+          if (!next.isLoading && mounted) {
+            _navigate(next);
+          }
+        });
+      } else {
+        _navigate(auth);
+      }
     });
+  }
+
+  void _navigate(AuthState auth) {
+    if (auth.isAuthenticated) {
+      if (auth.role == AppRole.brand) {
+        context.go('/brand/dashboard');
+      } else {
+        context.go('/creator/feed');
+      }
+    } else {
+      context.go('/welcome');
+    }
   }
 
   @override

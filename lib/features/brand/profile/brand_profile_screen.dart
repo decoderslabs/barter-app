@@ -14,6 +14,36 @@ import '../../../widgets/barter_network_image.dart';
 class BrandProfileScreen extends ConsumerWidget {
   const BrandProfileScreen({super.key});
 
+  Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await ref.read(authProvider.notifier).logout();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Signed out successfully'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    context.go('/welcome');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
@@ -33,6 +63,11 @@ class BrandProfileScreen extends ConsumerWidget {
           IconButton(
             icon: Icon(Symbols.notifications, color: bc.onBackground),
             onPressed: () => context.push('/notifications/center'),
+          ),
+          IconButton(
+            icon: Icon(Symbols.logout, color: bc.onBackground),
+            tooltip: 'Sign out',
+            onPressed: () => _confirmLogout(context, ref),
           ),
         ],
       ),

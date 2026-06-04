@@ -11,6 +11,7 @@ publish = "/Users/vaibhavnanda/Downloads/stitch_deal_room/barter_app/build/web"
 publishOrigin = "config"
 
 [build.environment]
+SITE_ID = "4ac9bc8d-29db-49e7-9470-1a78deac1805"
 
 [build.processing]
 

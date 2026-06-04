@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -35,8 +36,8 @@ class OfferDetailScreen extends ConsumerWidget {
           IconButton(
             icon: Icon(Symbols.share, color: bc.onBackground),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Share feature coming soon')),
+              Share.share(
+                'Check out this barter offer on Barter App!\nhttps://barter-app-wp.netlify.app/creator/offers/$offerId',
               );
             },
           ),

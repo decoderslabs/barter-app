@@ -55,7 +55,28 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     }
     if (!mounted) return;
     final state = ref.read(authProvider);
+    if (state.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(state.error!),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     if (state.user != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _isRegister
+                ? 'Account created! Welcome, ${state.user!.name}.'
+                : 'Welcome back, ${state.user!.name}!',
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
       _navigateAfterAuth(state.role);
     }
   }
@@ -90,13 +111,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       color: bc.onSurfaceVariant,
                     ),
               ),
-              if (auth.error != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  auth.error!,
-                  style: TextStyle(color: bc.error),
-                ),
-              ],
               const SizedBox(height: 24),
               ...[
                 BarterLabeledField(
