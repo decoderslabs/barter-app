@@ -7,16 +7,16 @@ class PaymentRepository {
 
   Future<Map<String, dynamic>> createDealFee({required String dealId}) async {
     return _client.postJson(
-      '/api/payments/create-deal-fee/',
+      '/payments/create-deal-fee',
       body: {'deal_id': dealId},
     );
   }
 
   Future<Map<String, dynamic>> mySubscription() async {
-    return _client.getJson('/api/payments/subscriptions/me/');
+    return _client.getJson('/payments/subscriptions/me');
   }
 
   Future<Map<String, dynamic>> myWallet() async {
-    return _client.getJson('/api/payments/wallet/');
+    return _client.getJson('/payments/wallet');
   }
 }

@@ -8,37 +8,37 @@ class DropsRepository {
   final BarterApiClient _client;
 
   Future<List<DropsCampaignDto>> listCampaigns() async {
-    final data = await _client.getJson('/api/drops/');
+    final data = await _client.getJson('/drops');
     return PaginatedResponse.fromJson(data, DropsCampaignDto.fromJson).results;
   }
 
   Future<DropsCampaignDto> getCampaign(String id) async {
-    final data = await _client.getJson('/api/drops/$id/');
+    final data = await _client.getJson('/drops/$id');
     return DropsCampaignDto.fromJson(data);
   }
 
   Future<DropsCampaignDto> createCampaign(Map<String, dynamic> body) async {
-    final data = await _client.postJson('/api/drops/', body: body);
+    final data = await _client.postJson('/drops', body: body);
     return DropsCampaignDto.fromJson(data);
   }
 
   Future<List<DropsApplicationDto>> listApplications(String campaignId) async {
-    final data = await _client.getJson('/api/drops/$campaignId/applications/');
+    final data = await _client.getJson('/drops/$campaignId/applications');
     return PaginatedResponse.fromJson(data, DropsApplicationDto.fromJson).results;
   }
 
   Future<void> apply(String campaignId, String pitch) async {
     await _client.postJson(
-      '/api/drops/$campaignId/apply/',
+      '/drops/$campaignId/apply',
       body: {'campaign': campaignId, 'pitch': pitch},
     );
   }
 
   Future<void> approveApplication(String campaignId, String appId) async {
-    await _client.postJson('/api/drops/$campaignId/applications/$appId/approve/');
+    await _client.postJson('/drops/$campaignId/applications/$appId/approve');
   }
 
   Future<void> declineApplication(String campaignId, String appId) async {
-    await _client.postJson('/api/drops/$campaignId/applications/$appId/decline/');
+    await _client.postJson('/drops/$campaignId/applications/$appId/decline');
   }
 }

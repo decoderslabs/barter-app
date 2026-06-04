@@ -1,35 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../data/dto/drops_dto.dart';
+import '../../../data/models/offer_model.dart';
+import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
 import '../../../widgets/barter_network_image.dart';
 
-class OfferFeedScreen extends StatelessWidget {
+class OfferFeedScreen extends ConsumerWidget {
   const OfferFeedScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
+    final offersAsync = ref.watch(offersProvider);
+    final dropsAsync = ref.watch(dropsProvider);
 
     return Scaffold(
       backgroundColor: bc.background,
       appBar: AppBar(
         backgroundColor: bc.background,
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: bc.surfaceContainerHighest,
-            shape: BoxShape.circle,
-          ),
-          child: ClipOval(
-            child: BarterNetworkImage(
-              url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBISmviadGA4tpxvl0mmaCC53za3ZXBCiy_ij9Cynr6qbodiT9ABmKsDNP7lkxODRBfh3QWXaAskuN19WEmtovgFai6xUL3OgZdVjDitV8WKs1cyxtWsd_RMR6Mq-4-YieCG_fExQP3bpwnkDkLg_xqWhX5poHGddZrBcekMMMxD8pLWeilbRbAocWhBplqOJMn4Z0ufP9bYi_cyijRREWOohcAz-rEiMoj1KO7QdTk5ZsaWDKeG8sNynbIXiah3_aI7VJvjrMwlhQ',
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
+        leading: CircleAvatar(backgroundColor: bc.surfaceContainerHighest),
         title: Text(
           'BARTER',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -60,14 +53,33 @@ class OfferFeedScreen extends StatelessWidget {
                   const SizedBox(height: 32),
                   _FilterChips(bc: bc),
                   const SizedBox(height: 48),
-                  _DropsSection(bc: bc),
+                  dropsAsync.when(
+                    loading: () => const SizedBox(
+                      height: 180,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (_, __) => const SizedBox.shrink(),
+                    data: (drops) => drops.isEmpty
+                        ? const SizedBox.shrink()
+                        : _DropsSection(bc: bc, drops: drops),
+                  ),
                   const SizedBox(height: 48),
                 ],
               ),
             ),
           ),
-          // Lazy-loaded featured exchange cards
-          _FeaturedExchangesSection(bc: bc),
+          offersAsync.when(
+            loading: () => const SliverToBoxAdapter(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, _) => SliverToBoxAdapter(
+              child: Center(child: Text('Failed to load offers: $e')),
+            ),
+            data: (payload) => _FeaturedExchangesSection(
+              bc: bc,
+              offers: payload.offers,
+            ),
+          ),
           const SliverToBoxAdapter(child: SizedBox(height: 120)),
         ],
       ),
@@ -195,9 +207,10 @@ class _Chip extends StatelessWidget {
 }
 
 class _DropsSection extends StatelessWidget {
-  const _DropsSection({required this.bc});
+  const _DropsSection({required this.bc, required this.drops});
 
   final BarterColors bc;
+  final List<DropsCampaignDto> drops;
 
   @override
   Widget build(BuildContext context) {
@@ -238,31 +251,25 @@ class _DropsSection extends StatelessWidget {
         const SizedBox(height: 24),
         SizedBox(
           height: 180,
-          child: ListView(
+          child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            children: [
-              _DropCard(
-                title: 'Alpha Wear Pro',
-                subtitle: 'Exclusive Gym Launch',
-                value: '\$1,200',
-                badge: '4 Slots Left',
-                badgeColor: bc.primary,
+            itemCount: drops.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 24),
+            itemBuilder: (context, i) {
+              final d = drops[i];
+              final slotsLeft = d.totalSlots - d.filledSlots;
+              final isEndingSoon = d.status == 'ending_soon' || d.status == 'closing';
+              return _DropCard(
+                title: d.name,
+                subtitle: d.brandName ?? d.goal,
+                value: '${d.totalSlots} Slots',
+                badge: isEndingSoon ? 'Ending Soon' : '$slotsLeft Slots Left',
+                badgeColor: isEndingSoon ? bc.error : bc.primary,
                 icon: Symbols.auto_awesome,
                 iconColor: bc.tertiary,
                 bc: bc,
-              ),
-              const SizedBox(width: 24),
-              _DropCard(
-                title: 'Skyline Resorts',
-                subtitle: 'Bali Explorer Drop',
-                value: '\$4,500',
-                badge: 'Ending Soon',
-                badgeColor: bc.error,
-                icon: Symbols.flight_takeoff,
-                iconColor: bc.primary,
-                bc: bc,
-              ),
-            ],
+              );
+            },
           ),
         ),
       ],
@@ -383,44 +390,21 @@ class _DropCard extends StatelessWidget {
 }
 
 class _FeaturedExchangesSection extends StatelessWidget {
-  const _FeaturedExchangesSection({required this.bc});
+  const _FeaturedExchangesSection({required this.bc, required this.offers});
 
   final BarterColors bc;
+  final List<OfferModel> offers;
 
   @override
   Widget build(BuildContext context) {
-    final offers = [
-      (
-        brandLogo:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuCquinfoPTqPDiR6oc-limfncVK9lRZq1p5nRup5kRBuS0lczo3dV2BWRIko3djLsXLXVs2DDKqG5OAw4aLgkeXA41PHx3RtBBLbiiPITBZNuNfuq-k9fMx4lBwpA2BcPaSekzPW9uY8B_2GuIa-qkaKWKzmPCYbnagTEUDzmITVxOA-MTYZJ1ZdfwuMhv95npObqyaNNbOIS_Te3qxDGPc5QuPgP-HmnbPHB6NbMgRU3ONSwHr-VUrcuk1QxhModHKVSJtkZ2afhM',
-        brandName: 'StreamFlow AI',
-        brandType: 'SaaS',
-        brandTypeColor: bc.tertiaryContainer,
-        brandDescription: 'Content Automation Suite',
-        title: 'Scale your content creation with lifetime pro access.',
-        description:
-            'We\'re looking for high-quality video creators to showcase our new AI video editor. You get lifetime access and 3 feature spots.',
-        value: '\$2,400',
-        deliverable: '3x Reels / TikTok',
-        deliverableIcon: Symbols.videocam,
-        isFeatured: true,
-      ),
-      (
-        brandLogo:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuDjSjEgkQfsBNIvUqLlhVl2sar4YdAOZuuV_NCc56AR90Yzv6s3FD3yxM-V-RDQY4InxwWexj3Qq9pLu6eWlUjv3ktUfFszub1PxLtorAsA40uDqcS65rBd0b5PU3xk5O1HbV8w5xgvBFIAHAPoR9czWDiEx0eJ_VOS_h3UbHgN9MGmLCC1XgLNRWavL56SsG0ed0Sz8ElH0vWHaWcK04wbIlxQNJOE87adKQ_ex_A-h_nkMIAJWhw2rYFGikrHLcHAXY2wMV2vAEw',
-        brandName: 'Luna Horology',
-        brandType: 'Luxury',
-        brandTypeColor: bc.secondary,
-        brandDescription: 'Luxury Timepieces',
-        title: 'The "Stellar" Collection launch partnership.',
-        description:
-            'High-end lifestyle photography for our upcoming collection. Product shipping worldwide. Looking for aesthetic-driven creators.',
-        value: '\$850',
-        deliverable: '5x Hi-Res Photos',
-        deliverableIcon: Symbols.photo_camera,
-        isFeatured: false,
-      ),
-    ];
+    if (offers.isEmpty) {
+      return const SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Center(child: Text('No offers available right now.')),
+        ),
+      );
+    }
 
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -448,17 +432,20 @@ class _FeaturedExchangesSection extends StatelessWidget {
             itemBuilder: (context, index) {
               final o = offers[index];
               return _OfferCard(
-                brandLogo: o.brandLogo,
+                offerId: o.id,
+                brandLogo: o.brandLogoUrl,
                 brandName: o.brandName,
-                brandType: o.brandType,
-                brandTypeColor: o.brandTypeColor,
-                brandDescription: o.brandDescription,
+                brandType: o.offerTypeLabel,
+                brandTypeColor: bc.tertiaryContainer,
+                brandDescription: o.verifiedLabel,
                 title: o.title,
-                description: o.description,
-                value: o.value,
-                deliverable: o.deliverable,
-                deliverableIcon: o.deliverableIcon,
-                isFeatured: o.isFeatured,
+                description: o.heroSubtitle ?? '',
+                value: o.estimatedValueLabel,
+                deliverable: o.requirementTags.isNotEmpty
+                    ? o.requirementTags.first
+                    : 'See offer',
+                deliverableIcon: Symbols.videocam,
+                isFeatured: index == 0,
                 bc: bc,
               );
             },
@@ -472,6 +459,7 @@ class _FeaturedExchangesSection extends StatelessWidget {
 
 class _OfferCard extends StatelessWidget {
   const _OfferCard({
+    required this.offerId,
     required this.brandLogo,
     required this.brandName,
     required this.brandType,
@@ -486,6 +474,7 @@ class _OfferCard extends StatelessWidget {
     required this.bc,
   });
 
+  final String offerId;
   final String brandLogo;
   final String brandName;
   final String brandType;
@@ -693,7 +682,7 @@ class _OfferCard extends StatelessWidget {
                 ],
               ),
               ElevatedButton(
-                onPressed: () => context.push('/creator/offers/offer_001'),
+                onPressed: () => context.push('/creator/offers/$offerId'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: bc.primary,
                   foregroundColor: bc.onPrimary,

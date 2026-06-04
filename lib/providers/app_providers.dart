@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/dto/drops_dto.dart';
 import '../data/dto/notification_dto.dart';
 import '../data/dto/user_dto.dart';
 import '../data/models/analytics_model.dart';
@@ -12,6 +13,11 @@ import '../data/models/onboarding_config.dart';
 import '../data/models/pipeline_model.dart';
 import '../data/repositories/auth_repository.dart';
 import 'api_providers.dart';
+
+final dropsProvider = FutureProvider<List<DropsCampaignDto>>((ref) async {
+  final repo = ref.watch(dropsRepositoryProvider);
+  return repo.listCampaigns();
+});
 
 final offersProvider = FutureProvider<OffersPayload>((ref) async {
   final repo = ref.watch(offerRepositoryProvider);

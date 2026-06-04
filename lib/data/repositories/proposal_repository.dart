@@ -8,12 +8,12 @@ class ProposalRepository {
   final BarterApiClient _client;
 
   Future<List<ProposalListItemDto>> listProposals() async {
-    final data = await _client.getJson('/api/proposals/');
+    final data = await _client.getJson('/proposals');
     return PaginatedResponse.fromJson(data, ProposalListItemDto.fromJson).results;
   }
 
   Future<ProposalDetailDto> getProposal(String id) async {
-    final data = await _client.getJson('/api/proposals/$id/');
+    final data = await _client.getJson('/proposals/$id');
     return ProposalDetailDto.fromJson(data);
   }
 
@@ -24,7 +24,7 @@ class ProposalRepository {
     required String timelineIsoDate,
   }) async {
     await _client.postJson(
-      '/api/offers/$offerId/proposals/',
+      '/offers/$offerId/proposals',
       body: {
         'offer': offerId,
         'pitch': pitch,
@@ -41,7 +41,7 @@ class ProposalRepository {
     String? note,
   }) async {
     await _client.postJson(
-      '/api/proposals/$proposalId/counter/',
+      '/proposals/$proposalId/counter',
       body: {
         'deliverables': deliverables,
         'timeline': timelineIsoDate,
@@ -51,10 +51,10 @@ class ProposalRepository {
   }
 
   Future<void> acceptProposal(String proposalId) async {
-    await _client.postJson('/api/proposals/$proposalId/accept/');
+    await _client.postJson('/proposals/$proposalId/accept');
   }
 
   Future<void> declineProposal(String proposalId) async {
-    await _client.postJson('/api/proposals/$proposalId/decline/');
+    await _client.postJson('/proposals/$proposalId/decline');
   }
 }
