@@ -1,0 +1,8 @@
+{
+  "name": "BARTER",
+  "short_name": "BARTER",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fcf8ff",
+  "theme_color": "#b3193d"
+}

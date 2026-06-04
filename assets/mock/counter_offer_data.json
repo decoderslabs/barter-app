@@ -1,0 +1,32 @@
+{
+  "counterOffer": {
+    "id": "counter_001",
+    "proposalId": "proposal_001",
+    "offerId": "offer_001",
+    "originalOffer": {
+      "title": "Glow Lab Serum Review",
+      "estimatedValue": "$75",
+      "quantity": 1,
+      "rights": "Standard"
+    },
+    "brand": {
+      "id": "brand_001",
+      "name": "Glow Lab",
+      "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM"
+    },
+    "creator": {
+      "id": "creator_001",
+      "name": "Priya Sharma",
+      "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM"
+    },
+    "counterProposal": {
+      "requestedValue": "$100",
+      "requestedQuantity": 2,
+      "requestedRights": "Extended",
+      "reasoning": "Given my audience engagement and reach, I believe this offer would provide excellent ROI. I can create additional content types including both Reels and Stories."
+    },
+    "status": "pending",
+    "createdAt": "2024-01-29",
+    "expiresAt": "2024-02-02"
+  }
+}

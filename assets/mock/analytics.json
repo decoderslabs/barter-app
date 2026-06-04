@@ -1,0 +1,113 @@
+{
+  "kpis": [
+    {"id": "deals", "label": "Total Deals", "value": "142", "trendLabel": "+12%", "trendUp": true},
+    {"id": "completed", "label": "Completed", "value": "98", "trendLabel": "44 Active", "trendUp": null},
+    {"id": "value", "label": "Est. Barter Value", "value": "₹12.4L", "trendLabel": "Across all campaigns", "trendUp": null},
+    {"id": "close", "label": "Avg. Close Time", "value": "8.4", "valueSuffix": "Days", "trendLabel": "1.2d faster", "trendUp": true},
+    {"id": "accept", "label": "Acceptance", "value": "12%", "trendLabel": null, "trendUp": null, "progress": 0.12}
+  ],
+  "reachChartTitle": "Monthly Reach",
+  "reachChart": [
+    {"month": "Aug", "reach": 980000},
+    {"month": "Sep", "reach": 1240000},
+    {"month": "Oct", "reach": 1580000},
+    {"month": "Nov", "reach": 2100000},
+    {"month": "Dec", "reach": 2650000},
+    {"month": "Jan", "reach": 3200000}
+  ],
+  "engagementChart": [
+    {"month": "Aug", "rate": 3.8},
+    {"month": "Sep", "rate": 4.1},
+    {"month": "Oct", "rate": 4.6},
+    {"month": "Nov", "rate": 5.0},
+    {"month": "Dec", "rate": 4.8},
+    {"month": "Jan", "rate": 5.2}
+  ],
+  "platformBreakdown": [
+    {"platform": "Instagram", "share": 0.54, "reach": 1728000, "deals": 76},
+    {"platform": "YouTube",   "share": 0.24, "reach": 768000,  "deals": 34},
+    {"platform": "TikTok",    "share": 0.14, "reach": 448000,  "deals": 20},
+    {"platform": "Twitter",   "share": 0.05, "reach": 160000,  "deals": 7},
+    {"platform": "LinkedIn",  "share": 0.03, "reach": 96000,   "deals": 5}
+  ],
+  "contentPerformanceTitle": "Content Performance",
+  "contentPerformance": [
+    {
+      "id": "cp_001",
+      "creatorName": "Priya Sharma",
+      "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM",
+      "campaignTitle": "Spring Glow Collection",
+      "platform": "Instagram",
+      "contentType": "Reel",
+      "reach": 420000,
+      "engagementRate": 6.1,
+      "clicks": 3200,
+      "conversions": 148,
+      "barterValue": "₹12,000",
+      "postedDate": "2024-11-10"
+    },
+    {
+      "id": "cp_002",
+      "creatorName": "Arjun Mehta",
+      "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuDMD0K0D1JoWFINTBrYqJQdjiICmMxQW89gybIyKrB8HRpNkP4z0XXgdFQCCJov4Mr774_ENlJ361b6GOZVWFHwtfowExI0fOD4P3ybu1mojhWiNlPmZn8ppKzDiERPti1azVLeqzZUWwxrfoq3vdBRkuFw5e4R9s2rDYH5cw-WX5OPBXD-okUzZGHI4dOu-1UaVqMEmY9U86Mrme_vijrFuIgHU70oaJqreGfXWjzPlJzA3qRetWE2lWLv6xbbYg5pY8Cyx0I0lJI",
+      "campaignTitle": "Mindful Morning Ritual",
+      "platform": "YouTube",
+      "contentType": "Short",
+      "reach": 290000,
+      "engagementRate": 5.4,
+      "clicks": 2100,
+      "conversions": 92,
+      "barterValue": "₹8,500",
+      "postedDate": "2024-10-22"
+    },
+    {
+      "id": "cp_003",
+      "creatorName": "Sneha Kapoor",
+      "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuCHeYJCGsJh92o1tQtWI4nkcknCt5-VYNTTfjhOi32iLHDj65Z3VQwMrAXLQb_Dv2RH9khpvUR5m4eFoaruWst4A0P6PA0duZ8Znm4Cz9CQOL9V_YKYDgRtk0KZfkGSWaWFOMUezlgxy39fyr0Guy8aYDyntSvxh9dkhu2nZJdiFFH8T-pRGId4xhJnWjKl8vdZ9p2VGxBzCR_YLeusHALMQqs8zzaoYkk_CSVJ7NdHDGdKTHU3enX8OwnNwM5gNvq1wcqkcJ9DXno",
+      "campaignTitle": "Clean Skin Essentials",
+      "platform": "Instagram",
+      "contentType": "Carousel",
+      "reach": 185000,
+      "engagementRate": 7.3,
+      "clicks": 1850,
+      "conversions": 114,
+      "barterValue": "₹6,000",
+      "postedDate": "2024-10-01"
+    },
+    {
+      "id": "cp_004",
+      "creatorName": "Meera Pillai",
+      "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuCORePb5LyZV-YtOPRWKABI5q_JUG9VtLCu5L7bzca5WJUAAvr4VUKmGdwwWJr0xF4zM8DM-nhKwpkxHZJr5rrCBckmg1O4VpuU0IFZ84eOhyWvn5uGZSlP49RNqdfoxTlZmd1Fd69yXTOubLk4SbNw3IrWiwA0yeSpcu0-kSTQ6Q22962jcwVFO5Mar8Qhc9UkqhIjIQzOzeD2GxWlv1goUTuOHefrltFRraldUFs3DCi3_JQBe0lcRpj1gNKipdNS7VyvO1Y9pnE",
+      "campaignTitle": "Wellness Winter Drop",
+      "platform": "TikTok",
+      "contentType": "Video",
+      "reach": 310000,
+      "engagementRate": 8.9,
+      "clicks": 4400,
+      "conversions": 201,
+      "barterValue": "₹7,200",
+      "postedDate": "2024-12-05"
+    },
+    {
+      "id": "cp_005",
+      "creatorName": "Dev Sharma",
+      "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuDMD0K0D1JoWFINTBrYqJQdjiICmMxQW89gybIyKrB8HRpNkP4z0XXgdFQCCJov4Mr774_ENlJ361b6GOZVWFHwtfowExI0fOD4P3ybu1mojhWiNlPmZn8ppKzDiERPti1azVLeqzZUWwxrfoq3vdBRkuFw5e4R9s2rDYH5cw-WX5OPBXD-okUzZGHI4dOu-1UaVqMEmY9U86Mrme_vijrFuIgHU70oaJqreGfXWjzPlJzA3qRetWE2lWLv6xbbYg5pY8Cyx0I0lJI",
+      "campaignTitle": "New Year Wellness Reset",
+      "platform": "Instagram",
+      "contentType": "Story Series",
+      "reach": 98000,
+      "engagementRate": 4.2,
+      "clicks": 720,
+      "conversions": 38,
+      "barterValue": "₹4,500",
+      "postedDate": "2025-01-03"
+    }
+  ],
+  "topCreators": [
+    {"rank": 1, "name": "Priya Sharma", "deals": 8, "totalReach": 1240000, "avgRating": 5.0},
+    {"rank": 2, "name": "Meera Pillai", "deals": 5, "totalReach": 890000, "avgRating": 4.9},
+    {"rank": 3, "name": "Sneha Kapoor", "deals": 6, "totalReach": 720000, "avgRating": 4.9},
+    {"rank": 4, "name": "Arjun Mehta", "deals": 4, "totalReach": 640000, "avgRating": 4.8},
+    {"rank": 5, "name": "Dev Sharma", "deals": 3, "totalReach": 410000, "avgRating": 4.6}
+  ]
+}

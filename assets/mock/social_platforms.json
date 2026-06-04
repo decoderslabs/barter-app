@@ -1,0 +1,84 @@
+{
+  "platforms": [
+    {
+      "id": "1",
+      "name": "Instagram",
+      "icon": "photo_camera",
+      "color": "#E1306C",
+      "handlePrefix": "@",
+      "urlTemplate": "https://instagram.com/{handle}",
+      "metrics": ["followers", "engagement_rate", "posts"],
+      "verified": false
+    },
+    {
+      "id": "2",
+      "name": "YouTube",
+      "icon": "play_circle",
+      "color": "#FF0000",
+      "handlePrefix": "@",
+      "urlTemplate": "https://youtube.com/@{handle}",
+      "metrics": ["subscribers", "views", "engagement_rate"],
+      "verified": false
+    },
+    {
+      "id": "3",
+      "name": "TikTok",
+      "icon": "music_note",
+      "color": "#000000",
+      "handlePrefix": "@",
+      "urlTemplate": "https://tiktok.com/@{handle}",
+      "metrics": ["followers", "likes", "engagement_rate"],
+      "verified": false
+    },
+    {
+      "id": "4",
+      "name": "Twitter/X",
+      "icon": "alternate_email",
+      "color": "#1DA1F2",
+      "handlePrefix": "@",
+      "urlTemplate": "https://twitter.com/{handle}",
+      "metrics": ["followers", "engagement_rate", "tweets"],
+      "verified": false
+    },
+    {
+      "id": "5",
+      "name": "LinkedIn",
+      "icon": "work",
+      "color": "#0077B5",
+      "handlePrefix": "",
+      "urlTemplate": "https://linkedin.com/in/{handle}",
+      "metrics": ["connections", "followers", "engagement_rate"],
+      "verified": false
+    },
+    {
+      "id": "6",
+      "name": "Pinterest",
+      "icon": "push_pin",
+      "color": "#E60023",
+      "handlePrefix": "@",
+      "urlTemplate": "https://pinterest.com/{handle}",
+      "metrics": ["followers", "monthly_views", "engagement_rate"],
+      "verified": false
+    },
+    {
+      "id": "7",
+      "name": "Twitch",
+      "icon": "videogame_asset",
+      "color": "#9146FF",
+      "handlePrefix": "",
+      "urlTemplate": "https://twitch.tv/{handle}",
+      "metrics": ["followers", "subscribers", "average_viewers"],
+      "verified": false
+    },
+    {
+      "id": "8",
+      "name": "Spotify",
+      "icon": "music_note",
+      "color": "#1DB954",
+      "handlePrefix": "",
+      "urlTemplate": "https://open.spotify.com/user/{handle}",
+      "metrics": ["followers", "monthly_listeners", "streams"],
+      "verified": false
+    }
+  ]
+}

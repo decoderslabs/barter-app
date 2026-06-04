@@ -1,0 +1,129 @@
+{
+  "columns": [
+    {
+      "id": "applied",
+      "title": "Applied",
+      "accentHex": "#b3193d",
+      "cards": [
+        {
+          "id": "card_001",
+          "creatorName": "Priya Sharma",
+          "offerTitle": "Aura Collective — Spring Glow Reel",
+          "tags": ["Beauty", "Instagram"],
+          "brandInitial": "A",
+          "barterValue": "₹12,000",
+          "appliedDate": "2 days ago"
+        },
+        {
+          "id": "card_002",
+          "creatorName": "Priya Sharma",
+          "offerTitle": "Glow Lab Serum — UGC Reel",
+          "tags": ["Skincare", "2.4K Reach"],
+          "brandInitial": "G",
+          "barterValue": "₹7,500",
+          "appliedDate": "3 days ago"
+        },
+        {
+          "id": "card_003",
+          "creatorName": "Priya Sharma",
+          "offerTitle": "TaskFlow Pro — Tutorial Series",
+          "tags": ["Tech", "YouTube"],
+          "brandInitial": "T",
+          "barterValue": "₹9,000",
+          "appliedDate": "5 days ago"
+        }
+      ]
+    },
+    {
+      "id": "shortlisted",
+      "title": "Shortlisted",
+      "accentHex": "#3e5d8b",
+      "cards": [
+        {
+          "id": "card_004",
+          "creatorName": "Priya Sharma",
+          "offerTitle": "Atelier Noir — Editorial Shoot",
+          "tags": ["Fashion", "IG"],
+          "brandInitial": "A",
+          "barterValue": "₹15,000",
+          "appliedDate": "1 week ago"
+        },
+        {
+          "id": "card_005",
+          "creatorName": "Priya Sharma",
+          "offerTitle": "Nomad Gear — Travel Reel",
+          "tags": ["Travel", "Lifestyle"],
+          "brandInitial": "N",
+          "barterValue": "₹11,000",
+          "appliedDate": "1 week ago"
+        }
+      ]
+    },
+    {
+      "id": "negotiating",
+      "title": "Negotiating",
+      "accentHex": "#c47800",
+      "cards": [
+        {
+          "id": "card_006",
+          "creatorName": "Priya Sharma",
+          "offerTitle": "BrewCo Coffee — Morning Ritual",
+          "tags": ["Food", "Lifestyle"],
+          "brandInitial": "B",
+          "barterValue": "₹8,500",
+          "appliedDate": "2 weeks ago"
+        }
+      ]
+    },
+    {
+      "id": "active",
+      "title": "Active Deals",
+      "accentHex": "#1a5e3a",
+      "cards": [
+        {
+          "id": "card_007",
+          "creatorName": "Priya Sharma",
+          "offerTitle": "SoundWave Pass — Event Coverage",
+          "tags": ["Events", "Stories"],
+          "brandInitial": "S",
+          "barterValue": "₹13,000",
+          "appliedDate": "3 weeks ago"
+        },
+        {
+          "id": "card_008",
+          "creatorName": "Priya Sharma",
+          "offerTitle": "Aura Collective — Clean Skin Bundle",
+          "tags": ["Wellness", "Skincare"],
+          "brandInitial": "A",
+          "barterValue": "₹9,000",
+          "appliedDate": "3 weeks ago"
+        }
+      ]
+    },
+    {
+      "id": "completed",
+      "title": "Completed",
+      "accentHex": "#4b5563",
+      "cards": [
+        {
+          "id": "card_009",
+          "creatorName": "Priya Sharma",
+          "offerTitle": "Glow Lab — Vitamin C Serum",
+          "tags": ["Beauty", "Carousel"],
+          "brandInitial": "G",
+          "barterValue": "₹6,500",
+          "appliedDate": "2 months ago"
+        },
+        {
+          "id": "card_010",
+          "creatorName": "Priya Sharma",
+          "offerTitle": "Vanguard Global — Editorial Series",
+          "tags": ["Fashion", "Editorial"],
+          "brandInitial": "V",
+          "barterValue": "₹18,000",
+          "appliedDate": "3 months ago"
+        }
+      ]
+    }
+  ]
+}

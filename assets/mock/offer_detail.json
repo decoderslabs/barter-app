@@ -1,0 +1,67 @@
+{
+  "offer": {
+    "id": "offer_001",
+    "brand": {
+      "id": "brand_001",
+      "name": "Glow Lab",
+      "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM",
+      "verified": true,
+      "industry": "Beauty & Skincare",
+      "location": "Los Angeles, CA"
+    },
+    "title": "Glow Lab Serum Review",
+    "description": "Review our new vitamin C serum. Create authentic content showing your skincare routine with our product. We're looking for creators who can demonstrate the product's benefits through before/after content and honest reviews.",
+    "offerType": "Physical Product",
+    "estimatedValue": 75,
+    "quantity": 1,
+    "requirements": {
+      "contentDeliverables": [
+        {
+          "id": "deliverable_001",
+          "type": "Instagram Reel",
+          "description": "30-60 second review video",
+          "selected": true
+        },
+        {
+          "id": "deliverable_002",
+          "type": "Instagram Story",
+          "description": "3-5 story frames showing product",
+          "selected": false
+        }
+      ],
+      "quantity": 1,
+      "minFollowers": 50000,
+      "engagementRate": 3.0,
+      "accountType": "any"
+    },
+    "rights": {
+      "usageLicense": "Standard",
+      "rawFiles": "No raw files needed",
+      "exclusivity": "Non-exclusive",
+      "creditRequired": true
+    },
+    "dealSettings": {
+      "proposalDeadline": "2024-02-10",
+      "maxProposals": 25
+    },
+    "deadline": "2024-02-15",
+    "proposalsReceived": 12,
+    "matchScore": 95,
+    "createdAt": "2024-01-20",
+    "status": "active",
+    "similarOffers": [
+      {
+        "id": "offer_004",
+        "title": "Summer Collection Launch",
+        "brand": "Glow Lab",
+        "estimatedValue": "$100"
+      },
+      {
+        "id": "offer_005",
+        "title": "Skincare Routine Bundle",
+        "brand": "BeautyBrand X",
+        "estimatedValue": "$85"
+      }
+    ]
+  }
+}

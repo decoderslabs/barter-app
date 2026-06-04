@@ -1,0 +1,164 @@
+{
+  "pipeline": {
+    "columns": [
+      {
+        "id": "col_001",
+        "name": "New Proposals",
+        "color": "#6366f1",
+        "deals": [
+          {
+            "id": "deal_001",
+            "title": "Spring Glow Collection",
+            "brand": "Aura Collective",
+            "creator": "Priya Sharma",
+            "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM",
+            "value": "₹12,000",
+            "platform": "Instagram",
+            "status": "new",
+            "createdAt": "2024-01-28"
+          },
+          {
+            "id": "deal_002",
+            "title": "Mindful Morning Ritual",
+            "brand": "Aura Collective",
+            "creator": "Arjun Mehta",
+            "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuDMD0K0D1JoWFINTBrYqJQdjiICmMxQW89gybIyKrB8HRpNkP4z0XXgdFQCCJov4Mr774_ENlJ361b6GOZVWFHwtfowExI0fOD4P3ybu1mojhWiNlPmZn8ppKzDiERPti1azVLeqzZUWwxrfoq3vdBRkuFw5e4R9s2rDYH5cw-WX5OPBXD-okUzZGHI4dOu-1UaVqMEmY9U86Mrme_vijrFuIgHU70oaJqreGfXWjzPlJzA3qRetWE2lWLv6xbbYg5pY8Cyx0I0lJI",
+            "value": "₹8,500",
+            "platform": "YouTube",
+            "status": "new",
+            "createdAt": "2024-01-29"
+          },
+          {
+            "id": "deal_002b",
+            "title": "Nomad Travel Backpack",
+            "brand": "Nomad Gear",
+            "creator": "Meera Pillai",
+            "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuCORePb5LyZV-YtOPRWKABI5q_JUG9VtLCu5L7bzca5WJUAAvr4VUKmGdwwWJr0xF4zM8DM-nhKwpkxHZJr5rrCBckmg1O4VpuU0IFZ84eOhyWvn5uGZSlP49RNqdfoxTlZmd1Fd69yXTOubLk4SbNw3IrWiwA0yeSpcu0-kSTQ6Q22962jcwVFO5Mar8Qhc9UkqhIjIQzOzeD2GxWlv1goUTuOHefrltFRraldUFs3DCi3_JQBe0lcRpj1gNKipdNS7VyvO1Y9pnE",
+            "value": "₹18,000",
+            "platform": "Instagram",
+            "status": "new",
+            "createdAt": "2024-01-30"
+          }
+        ]
+      },
+      {
+        "id": "col_002",
+        "name": "Negotiating",
+        "color": "#f59e0b",
+        "deals": [
+          {
+            "id": "deal_003",
+            "title": "SoundWave VIP Pass",
+            "brand": "SoundWave",
+            "creator": "Sneha Kapoor",
+            "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuCHeYJCGsJh92o1tQtWI4nkcknCt5-VYNTTfjhOi32iLHDj65Z3VQwMrAXLQb_Dv2RH9khpvUR5m4eFoaruWst4A0P6PA0duZ8Znm4Cz9CQOL9V_YKYDgRtk0KZfkGSWaWFOMUezlgxy39fyr0Guy8aYDyntSvxh9dkhu2nZJdiFFH8T-pRGId4xhJnWjKl8vdZ9p2VGxBzCR_YLeusHALMQqs8zzaoYkk_CSVJ7NdHDGdKTHU3enX8OwnNwM5gNvq1wcqkcJ9DXno",
+            "value": "₹14,000",
+            "platform": "YouTube",
+            "status": "negotiating",
+            "createdAt": "2024-01-25"
+          },
+          {
+            "id": "deal_003b",
+            "title": "BrewCo Morning Ritual",
+            "brand": "BrewCo",
+            "creator": "Dev Sharma",
+            "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuDMD0K0D1JoWFINTBrYqJQdjiICmMxQW89gybIyKrB8HRpNkP4z0XXgdFQCCJov4Mr774_ENlJ361b6GOZVWFHwtfowExI0fOD4P3ybu1mojhWiNlPmZn8ppKzDiERPti1azVLeqzZUWwxrfoq3vdBRkuFw5e4R9s2rDYH5cw-WX5OPBXD-okUzZGHI4dOu-1UaVqMEmY9U86Mrme_vijrFuIgHU70oaJqreGfXWjzPlJzA3qRetWE2lWLv6xbbYg5pY8Cyx0I0lJI",
+            "value": "₹5,500",
+            "platform": "Instagram",
+            "status": "negotiating",
+            "createdAt": "2024-01-26"
+          }
+        ]
+      },
+      {
+        "id": "col_003",
+        "name": "In Progress",
+        "color": "#10b981",
+        "deals": [
+          {
+            "id": "deal_004",
+            "title": "Clean Skin Essentials Bundle",
+            "brand": "Aura Collective",
+            "creator": "Priya Sharma",
+            "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM",
+            "value": "₹9,000",
+            "platform": "Instagram",
+            "status": "in_progress",
+            "createdAt": "2024-01-20"
+          },
+          {
+            "id": "deal_004b",
+            "title": "Vanguard Autumn Editorial",
+            "brand": "Vanguard Global",
+            "creator": "Arjun Mehta",
+            "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuDMD0K0D1JoWFINTBrYqJQdjiICmMxQW89gybIyKrB8HRpNkP4z0XXgdFQCCJov4Mr774_ENlJ361b6GOZVWFHwtfowExI0fOD4P3ybu1mojhWiNlPmZn8ppKzDiERPti1azVLeqzZUWwxrfoq3vdBRkuFw5e4R9s2rDYH5cw-WX5OPBXD-okUzZGHI4dOu-1UaVqMEmY9U86Mrme_vijrFuIgHU70oaJqreGfXWjzPlJzA3qRetWE2lWLv6xbbYg5pY8Cyx0I0lJI",
+            "value": "₹18,000",
+            "platform": "Instagram",
+            "status": "in_progress",
+            "createdAt": "2024-01-22"
+          }
+        ]
+      },
+      {
+        "id": "col_004",
+        "name": "Review",
+        "color": "#8b5cf6",
+        "deals": [
+          {
+            "id": "deal_005",
+            "title": "TaskFlow Pro Tutorial",
+            "brand": "TaskFlow Pro",
+            "creator": "Sneha Kapoor",
+            "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuCHeYJCGsJh92o1tQtWI4nkcknCt5-VYNTTfjhOi32iLHDj65Z3VQwMrAXLQb_Dv2RH9khpvUR5m4eFoaruWst4A0P6PA0duZ8Znm4Cz9CQOL9V_YKYDgRtk0KZfkGSWaWFOMUezlgxy39fyr0Guy8aYDyntSvxh9dkhu2nZJdiFFH8T-pRGId4xhJnWjKl8vdZ9p2VGxBzCR_YLeusHALMQqs8zzaoYkk_CSVJ7NdHDGdKTHU3enX8OwnNwM5gNvq1wcqkcJ9DXno",
+            "value": "₹9,500",
+            "platform": "YouTube",
+            "status": "review",
+            "createdAt": "2024-01-15"
+          },
+          {
+            "id": "deal_005b",
+            "title": "Glow Lab Serum UGC",
+            "brand": "Glow Lab",
+            "creator": "Meera Pillai",
+            "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuCORePb5LyZV-YtOPRWKABI5q_JUG9VtLCu5L7bzca5WJUAAvr4VUKmGdwwWJr0xF4zM8DM-nhKwpkxHZJr5rrCBckmg1O4VpuU0IFZ84eOhyWvn5uGZSlP49RNqdfoxTlZmd1Fd69yXTOubLk4SbNw3IrWiwA0yeSpcu0-kSTQ6Q22962jcwVFO5Mar8Qhc9UkqhIjIQzOzeD2GxWlv1goUTuOHefrltFRraldUFs3DCi3_JQBe0lcRpj1gNKipdNS7VyvO1Y9pnE",
+            "value": "₹7,500",
+            "platform": "Instagram",
+            "status": "review",
+            "createdAt": "2024-01-17"
+          }
+        ]
+      },
+      {
+        "id": "col_005",
+        "name": "Completed",
+        "color": "#64748b",
+        "deals": [
+          {
+            "id": "deal_006",
+            "title": "Vitamin C Serum Review",
+            "brand": "Glow Lab",
+            "creator": "Priya Sharma",
+            "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM",
+            "value": "₹6,500",
+            "platform": "Instagram",
+            "rating": 5.0,
+            "status": "completed",
+            "createdAt": "2024-01-10"
+          },
+          {
+            "id": "deal_006b",
+            "title": "Wellness Morning Ritual",
+            "brand": "Aura Collective",
+            "creator": "Sneha Kapoor",
+            "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuCHeYJCGsJh92o1tQtWI4nkcknCt5-VYNTTfjhOi32iLHDj65Z3VQwMrAXLQb_Dv2RH9khpvUR5m4eFoaruWst4A0P6PA0duZ8Znm4Cz9CQOL9V_YKYDgRtk0KZfkGSWaWFOMUezlgxy39fyr0Guy8aYDyntSvxh9dkhu2nZJdiFFH8T-pRGId4xhJnWjKl8vdZ9p2VGxBzCR_YLeusHALMQqs8zzaoYkk_CSVJ7NdHDGdKTHU3enX8OwnNwM5gNvq1wcqkcJ9DXno",
+            "value": "₹8,000",
+            "platform": "YouTube",
+            "rating": 4.9,
+            "status": "completed",
+            "createdAt": "2024-01-05"
+          }
+        ]
+      }
+    ]
+  }
+}

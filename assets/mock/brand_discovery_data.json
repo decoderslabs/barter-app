@@ -1,0 +1,120 @@
+{
+  "filters": {
+    "niches": ["Beauty", "Fashion", "Lifestyle", "Tech", "Food", "Travel", "Fitness", "Gaming"],
+    "platforms": ["Instagram", "YouTube", "TikTok", "Twitter / X", "LinkedIn"],
+    "followerRanges": ["1K–10K", "10K–50K", "50K–200K", "200K–1M", "1M+"],
+    "engagementRanges": ["1–3%", "3–6%", "6–10%", "10%+"]
+  },
+  "creators": [
+    {
+      "id": "creator_001",
+      "name": "Priya Sharma",
+      "username": "@priyasharma",
+      "avatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM",
+      "niche": "Beauty", "location": "Mumbai", "verified": true, "barterScore": 94,
+      "totalFollowers": 170000, "avgEngagementRate": 4.8, "pastCollabs": 24,
+      "platforms": ["Instagram", "YouTube"],
+      "tags": ["Clean Beauty", "Skincare", "Lifestyle"]
+    },
+    {
+      "id": "creator_002",
+      "name": "Arjun Mehta",
+      "username": "@arjunmehta",
+      "avatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuDMD0K0D1JoWFINTBrYqJQdjiICmMxQW89gybIyKrB8HRpNkP4z0XXgdFQCCJov4Mr774_ENlJ361b6GOZVWFHwtfowExI0fOD4P3ybu1mojhWiNlPmZn8ppKzDiERPti1azVLeqzZUWwxrfoq3vdBRkuFw5e4R9s2rDYH5cw-WX5OPBXD-okUzZGHI4dOu-1UaVqMEmY9U86Mrme_vijrFuIgHU70oaJqreGfXWjzPlJzA3qRetWE2lWLv6xbbYg5pY8Cyx0I0lJI",
+      "niche": "Lifestyle", "location": "Delhi", "verified": true, "barterScore": 88,
+      "totalFollowers": 299000, "avgEngagementRate": 6.4, "pastCollabs": 18,
+      "platforms": ["Instagram", "TikTok"],
+      "tags": ["Wellness", "Travel", "Minimalism"]
+    },
+    {
+      "id": "creator_003",
+      "name": "Sneha Kapoor",
+      "username": "@snehakapoor",
+      "avatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuCHeYJCGsJh92o1tQtWI4nkcknCt5-VYNTTfjhOi32iLHDj65Z3VQwMrAXLQb_Dv2RH9khpvUR5m4eFoaruWst4A0P6PA0duZ8Znm4Cz9CQOL9V_YKYDgRtk0KZfkGSWaWFOMUezlgxy39fyr0Guy8aYDyntSvxh9dkhu2nZJdiFFH8T-pRGId4xhJnWjKl8vdZ9p2VGxBzCR_YLeusHALMQqs8zzaoYkk_CSVJ7NdHDGdKTHU3enX8OwnNwM5gNvq1wcqkcJ9DXno",
+      "niche": "Skincare", "location": "Bangalore", "verified": true, "barterScore": 91,
+      "totalFollowers": 99000, "avgEngagementRate": 5.5, "pastCollabs": 31,
+      "platforms": ["Instagram", "YouTube"],
+      "tags": ["Skincare", "Ayurveda", "Wellness"]
+    },
+    {
+      "id": "creator_004",
+      "name": "Rahul Nair",
+      "username": "@rahulnair",
+      "avatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuCBdAnksszAhfcQoWzgU0nGk8VDSiw3nf0n14xFNStSH18Sa4yKsjHrexhZITcrxsky5lnaiQMUIHRmI8p0q-vf06oia37Bi2EWs8YGkul32_pO3UEqWte-KyBGy7u-azhYXu1CLCPmvmyb_k-vu8F4vO9W5NacLt-x-gu7uzynQjN2iqD2g4MU9i25ZK_cYACqqsSSKKxgBJ71sPPr9MJO8n7PStAeJpqpO9qJhv9dKAjNkk6YFWxzneCZMZ9iafB0hiBSA6CiALw",
+      "niche": "Tech", "location": "Chennai", "verified": false, "barterScore": 76,
+      "totalFollowers": 173000, "avgEngagementRate": 3.0, "pastCollabs": 9,
+      "platforms": ["YouTube", "Twitter / X"],
+      "tags": ["Tech Reviews", "Gadgets", "Productivity"]
+    },
+    {
+      "id": "creator_005",
+      "name": "Meera Pillai",
+      "username": "@meerapillai",
+      "avatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuCORePb5LyZV-YtOPRWKABI5q_JUG9VtLCu5L7bzca5WJUAAvr4VUKmGdwwWJr0xF4zM8DM-nhKwpkxHZJr5rrCBckmg1O4VpuU0IFZ84eOhyWvn5uGZSlP49RNqdfoxTlZmd1Fd69yXTOubLk4SbNw3IrWiwA0yeSpcu0-kSTQ6Q22962jcwVFO5Mar8Qhc9UkqhIjIQzOzeD2GxWlv1goUTuOHefrltFRraldUFs3DCi3_JQBe0lcRpj1gNKipdNS7VyvO1Y9pnE",
+      "niche": "Food", "location": "Hyderabad", "verified": true, "barterScore": 85,
+      "totalFollowers": 55000, "avgEngagementRate": 7.2, "pastCollabs": 14,
+      "platforms": ["Instagram", "YouTube"],
+      "tags": ["Food", "Recipes", "Sustainable Eating"]
+    },
+    {
+      "id": "creator_006",
+      "name": "Dev Sharma",
+      "username": "@devsharma",
+      "avatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuDMD0K0D1JoWFINTBrYqJQdjiICmMxQW89gybIyKrB8HRpNkP4z0XXgdFQCCJov4Mr774_ENlJ361b6GOZVWFHwtfowExI0fOD4P3ybu1mojhWiNlPmZn8ppKzDiERPti1azVLeqzZUWwxrfoq3vdBRkuFw5e4R9s2rDYH5cw-WX5OPBXD-okUzZGHI4dOu-1UaVqMEmY9U86Mrme_vijrFuIgHU70oaJqreGfXWjzPlJzA3qRetWE2lWLv6xbbYg5pY8Cyx0I0lJI",
+      "niche": "Fitness", "location": "Pune", "verified": true, "barterScore": 82,
+      "totalFollowers": 128000, "avgEngagementRate": 5.9, "pastCollabs": 22,
+      "platforms": ["Instagram", "TikTok"],
+      "tags": ["Fitness", "Nutrition", "Mindfulness"]
+    }
+  ],
+  "inbox": {
+    "conversations": [
+      {
+        "id": "conv_001",
+        "creatorId": "creator_001",
+        "creatorName": "Priya Sharma",
+        "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM",
+        "campaignTitle": "Spring Glow Collection Launch",
+        "lastMessage": "Hi! I had a quick question about the deliverable format — should the reel be posted before the story or can I post them together?",
+        "lastMessageTime": "2 min ago",
+        "unread": true,
+        "messages": [
+          { "id": "m1", "sender": "creator", "text": "Hey! So excited to work on this campaign. Just wanted to confirm the posting schedule.", "time": "10:02 AM" },
+          { "id": "m2", "sender": "brand", "text": "Hi Priya! Great to have you. The reel should go first, followed by the story within 24 hours.", "time": "10:15 AM" },
+          { "id": "m3", "sender": "creator", "text": "Perfect, thanks! One more thing — is the hashtag mandatory in the caption?", "time": "10:22 AM" },
+          { "id": "m4", "sender": "brand", "text": "Yes, please use #AuraGlow and tag @auracollective. Let us know if you need the brief again.", "time": "10:35 AM" },
+          { "id": "m5", "sender": "creator", "text": "Hi! I had a quick question about the deliverable format — should the reel be posted before the story or can I post them together?", "time": "2:18 PM" }
+        ]
+      },
+      {
+        "id": "conv_002",
+        "creatorId": "creator_002",
+        "creatorName": "Arjun Mehta",
+        "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuDMD0K0D1JoWFINTBrYqJQdjiICmMxQW89gybIyKrB8HRpNkP4z0XXgdFQCCJov4Mr774_ENlJ361b6GOZVWFHwtfowExI0fOD4P3ybu1mojhWiNlPmZn8ppKzDiERPti1azVLeqzZUWwxrfoq3vdBRkuFw5e4R9s2rDYH5cw-WX5OPBXD-okUzZGHI4dOu-1UaVqMEmY9U86Mrme_vijrFuIgHU70oaJqreGfXWjzPlJzA3qRetWE2lWLv6xbbYg5pY8Cyx0I0lJI",
+        "campaignTitle": "Mindful Morning Ritual Kit",
+        "lastMessage": "Content is ready for review! Uploaded the reel draft.",
+        "lastMessageTime": "1 hr ago",
+        "unread": true,
+        "messages": [
+          { "id": "m1", "sender": "creator", "text": "Hi! I've completed shooting. Will upload the draft by EOD today.", "time": "9:00 AM" },
+          { "id": "m2", "sender": "brand", "text": "Amazing, looking forward to it! Make sure the product is visible in the first 3 seconds.", "time": "9:30 AM" },
+          { "id": "m3", "sender": "creator", "text": "Content is ready for review! Uploaded the reel draft.", "time": "1:15 PM" }
+        ]
+      },
+      {
+        "id": "conv_003",
+        "creatorId": "creator_003",
+        "creatorName": "Sneha Kapoor",
+        "creatorAvatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuCHeYJCGsJh92o1tQtWI4nkcknCt5-VYNTTfjhOi32iLHDj65Z3VQwMrAXLQb_Dv2RH9khpvUR5m4eFoaruWst4A0P6PA0duZ8Znm4Cz9CQOL9V_YKYDgRtk0KZfkGSWaWFOMUezlgxy39fyr0Guy8aYDyntSvxh9dkhu2nZJdiFFH8T-pRGId4xhJnWjKl8vdZ9p2VGxBzCR_YLeusHALMQqs8zzaoYkk_CSVJ7NdHDGdKTHU3enX8OwnNwM5gNvq1wcqkcJ9DXno",
+        "campaignTitle": "Clean Skin Essentials Bundle",
+        "lastMessage": "Thank you so much! Really enjoyed working with Aura Collective.",
+        "lastMessageTime": "3 hrs ago",
+        "unread": false,
+        "messages": [
+          { "id": "m1", "sender": "brand", "text": "Sneha, your content was absolutely brilliant. Thank you for the collaboration!", "time": "11:00 AM" },
+          { "id": "m2", "sender": "creator", "text": "Thank you so much! Really enjoyed working with Aura Collective.", "time": "11:45 AM" }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "offers": [
+    {
+      "id": "offer_001",
+      "brand": {
+        "id": "brand_001",
+        "name": "Glow Lab",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM",
+        "verified": true
+      },
+      "title": "Glow Lab Serum Review",
+      "description": "Review our new vitamin C serum. Create authentic content showing your skincare routine with our product.",
+      "offerType": "Physical Product",
+      "estimatedValue": "$75",
+      "quantity": 1,
+      "requirements": {
+        "contentDeliverables": ["Instagram Reel", "Instagram Story"],
+        "quantity": 2,
+        "minFollowers": 50000,
+        "engagementRate": 3.0,
+        "accountType": "any"
+      },
+      "rights": {
+        "usageLicense": "Standard",
+        "rawFiles": "No raw files needed",
+        "exclusivity": "Non-exclusive",
+        "creditRequired": true
+      },
+      "deadline": "2024-02-15",
+      "proposalsReceived": 12,
+      "matchScore": 95,
+      "createdAt": "2024-01-20",
+      "status": "active"
+    },
+    {
+      "id": "offer_002",
+      "brand": {
+        "id": "brand_002",
+        "name": "TaskFlow Pro",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuDmT5qngLO9efHvFe6rAW1vRFHwfEulcqSq0Wf4zkvmKxNOeaGvI2d8MQK_gNB7K3tcJqypBkhf3OyhlchcAGpkCF0Z7BnMMKz6jfnZrwEIwyTfYj6D1mDQGlD0Hv3SO5nYpHdLYGPCyBVOJOuOWxj3qJ7-1zjJoL5F5yJuSRoqJhjTkEA-R6RYzjmywZCb9Tt3Ldl83v5mP5lv-C8-oD1qkIZC4Ddf2XAujjpiTHn0PLBK-6NSFzmpGku2iJOixeeXMZmLKmx5vWA",
+        "verified": true
+      },
+      "title": "TaskFlow Pro SaaS Review",
+      "description": "Demonstrate how TaskFlow Pro improves your productivity. Create a tutorial video showing key features.",
+      "offerType": "SaaS Access",
+      "estimatedValue": "$120",
+      "quantity": 1,
+      "requirements": {
+        "contentDeliverables": ["YouTube Video"],
+        "quantity": 1,
+        "minFollowers": 25000,
+        "engagementRate": 2.5,
+        "accountType": "any"
+      },
+      "rights": {
+        "usageLicense": "Extended",
+        "rawFiles": "Request raw files",
+        "exclusivity": "Category exclusive",
+        "creditRequired": true
+      },
+      "deadline": "2024-02-20",
+      "proposalsReceived": 8,
+      "matchScore": 88,
+      "createdAt": "2024-01-22",
+      "status": "active"
+    },
+    {
+      "id": "offer_003",
+      "brand": {
+        "id": "brand_003",
+        "name": "SoundWave",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuCqu97dGCVC9axOWiYXMrjmkZa8RO6R8wuBXqxYz1MyF69kVCbx21FOn1FEPLxDuVUxlfm0m0riQZh0dXU0FLZbXLBVsD4935HiFzfR-BlmOmF-6UOnPIxoiB0IGK99eK-oCi-C3qqm2qSWcwCwMP_ERjFspzJyJU8hFrmmtnth0PX7eMWKkBhdkjCY6zoOOsV1W6iUB-tsHW5dp5GcOiTE-RtrLbLrhAteRtJ6cLRtXPAExOqTr-y9JBHeYyj3gaYYieNUZ16mPTI",
+        "verified": true
+      },
+      "title": "SoundWave VIP Pass",
+      "description": "Experience our premium audio platform and share your honest review. Create content showcasing the audio quality.",
+      "offerType": "Digital Service",
+      "estimatedValue": "$150",
+      "quantity": 1,
+      "requirements": {
+        "contentDeliverables": ["Instagram Reel", "YouTube Short"],
+        "quantity": 2,
+        "minFollowers": 75000,
+        "engagementRate": 4.0,
+        "accountType": "verified"
+      },
+      "rights": {
+        "usageLicense": "Full Buyout",
+        "rawFiles": "Raw files mandatory",
+        "exclusivity": "Full exclusive",
+        "creditRequired": false
+      },
+      "deadline": "2024-02-25",
+      "proposalsReceived": 5,
+      "matchScore": 92,
+      "createdAt": "2024-01-25",
+      "status": "active"
+    },
+    {
+      "id": "offer_004",
+      "brand": {
+        "id": "brand_004",
+        "name": "Aura Collective",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuBW2xW6cWO8vwfXXk_B5pvuvw3XnHSJGtKgvCqLSrV4JT4XhHYJTlSDmFIoLLhJ7sFZrUJxNJGJDnJG6UVOkuWHwAT7m6YJlLjD5aPpXSWTvd4vl2i0OQoQrwFqYj4-8TqxkbJTFQoMnA6k3Z7w_qzH_Ij8u5PEMzJdD6K0RY2-UiDqRm-Q9hOx5y3_Tm5UiDqRm-1",
+        "verified": true
+      },
+      "title": "Spring Glow Collection Launch",
+      "description": "Partner with Aura Collective to launch our Spring Glow skincare line. Create authentic content that showcases the product's natural ingredients and your real skincare routine.",
+      "offerType": "Physical Product",
+      "estimatedValue": "₹12,000",
+      "quantity": 1,
+      "requirements": {
+        "contentDeliverables": ["Instagram Reel", "Instagram Story (x3)"],
+        "quantity": 2,
+        "minFollowers": 50000,
+        "engagementRate": 3.5,
+        "accountType": "any"
+      },
+      "rights": {
+        "usageLicense": "Standard",
+        "rawFiles": "No raw files needed",
+        "exclusivity": "Non-exclusive",
+        "creditRequired": true
+      },
+      "deadline": "2024-03-10",
+      "proposalsReceived": 28,
+      "matchScore": 97,
+      "createdAt": "2024-02-01",
+      "status": "active"
+    },
+    {
+      "id": "offer_005",
+      "brand": {
+        "id": "brand_005",
+        "name": "BrewCo",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuCqu97dGCVC9axOWiYXMrjmkZa8RO6R8wuBXqxYz1MyF69kVCbx21FOn1FEPLxDuVUxlfm0m0riQZh0dXU0FLZbXLBVsD4935HiFzfR-BlmOmF-6UOnPIxoiB0IGK99eK-oCi-C3qqm2qSWcwCwMP_ERjFspzJyJU8hFrmmtnth0PX7eMWKkBhdkjCY6zoOOsV1W6iUB-tsHW5dp5GcOiTE-RtrLbLrhAteRtJ6cLRtXPAExOqTr-y9JBHeYyj3gaYYieNUZ16mPTI",
+        "verified": false
+      },
+      "title": "BrewCo Morning Ritual Kit",
+      "description": "Show us how BrewCo coffee fits into your morning. We want real, authentic content — no scripted ads, just your genuine experience with our premium blend.",
+      "offerType": "Physical Product",
+      "estimatedValue": "₹5,500",
+      "quantity": 2,
+      "requirements": {
+        "contentDeliverables": ["Instagram Reel"],
+        "quantity": 1,
+        "minFollowers": 10000,
+        "engagementRate": 4.0,
+        "accountType": "any"
+      },
+      "rights": {
+        "usageLicense": "Standard",
+        "rawFiles": "No raw files needed",
+        "exclusivity": "Non-exclusive",
+        "creditRequired": true
+      },
+      "deadline": "2024-03-01",
+      "proposalsReceived": 6,
+      "matchScore": 81,
+      "createdAt": "2024-02-05",
+      "status": "active"
+    },
+    {
+      "id": "offer_006",
+      "brand": {
+        "id": "brand_006",
+        "name": "Nomad Gear",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuCBdAnksszAhfcQoWzgU0nGk8VDSiw3nf0n14xFNStSH18Sa4yKsjHrexhZITcrxsky5lnaiQMUIHRmI8p0q-vf06oia37Bi2EWs8YGkul32_pO3UEqWte-KyBGy7u-azhYXu1CLCPmvmyb_k-vu8F4vO9W5NacLt-x-gu7uzynQjN2iqD2g4MU9i25ZK_cYACqqsSSKKxgBJ71sPPr9MJO8n7PStAeJpqpO9qJhv9dKAjNkk6YFWxzneCZMZ9iafB0hiBSA6CiALw",
+        "verified": true
+      },
+      "title": "Nomad Travel Backpack Review",
+      "description": "Take our latest travel backpack on your next adventure and create an honest review video. Perfect for travel content creators who are always on the move.",
+      "offerType": "Physical Product",
+      "estimatedValue": "₹18,000",
+      "quantity": 1,
+      "requirements": {
+        "contentDeliverables": ["YouTube Video (8–15 min)", "Instagram Reel"],
+        "quantity": 2,
+        "minFollowers": 30000,
+        "engagementRate": 3.0,
+        "accountType": "any"
+      },
+      "rights": {
+        "usageLicense": "Extended",
+        "rawFiles": "Request raw files",
+        "exclusivity": "Category exclusive",
+        "creditRequired": true
+      },
+      "deadline": "2024-03-20",
+      "proposalsReceived": 11,
+      "matchScore": 84,
+      "createdAt": "2024-02-08",
+      "status": "active"
+    },
+    {
+      "id": "offer_007",
+      "brand": {
+        "id": "brand_007",
+        "name": "Vanguard Global",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuD9Ep7pPlQzRQ6kJuSn2kR64dmmn4cwA9_Jsq4WSOoe-dEK-_lkU4rtAAFy9DYaWvLInRwe39hN1SgQosso0EwqgGLT6KyKvVmC0Er3fUY23kvfsZSgU3aqn1s5RXhdMwWp6ehlzvc0jNsVBqzvPC4WN2BBNQEysF8s9SkogqU7RnFNLTyRkmukO0F7x2Qwv6EcatGjfSiGn8cRt21h-drs3uZCW8KmzztZaodcS3EbhMdZ-nCiLCFFbSh_VbJlRYa_w1Tee9xQt6Q",
+        "verified": true
+      },
+      "title": "Vanguard — Autumn Editorial",
+      "description": "Collaborate on an editorial fashion shoot for Vanguard Global's Autumn/Winter lookbook. Looking for creators with a strong editorial aesthetic and high-quality photography skills.",
+      "offerType": "Fashion / Clothing",
+      "estimatedValue": "₹22,000",
+      "quantity": 3,
+      "requirements": {
+        "contentDeliverables": ["3x High-Res Editorial Posts", "1x Story Series"],
+        "quantity": 4,
+        "minFollowers": 80000,
+        "engagementRate": 4.5,
+        "accountType": "verified"
+      },
+      "rights": {
+        "usageLicense": "Full Buyout",
+        "rawFiles": "Raw files mandatory",
+        "exclusivity": "Full exclusive — 60 days",
+        "creditRequired": false
+      },
+      "deadline": "2024-02-28",
+      "proposalsReceived": 3,
+      "matchScore": 90,
+      "createdAt": "2024-02-10",
+      "status": "active"
+    }
+  ]
+}

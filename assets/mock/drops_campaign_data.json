@@ -1,0 +1,161 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign_001",
+      "title": "Summer Glow Collection",
+      "brand": {
+        "id": "brand_001",
+        "name": "Glow Lab",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM"
+      },
+      "description": "Launch our new summer skincare collection with exclusive creator drops.",
+      "startDate": "2024-06-01",
+      "endDate": "2024-08-31",
+      "status": "upcoming",
+      "targetCreators": 50,
+      "enrolledCreators": 12,
+      "budget": 15000,
+      "products": [
+        {
+          "id": "product_001",
+          "name": "Summer Glow Serum",
+          "value": 75,
+          "quantity": 100
+        },
+        {
+          "id": "product_002",
+          "name": "Sunscreen SPF 50",
+          "value": 45,
+          "quantity": 150
+        }
+      ],
+      "requirements": {
+        "contentDeliverables": ["Instagram Reel", "Instagram Story", "YouTube Short"],
+        "postingSchedule": "Weekly",
+        "hashtags": ["#SummerGlow", "#GlowLab", "#Skincare"]
+      }
+    },
+    {
+      "id": "campaign_002",
+      "title": "Tech Productivity Month",
+      "brand": {
+        "id": "brand_002",
+        "name": "TaskFlow Pro",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuDmT5qngLO9efHvFe6rAW1vRFHwfEulcqSq0Wf4zkvmKxNOeaGvI2d8MQK_gNB7K3tcJqypBkhf3OyhlchcAGpkCF0Z7BnMMKz6jfnZrwEIwyTfYj6D1mDQGlD0Hv3SO5nYpHdLYGPCyBVOJOuOWxj3qJ7-1zjJoL5F5yJuSRoqJhjTkEA-R6RYzjmywZCb9Tt3Ldl83v5mP5lv-C8-oD1qkIZC4Ddf2XAujjpiTHn0PLBK-6NSFzmpGku2iJOixeeXMZmLKmx5vWA"
+      },
+      "description": "Promote productivity tools and work-life balance solutions throughout January.",
+      "startDate": "2024-01-01",
+      "endDate": "2024-01-31",
+      "status": "active",
+      "targetCreators": 30,
+      "enrolledCreators": 28,
+      "budget": 8000,
+      "niches": ["Tech", "Productivity", "Lifestyle"],
+      "products": [
+        {
+          "id": "product_003",
+          "name": "TaskFlow Pro Annual Licence",
+          "value": 9500,
+          "quantity": 50
+        }
+      ],
+      "requirements": {
+        "contentDeliverables": ["YouTube Video", "LinkedIn Post"],
+        "postingSchedule": "Bi-weekly",
+        "hashtags": ["#Productivity", "#TaskFlowPro", "#WorkLifeBalance"]
+      },
+      "enrolledCreatorPreviews": [
+        {
+          "name": "Dev Sharma",
+          "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuDMD0K0D1JoWFINTBrYqJQdjiICmMxQW89gybIyKrB8HRpNkP4z0XXgdFQCCJov4Mr774_ENlJ361b6GOZVWFHwtfowExI0fOD4P3ybu1mojhWiNlPmZn8ppKzDiERPti1azVLeqzZUWwxrfoq3vdBRkuFw5e4R9s2rDYH5cw-WX5OPBXD-okUzZGHI4dOu-1UaVqMEmY9U86Mrme_vijrFuIgHU70oaJqreGfXWjzPlJzA3qRetWE2lWLv6xbbYg5pY8Cyx0I0lJI"
+        },
+        {
+          "name": "Sneha Kapoor",
+          "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuCHeYJCGsJh92o1tQtWI4nkcknCt5-VYNTTfjhOi32iLHDj65Z3VQwMrAXLQb_Dv2RH9khpvUR5m4eFoaruWst4A0P6PA0duZ8Znm4Cz9CQOL9V_YKYDgRtk0KZfkGSWaWFOMUezlgxy39fyr0Guy8aYDyntSvxh9dkhu2nZJdiFFH8T-pRGId4xhJnWjKl8vdZ9p2VGxBzCR_YLeusHALMQqs8zzaoYkk_CSVJ7NdHDGdKTHU3enX8OwnNwM5gNvq1wcqkcJ9DXno"
+        }
+      ]
+    },
+    {
+      "id": "campaign_003",
+      "title": "Wellness Winter Drop",
+      "brand": {
+        "id": "brand_004",
+        "name": "Aura Collective",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuBW2xW6cWO8vwfXXk_B5pvuvw3XnHSJGtKgvCqLSrV4JT4XhHYJTlSDmFIoLLhJ7sFZrUJxNJGJDnJG6UVOkuWHwAT7m6YJlLjD5aPpXSWTvd4vl2i0OQoQrwFqYj4-8TqxkbJTFQoMnA6k3Z7w_qzH_Ij8u5PEMzJdD6K0RY2-UiDqRm-Q9hOx5y3_Tm5UiDqRm-1"
+      },
+      "description": "A curated winter wellness campaign featuring Aura Collective's cold-season skincare and self-care range. We want creators who champion slow living and mindful routines.",
+      "startDate": "2024-12-01",
+      "endDate": "2024-12-31",
+      "status": "completed",
+      "targetCreators": 20,
+      "enrolledCreators": 20,
+      "budget": 12000,
+      "niches": ["Wellness", "Beauty", "Lifestyle"],
+      "products": [
+        {
+          "id": "product_004",
+          "name": "Winter Wellness Kit",
+          "value": 7200,
+          "quantity": 30
+        },
+        {
+          "id": "product_005",
+          "name": "Calming Night Serum",
+          "value": 4500,
+          "quantity": 40
+        }
+      ],
+      "requirements": {
+        "contentDeliverables": ["Instagram Reel", "Instagram Story (x2)", "TikTok Video"],
+        "postingSchedule": "Weekly",
+        "hashtags": ["#WellnessWinter", "#AuraCollective", "#SlowLiving", "#CleanBeauty"]
+      },
+      "enrolledCreatorPreviews": [
+        {
+          "name": "Priya Sharma",
+          "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM"
+        },
+        {
+          "name": "Meera Pillai",
+          "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuCORePb5LyZV-YtOPRWKABI5q_JUG9VtLCu5L7bzca5WJUAAvr4VUKmGdwwWJr0xF4zM8DM-nhKwpkxHZJr5rrCBckmg1O4VpuU0IFZ84eOhyWvn5uGZSlP49RNqdfoxTlZmd1Fd69yXTOubLk4SbNw3IrWiwA0yeSpcu0-kSTQ6Q22962jcwVFO5Mar8Qhc9UkqhIjIQzOzeD2GxWlv1goUTuOHefrltFRraldUFs3DCi3_JQBe0lcRpj1gNKipdNS7VyvO1Y9pnE"
+        }
+      ]
+    },
+    {
+      "id": "campaign_004",
+      "title": "Vanguard — A/W Lookbook Drop",
+      "brand": {
+        "id": "brand_007",
+        "name": "Vanguard Global",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuD9Ep7pPlQzRQ6kJuSn2kR64dmmn4cwA9_Jsq4WSOoe-dEK-_lkU4rtAAFy9DYaWvLInRwe39hN1SgQosso0EwqgGLT6KyKvVmC0Er3fUY23kvfsZSgU3aqn1s5RXhdMwWp6ehlzvc0jNsVBqzvPC4WN2BBNQEysF8s9SkogqU7RnFNLTyRkmukO0F7x2Qwv6EcatGjfSiGn8cRt21h-drs3uZCW8KmzztZaodcS3EbhMdZ-nCiLCFFbSh_VbJlRYa_w1Tee9xQt6Q"
+      },
+      "description": "Vanguard Global's Autumn/Winter editorial drop. Looking for 10 high-aesthetic creators to produce fashion-forward content for the new lookbook across Instagram and TikTok.",
+      "startDate": "2024-10-15",
+      "endDate": "2024-11-15",
+      "status": "active",
+      "targetCreators": 10,
+      "enrolledCreators": 6,
+      "budget": 25000,
+      "niches": ["Fashion", "Editorial", "Lifestyle"],
+      "products": [
+        {
+          "id": "product_006",
+          "name": "A/W Lookbook Collection (4 pieces)",
+          "value": 22000,
+          "quantity": 10
+        }
+      ],
+      "requirements": {
+        "contentDeliverables": ["3x Editorial Instagram Posts", "1x Reel", "TikTok Video"],
+        "postingSchedule": "As agreed per brief",
+        "hashtags": ["#VanguardGlobal", "#AutumnEditorial", "#AWLookbook", "#FashionDrop"]
+      },
+      "enrolledCreatorPreviews": [
+        {
+          "name": "Arjun Mehta",
+          "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuDMD0K0D1JoWFINTBrYqJQdjiICmMxQW89gybIyKrB8HRpNkP4z0XXgdFQCCJov4Mr774_ENlJ361b6GOZVWFHwtfowExI0fOD4P3ybu1mojhWiNlPmZn8ppKzDiERPti1azVLeqzZUWwxrfoq3vdBRkuFw5e4R9s2rDYH5cw-WX5OPBXD-okUzZGHI4dOu-1UaVqMEmY9U86Mrme_vijrFuIgHU70oaJqreGfXWjzPlJzA3qRetWE2lWLv6xbbYg5pY8Cyx0I0lJI"
+        }
+      ]
+    }
+  ]
+}

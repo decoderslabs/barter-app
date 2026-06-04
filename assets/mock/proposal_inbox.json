@@ -1,0 +1,124 @@
+{
+  "proposals": [
+    {
+      "id": "proposal_001",
+      "offer": {
+        "id": "offer_001",
+        "title": "Glow Lab Serum Review",
+        "brand": "Glow Lab",
+        "estimatedValue": "$75"
+      },
+      "brand": {
+        "id": "brand_001",
+        "name": "Glow Lab",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM",
+        "verified": true
+      },
+      "creatorMessage": "I'd love to collaborate with Glow Lab! I've been using your products for 6 months and would be happy to create authentic content showing my skincare routine.",
+      "creator": {
+        "id": "creator_001",
+        "name": "Priya Sharma",
+        "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM"
+      },
+      "proposedDate": "2024-01-28",
+      "status": "pending",
+      "matchScore": 95
+    },
+    {
+      "id": "proposal_002",
+      "offer": {
+        "id": "offer_002",
+        "title": "TaskFlow Pro SaaS Review",
+        "brand": "TaskFlow Pro",
+        "estimatedValue": "$120"
+      },
+      "brand": {
+        "id": "brand_002",
+        "name": "TaskFlow Pro",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuDmT5qngLO9efHvFe6rAW1vRFHwfEulcqSq0Wf4zkvmKxNOeaGvI2d8MQK_gNB7K3tcJqypBkhf3OyhlchcAGpkCF0Z7BnMMKz6jfnZrwEIwyTfYj6D1mDQGlD0Hv3SO5nYpHdLYGPCyBVOJOuOWxj3qJ7-1zjJoL5F5yJuSRoqJhjTkEA-R6RYzjmywZCb9Tt3Ldl83v5mP5lv-C8-oD1qkIZC4Ddf2XAujjpiTHn0PLBK-6NSFzmpGku2iJOixeeXMZmLKmx5vWA",
+        "verified": true
+      },
+      "creatorMessage": "I'm interested in reviewing TaskFlow Pro. I have experience creating software tutorials and can demonstrate the key features effectively.",
+      "creator": {
+        "id": "creator_001",
+        "name": "Priya Sharma",
+        "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM"
+      },
+      "proposedDate": "2024-01-26",
+      "status": "accepted",
+      "matchScore": 88
+    },
+    {
+      "id": "proposal_003",
+      "offer": {
+        "id": "offer_004",
+        "title": "Spring Glow Collection Launch",
+        "brand": "Aura Collective",
+        "estimatedValue": "₹12,000"
+      },
+      "brand": {
+        "id": "brand_004",
+        "name": "Aura Collective",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuBW2xW6cWO8vwfXXk_B5pvuvw3XnHSJGtKgvCqLSrV4JT4XhHYJTlSDmFIoLLhJ7sFZrUJxNJGJDnJG6UVOkuWHwAT7m6YJlLjD5aPpXSWTvd4vl2i0OQoQrwFqYj4-8TqxkbJTFQoMnA6k3Z7w_qzH_Ij8u5PEMzJdD6K0RY2-UiDqRm-Q9hOx5y3_Tm5UiDqRm-1",
+        "verified": true
+      },
+      "creatorMessage": "Huge admirer of Aura Collective's ethos. I've been personally using your products for the past year and genuinely believe in the brand — I'd love to bring that authenticity to this campaign.",
+      "creator": {
+        "id": "creator_001",
+        "name": "Priya Sharma",
+        "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM"
+      },
+      "proposedDate": "2024-02-03",
+      "status": "pending",
+      "matchScore": 97
+    },
+    {
+      "id": "proposal_004",
+      "offer": {
+        "id": "offer_006",
+        "title": "Nomad Travel Backpack Review",
+        "brand": "Nomad Gear",
+        "estimatedValue": "₹18,000"
+      },
+      "brand": {
+        "id": "brand_006",
+        "name": "Nomad Gear",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuCBdAnksszAhfcQoWzgU0nGk8VDSiw3nf0n14xFNStSH18Sa4yKsjHrexhZITcrxsky5lnaiQMUIHRmI8p0q-vf06oia37Bi2EWs8YGkul32_pO3UEqWte-KyBGy7u-azhYXu1CLCPmvmyb_k-vu8F4vO9W5NacLt-x-gu7uzynQjN2iqD2g4MU9i25ZK_cYACqqsSSKKxgBJ71sPPr9MJO8n7PStAeJpqpO9qJhv9dKAjNkk6YFWxzneCZMZ9iafB0hiBSA6CiALw",
+        "verified": true
+      },
+      "creatorMessage": "Travel content is my core niche and I have upcoming trips to Coorg and Goa planned — the backpack would feature in both shoots. My audience skews 25–35, frequent travellers.",
+      "creator": {
+        "id": "creator_001",
+        "name": "Priya Sharma",
+        "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM"
+      },
+      "proposedDate": "2024-02-09",
+      "status": "counter_offered",
+      "matchScore": 84
+    },
+    {
+      "id": "proposal_005",
+      "offer": {
+        "id": "offer_007",
+        "title": "Vanguard — Autumn Editorial",
+        "brand": "Vanguard Global",
+        "estimatedValue": "₹22,000"
+      },
+      "brand": {
+        "id": "brand_007",
+        "name": "Vanguard Global",
+        "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuD9Ep7pPlQzRQ6kJuSn2kR64dmmn4cwA9_Jsq4WSOoe-dEK-_lkU4rtAAFy9DYaWvLInRwe39hN1SgQosso0EwqgGLT6KyKvVmC0Er3fUY23kvfsZSgU3aqn1s5RXhdMwWp6ehlzvc0jNsVBqzvPC4WN2BBNQEysF8s9SkogqU7RnFNLTyRkmukO0F7x2Qwv6EcatGjfSiGn8cRt21h-drs3uZCW8KmzztZaodcS3EbhMdZ-nCiLCFFbSh_VbJlRYa_w1Tee9xQt6Q",
+        "verified": true
+      },
+      "creatorMessage": "I've been following Vanguard's editorial work for a long time. My feed has a strong fashion/editorial aesthetic (see portfolio) and I regularly shoot in locations that align with this brief.",
+      "creator": {
+        "id": "creator_001",
+        "name": "Priya Sharma",
+        "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuABMK6SNVORPI-pr2G8OxNNABUobLc5aPFpZW5gIw9fo7ciLcpeaAEF8odpCTWRghT2SEllieENLB941kJVyG5a2MPLtZwcPxpy_e_EfRj_SBARaiVaHkUYMfuh5sEP9t72GKAXXBg0n6H7XEzukuNSdbCMpBHuNjfwywz6c8uCX8LtpGoIupF3h39m-5iSSN4qGif5eFdyU2tTqzRBjHwnWPfyyEva_RoCJuwTqpxZbmfEflmorvmUR5JAigaX7vQYs6z7IoGcGqM"
+      },
+      "proposedDate": "2024-02-11",
+      "status": "in_progress",
+      "matchScore": 90
+    }
+  ]
+}

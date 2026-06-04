@@ -1,0 +1,94 @@
+{
+  "contentTypes": [
+    {
+      "id": "1",
+      "name": "Instagram Reels",
+      "icon": "photo_camera",
+      "platform": "Instagram",
+      "description": "Short-form vertical video content",
+      "recommendedLength": "15-60 seconds",
+      "engagementRate": "high"
+    },
+    {
+      "id": "2",
+      "name": "Instagram Stories",
+      "icon": "camera_alt",
+      "platform": "Instagram",
+      "description": "Ephemeral photo/video content",
+      "recommendedLength": "15-30 seconds",
+      "engagementRate": "high"
+    },
+    {
+      "id": "3",
+      "name": "YouTube Shorts",
+      "icon": "smart_display",
+      "platform": "YouTube",
+      "description": "Short-form vertical video content",
+      "recommendedLength": "60 seconds",
+      "engagementRate": "high"
+    },
+    {
+      "id": "4",
+      "name": "YouTube Videos",
+      "icon": "play_circle",
+      "platform": "YouTube",
+      "description": "Long-form video content",
+      "recommendedLength": "5-20 minutes",
+      "engagementRate": "medium"
+    },
+    {
+      "id": "5",
+      "name": "TikTok",
+      "icon": "music_note",
+      "platform": "TikTok",
+      "description": "Short-form video content",
+      "recommendedLength": "15-60 seconds",
+      "engagementRate": "high"
+    },
+    {
+      "id": "6",
+      "name": "Twitter/X",
+      "icon": "alternate_email",
+      "platform": "Twitter",
+      "description": "Short text and media posts",
+      "recommendedLength": "280 characters",
+      "engagementRate": "medium"
+    },
+    {
+      "id": "7",
+      "name": "LinkedIn",
+      "icon": "work",
+      "platform": "LinkedIn",
+      "description": "Professional content and articles",
+      "recommendedLength": "3000 characters",
+      "engagementRate": "low"
+    },
+    {
+      "id": "8",
+      "name": "Pinterest",
+      "icon": "push_pin",
+      "platform": "Pinterest",
+      "description": "Visual content and inspiration",
+      "recommendedLength": "image-based",
+      "engagementRate": "medium"
+    },
+    {
+      "id": "9",
+      "name": "Blog Posts",
+      "icon": "article",
+      "platform": "Website",
+      "description": "Long-form written content",
+      "recommendedLength": "1000-3000 words",
+      "engagementRate": "medium"
+    },
+    {
+      "id": "10",
+      "name": "Podcast",
+      "icon": "mic",
+      "platform": "Audio",
+      "description": "Audio content and interviews",
+      "recommendedLength": "20-60 minutes",
+      "engagementRate": "medium"
+    }
+  ]
+}

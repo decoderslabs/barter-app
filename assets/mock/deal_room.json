@@ -1,0 +1,73 @@
+{
+  "dealId": "deal-vg-001",
+  "brandName": "Vanguard Global",
+  "brandLogoUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuD9Ep7pPlQzRQ6kJuSn2kR64dmmn4cwA9_Jsq4WSOoe-dEK-_lkU4rtAAFy9DYaWvLInRwe39hN1SgQosso0EwqgGLT6KyKvVmC0Er3fUY23kvfsZSgU3aqn1s5RXhdMwWp6ehlzvc0jNsVBqzvPC4WN2BBNQEysF8s9SkogqU7RnFNLTyRkmukO0F7x2Qwv6EcatGjfSiGn8cRt21h-drs3uZCW8KmzztZaodcS3EbhMdZ-nCiLCFFbSh_VbJlRYa_w1Tee9xQt6Q",
+  "creatorAvatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuC2ECTY7uAF4YOEeMIIQySgpdIT6A0jKiPfFBaXHphQYzLzivTvgLtNkVED3tMLWN-GvoWF6WI6eCEyFlk1ymm3mD08syfGMwo1lDBfTHttMYANr4dF9Y4IEERYN3zfxAnkwfuAgh4v1eeu2frmQyWUtaEFU8bDG8xb43KeL35MFWfF2y6bEKYCgyxVGeaVYy83UIs2pPflFXlJf1pxv5BiPAm4mtqmGgyvBbcnpu0ZgIQLN8l6HYsz5CNg-IhBQ2r6x5bloctmkY8",
+  "termsSummary": "3x High-Res Editorial Posts + Story",
+  "barterValue": "₹18,000",
+  "platform": "Instagram",
+  "contentType": "Editorial Posts + Story",
+  "milestones": [
+    {"id": "m1", "label": "Initial Brief Review", "done": true, "completedDate": "Oct 24"},
+    {"id": "m2", "label": "Location Approval", "done": true, "completedDate": "Oct 26"},
+    {"id": "m3", "label": "Content Submission", "done": false, "dueDate": "Nov 2"},
+    {"id": "m4", "label": "Brand Review", "done": false, "dueDate": "Nov 4"},
+    {"id": "m5", "label": "Publish & Report", "done": false, "dueDate": "Nov 6"}
+  ],
+  "pinnedAssets": [
+    {"id": "asset_001", "type": "pdf", "label": "Campaign Brief v2.pdf", "uploadedBy": "brand", "uploadedAt": "Oct 24"},
+    {"id": "asset_002", "type": "image", "label": "Moodboard — Autumn Editorial", "uploadedBy": "brand", "uploadedAt": "Oct 24"},
+    {"id": "asset_003", "type": "link", "label": "Reference Instagram Grid", "url": "https://instagram.com/vanguardglobal", "uploadedBy": "brand", "uploadedAt": "Oct 25"}
+  ],
+  "deliverables": [
+    {"id": "d1", "label": "3x High-Res Editorial Posts", "status": "pending"},
+    {"id": "d2", "label": "1x Story Series (5 frames)", "status": "pending"},
+    {"id": "d3", "label": "Raw files (optional)", "status": "waived"}
+  ],
+  "daysRemaining": 4,
+  "agreementDateLabel": "Agreement finalized Oct 24",
+  "messages": [
+    {
+      "id": "msg1",
+      "from": "brand",
+      "text": "Excited to have you on board! The moodboard is pinned above. Please let us know if you have any questions before starting the shoot.",
+      "time": "Oct 24, 09:42 AM",
+      "avatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuAXKlJWuggko5huMBOEBZwnekfuSj9zc5Q3hGaADvTn3G3YGA9Y-mTjjyAgfROQFFfd7vYX-8-_i72V6HUX2WB49pRqunXChDOWvo5amY1RPByhZ31GB73bi4RzFszVSvWe3CaV3j4B0W_L1BH_kAlNGdU4v4IAL5YwMKPrItYl1XfCjHUo8CuLOE5GJ3Kabj0TiWR9gpJr-xSm5TliqHU5vy8QoQ9WMvEpYwg_8o99ZEh60wVDSdfVpeziQSEKVE5f4v0EKsnNMGI"
+    },
+    {
+      "id": "msg2",
+      "from": "creator",
+      "text": "Moodboard looks great. I'm scouting locations today. Will update with a few shots later!",
+      "time": "Oct 24, 10:15 AM",
+      "avatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuC2ECTY7uAF4YOEeMIIQySgpdIT6A0jKiPfFBaXHphQYzLzivTvgLtNkVED3tMLWN-GvoWF6WI6eCEyFlk1ymm3mD08syfGMwo1lDBfTHttMYANr4dF9Y4IEERYN3zfxAnkwfuAgh4v1eeu2frmQyWUtaEFU8bDG8xb43KeL35MFWfF2y6bEKYCgyxVGeaVYy83UIs2pPflFXlJf1pxv5BiPAm4mtqmGgyvBbcnpu0ZgIQLN8l6HYsz5CNg-IhBQ2r6x5bloctmkY8"
+    },
+    {
+      "id": "msg3",
+      "from": "brand",
+      "text": "Perfect! A few notes from our creative director — keep the colour palette muted and earthy. Avoid heavy filters. Natural light preferred.",
+      "time": "Oct 24, 11:30 AM",
+      "avatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuAXKlJWuggko5huMBOEBZwnekfuSj9zc5Q3hGaADvTn3G3YGA9Y-mTjjyAgfROQFFfd7vYX-8-_i72V6HUX2WB49pRqunXChDOWvo5amY1RPByhZ31GB73bi4RzFszVSvWe3CaV3j4B0W_L1BH_kAlNGdU4v4IAL5YwMKPrItYl1XfCjHUo8CuLOE5GJ3Kabj0TiWR9gpJr-xSm5TliqHU5vy8QoQ9WMvEpYwg_8o99ZEh60wVDSdfVpeziQSEKVE5f4v0EKsnNMGI"
+    },
+    {
+      "id": "msg4",
+      "from": "creator",
+      "text": "Got it — earthy tones, natural light. I'm thinking a rooftop garden session at sunrise. Sending location recon shots by EOD.",
+      "time": "Oct 25, 08:55 AM",
+      "avatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuC2ECTY7uAF4YOEeMIIQySgpdIT6A0jKiPfFBaXHphQYzLzivTvgLtNkVED3tMLWN-GvoWF6WI6eCEyFlk1ymm3mD08syfGMwo1lDBfTHttMYANr4dF9Y4IEERYN3zfxAnkwfuAgh4v1eeu2frmQyWUtaEFU8bDG8xb43KeL35MFWfF2y6bEKYCgyxVGeaVYy83UIs2pPflFXlJf1pxv5BiPAm4mtqmGgyvBbcnpu0ZgIQLN8l6HYsz5CNg-IhBQ2r6x5bloctmkY8"
+    },
+    {
+      "id": "msg5",
+      "from": "brand",
+      "text": "Rooftop garden sounds amazing — approved! Let's lock it in. Looking forward to the final content.",
+      "time": "Oct 26, 09:10 AM",
+      "avatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuAXKlJWuggko5huMBOEBZwnekfuSj9zc5Q3hGaADvTn3G3YGA9Y-mTjjyAgfROQFFfd7vYX-8-_i72V6HUX2WB49pRqunXChDOWvo5amY1RPByhZ31GB73bi4RzFszVSvWe3CaV3j4B0W_L1BH_kAlNGdU4v4IAL5YwMKPrItYl1XfCjHUo8CuLOE5GJ3Kabj0TiWR9gpJr-xSm5TliqHU5vy8QoQ9WMvEpYwg_8o99ZEh60wVDSdfVpeziQSEKVE5f4v0EKsnNMGI"
+    },
+    {
+      "id": "msg6",
+      "from": "creator",
+      "text": "Shoot is done — honestly some of the best frames I've captured this year. Editing now, will submit the draft reel by Nov 1.",
+      "time": "Oct 29, 07:42 PM",
+      "avatarUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuC2ECTY7uAF4YOEeMIIQySgpdIT6A0jKiPfFBaXHphQYzLzivTvgLtNkVED3tMLWN-GvoWF6WI6eCEyFlk1ymm3mD08syfGMwo1lDBfTHttMYANr4dF9Y4IEERYN3zfxAnkwfuAgh4v1eeu2frmQyWUtaEFU8bDG8xb43KeL35MFWfF2y6bEKYCgyxVGeaVYy83UIs2pPflFXlJf1pxv5BiPAm4mtqmGgyvBbcnpu0ZgIQLN8l6HYsz5CNg-IhBQ2r6x5bloctmkY8"
+    }
+  ]
+}
