@@ -7,6 +7,13 @@ class MembershipStatusDto {
     this.tier = 'nano',
     this.tasksThisPeriod = 0,
     this.periodResetAt,
+    this.pointsToNextMilestone = 0,
+    this.periodLabel = '',
+    this.periodTaskLimit = 0,
+    this.completedThisPeriod = 0,
+    this.nextMilestoneLabel = '',
+    this.pendingVerification = false,
+    this.history = const [],
   });
 
   final int totalPoints;
@@ -16,6 +23,13 @@ class MembershipStatusDto {
   final String tier;
   final int tasksThisPeriod;
   final String? periodResetAt;
+  final int pointsToNextMilestone;
+  final String periodLabel;
+  final int periodTaskLimit;
+  final int completedThisPeriod;
+  final String nextMilestoneLabel;
+  final bool pendingVerification;
+  final List<Map<String, dynamic>> history;
 
   factory MembershipStatusDto.fromJson(Map<String, dynamic> json) =>
       MembershipStatusDto(
@@ -26,6 +40,17 @@ class MembershipStatusDto {
         tier: json['tier'] as String? ?? 'nano',
         tasksThisPeriod: _parseInt(json['tasks_this_period']),
         periodResetAt: json['period_reset_at'] as String?,
+        pointsToNextMilestone: _parseInt(json['points_to_next_milestone']),
+        periodLabel: json['period_label'] as String? ?? '',
+        periodTaskLimit: _parseInt(json['period_task_limit']),
+        completedThisPeriod: _parseInt(json['completed_this_period']),
+        nextMilestoneLabel: json['next_milestone_label'] as String? ?? '',
+        pendingVerification: json['pending_verification'] as bool? ?? false,
+        history: (() {
+          final h = json['history'];
+          if (h is List) return h.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+          return <Map<String, dynamic>>[];
+        })(),
       );
 
   static int _parseInt(dynamic value) {

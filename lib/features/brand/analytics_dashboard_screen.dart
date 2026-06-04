@@ -125,43 +125,22 @@ class _AnalyticsBody extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(height: 28),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(28),
-            decoration: BoxDecoration(
-              color: bc.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(40),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      payload.contentPerformanceTitle,
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    Row(
-                      children: [
-                        _Pill(label: 'Latest', active: true, bc: bc),
-                        const SizedBox(width: 8),
-                        _Pill(label: 'Top Rated', active: false, bc: bc),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Chart placeholder — wire to real analytics.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: bc.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
-          ),
+          if (payload.reachChart.isNotEmpty) ...[  
+            const SizedBox(height: 28),
+            _ReachChartCard(payload: payload, bc: bc),
+          ],
+          if (payload.platformBreakdown.isNotEmpty) ...[  
+            const SizedBox(height: 20),
+            _PlatformBreakdownCard(payload: payload, bc: bc),
+          ],
+          if (payload.contentPerformance.isNotEmpty) ...[  
+            const SizedBox(height: 20),
+            _ContentPerformanceCard(payload: payload, bc: bc),
+          ],
+          if (payload.topCreators.isNotEmpty) ...[  
+            const SizedBox(height: 20),
+            _TopCreatorsCard(payload: payload, bc: bc),
+          ],
         ],
       ),
     );
@@ -261,6 +240,213 @@ class _KpiTile extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ReachChartCard extends StatelessWidget {
+  const _ReachChartCard({required this.payload, required this.bc});
+  final AnalyticsPayload payload;
+  final BarterColors bc;
+
+  @override
+  Widget build(BuildContext context) {
+    final points = payload.reachChart;
+    final maxVal = points.isEmpty ? 1.0 : points.map((p) => p.value).reduce((a, b) => a > b ? a : b);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: bc.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(40),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            payload.reachChartTitle.isNotEmpty ? payload.reachChartTitle : 'Monthly Reach',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          ...points.map((p) {
+            final frac = maxVal > 0 ? (p.value / maxVal).clamp(0.0, 1.0) : 0.0;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 52,
+                    child: Text(p.label, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: bc.onSurfaceVariant)),
+                  ),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: frac,
+                        minHeight: 18,
+                        backgroundColor: bc.surfaceContainerHigh,
+                        color: bc.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    p.value >= 1000000 ? '${(p.value / 1000000).toStringAsFixed(1)}M' : p.value >= 1000 ? '${(p.value / 1000).toStringAsFixed(0)}K' : '${p.value.toInt()}',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlatformBreakdownCard extends StatelessWidget {
+  const _PlatformBreakdownCard({required this.payload, required this.bc});
+  final AnalyticsPayload payload;
+  final BarterColors bc;
+
+  @override
+  Widget build(BuildContext context) {
+    final slices = payload.platformBreakdown;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(color: bc.surfaceContainerLow, borderRadius: BorderRadius.circular(40)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Platform Breakdown', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Row(
+              children: slices.map((s) {
+                final color = parseHexColor(s.colorHex);
+                return Flexible(
+                  flex: s.percentage.toInt().clamp(1, 100),
+                  child: Container(height: 18, color: color),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
+            children: slices.map((s) {
+              final color = parseHexColor(s.colorHex);
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+                  const SizedBox(width: 6),
+                  Text('${s.platform} ${s.percentage.toStringAsFixed(0)}%', style: Theme.of(context).textTheme.labelMedium),
+                ],
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContentPerformanceCard extends StatelessWidget {
+  const _ContentPerformanceCard({required this.payload, required this.bc});
+  final AnalyticsPayload payload;
+  final BarterColors bc;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = payload.contentPerformance;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(color: bc.surfaceContainerLow, borderRadius: BorderRadius.circular(40)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            payload.contentPerformanceTitle.isNotEmpty ? payload.contentPerformanceTitle : 'Content Performance',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: Text('CONTENT', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: bc.onSurfaceVariant, letterSpacing: 1.2))),
+              SizedBox(width: 64, child: Text('REACH', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: bc.onSurfaceVariant, letterSpacing: 1.2), textAlign: TextAlign.center)),
+              SizedBox(width: 64, child: Text('ENG.', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: bc.onSurfaceVariant, letterSpacing: 1.2), textAlign: TextAlign.center)),
+              SizedBox(width: 48, child: Text('DEALS', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: bc.onSurfaceVariant, letterSpacing: 1.2), textAlign: TextAlign.center)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ...rows.map((r) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              children: [
+                Expanded(child: Text(r.title, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
+                SizedBox(width: 64, child: Text(r.reach, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center)),
+                SizedBox(width: 64, child: Text(r.engagement, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center)),
+                SizedBox(width: 48, child: Text('${r.deals}', style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center)),
+              ],
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+}
+
+class _TopCreatorsCard extends StatelessWidget {
+  const _TopCreatorsCard({required this.payload, required this.bc});
+  final AnalyticsPayload payload;
+  final BarterColors bc;
+
+  @override
+  Widget build(BuildContext context) {
+    final creators = payload.topCreators;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(color: bc.surfaceContainerLow, borderRadius: BorderRadius.circular(40)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Top Creators', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 108,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: creators.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 16),
+              itemBuilder: (context, i) {
+                final c = creators[i];
+                return SizedBox(
+                  width: 88,
+                  child: Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor: bc.surfaceContainerHigh,
+                        backgroundImage: c.avatarUrl.isNotEmpty ? NetworkImage(c.avatarUrl) : null,
+                        child: c.avatarUrl.isEmpty ? Text(c.name.isNotEmpty ? c.name[0] : '?', style: Theme.of(context).textTheme.titleMedium) : null,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(c.name.split(' ').first, style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis, textAlign: TextAlign.center),
+                      Text('${c.score} pts', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: bc.onSurfaceVariant)),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );

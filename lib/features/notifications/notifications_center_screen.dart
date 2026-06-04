@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../data/dto/notification_dto.dart';
+import '../../providers/api_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../widgets/barter_appbar.dart';
@@ -103,7 +104,7 @@ class _NotificationsCenterScreenState extends ConsumerState<NotificationsCenterS
                   sliver: SliverList.separated(
                     itemCount: filtered.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 16),
-                    itemBuilder: (context, i) => _LiveNotificationCard(n: filtered[i], bc: bc),
+                    itemBuilder: (context, i) => _LiveNotificationCard(n: filtered[i], bc: bc, ref: ref),
                   ),
                 ),
               SliverToBoxAdapter(
@@ -159,10 +160,11 @@ class _FilterChips extends StatelessWidget {
 }
 
 class _LiveNotificationCard extends StatelessWidget {
-  const _LiveNotificationCard({required this.n, required this.bc});
+  const _LiveNotificationCard({required this.n, required this.bc, required this.ref});
 
   final NotificationDto n;
   final BarterColors bc;
+  final WidgetRef ref;
 
   IconData get _icon {
     if (n.type.contains('proposal')) return Symbols.mail;
@@ -178,9 +180,21 @@ class _LiveNotificationCard extends StatelessWidget {
     return bc.primary;
   }
 
+  Future<void> _handleTap(BuildContext context) async {
+    try {
+      await ref.read(notificationRepositoryProvider).markRead(n.id);
+      ref.invalidate(notificationsProvider);
+    } catch (_) {}
+    if (n.deepLink != null && n.deepLink!.isNotEmpty && context.mounted) {
+      context.push(n.deepLink!);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: () => _handleTap(context),
+      child: Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: bc.surfaceContainerLowest,
@@ -196,6 +210,17 @@ class _LiveNotificationCard extends StatelessWidget {
       ),
       child: Row(
         children: [
+          if (n.actorAvatarUrl != null && n.actorAvatarUrl!.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BarterNetworkImage(
+                url: n.actorAvatarUrl!,
+                width: 48,
+                height: 48,
+                fit: BoxFit.cover,
+              ),
+            )
+          else
           Container(
             width: 48,
             height: 48,
@@ -246,6 +271,7 @@ class _LiveNotificationCard extends StatelessWidget {
           if (!n.read) ...[const SizedBox(width: 8), Container(width: 8, height: 8, decoration: BoxDecoration(color: bc.primary, shape: BoxShape.circle))],
         ],
       ),
+    ),
     );
   }
 

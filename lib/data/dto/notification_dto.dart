@@ -7,6 +7,7 @@ class NotificationDto {
     this.deepLink,
     this.read = false,
     this.createdAt,
+    this.actorAvatarUrl,
   });
 
   final String id;
@@ -16,6 +17,7 @@ class NotificationDto {
   final String? deepLink;
   final bool read;
   final String? createdAt;
+  final String? actorAvatarUrl;
 
   factory NotificationDto.fromJson(Map<String, dynamic> json) => NotificationDto(
         id: json['id']?.toString() ?? '',
@@ -25,5 +27,6 @@ class NotificationDto {
         deepLink: json['deep_link'] as String?,
         read: json['read'] as bool? ?? false,
         createdAt: json['created_at'] as String?,
+        actorAvatarUrl: json['actor_avatar_url'] as String?,
       );
 }

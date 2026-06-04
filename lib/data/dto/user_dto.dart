@@ -9,11 +9,16 @@ class UserDto {
     this.locationCity,
     this.locationCountry,
     this.profilePhotoUrl,
+    this.coverPhotoUrl,
     this.isVerified = false,
     this.barterScore,
     this.brandProfile,
     this.creatorProfile,
     this.socialAccounts = const [],
+    this.totalDealsCompleted = 0,
+    this.totalReach = 0,
+    this.avgEngagementRate = 0.0,
+    this.barterScoreBreakdown = const {},
   });
 
   final String id;
@@ -25,11 +30,16 @@ class UserDto {
   final String? locationCity;
   final String? locationCountry;
   final String? profilePhotoUrl;
+  final String? coverPhotoUrl;
   final bool isVerified;
   final dynamic barterScore;
   final BrandProfileDto? brandProfile;
   final CreatorProfileDto? creatorProfile;
   final List<SocialAccountDto> socialAccounts;
+  final int totalDealsCompleted;
+  final int totalReach;
+  final double avgEngagementRate;
+  final Map<String, int> barterScoreBreakdown;
 
   factory UserDto.fromJson(Map<String, dynamic> json) {
     return UserDto(
@@ -42,6 +52,7 @@ class UserDto {
       locationCity: json['location_city'] as String?,
       locationCountry: json['location_country'] as String?,
       profilePhotoUrl: json['profile_photo_url'] as String?,
+      coverPhotoUrl: json['cover_photo_url'] as String?,
       isVerified: json['is_verified'] as bool? ?? false,
       barterScore: json['barter_score'],
       brandProfile: json['brand_profile'] != null
@@ -53,7 +64,34 @@ class UserDto {
       socialAccounts: (json['social_accounts'] as List<dynamic>? ?? const [])
           .map((e) => SocialAccountDto.fromJson(e as Map<String, dynamic>))
           .toList(),
+      totalDealsCompleted: _parseInt(json['total_deals_completed']),
+      totalReach: _parseInt(json['total_reach']),
+      avgEngagementRate: _parseDouble(json['avg_engagement_rate']),
+      barterScoreBreakdown: _parseScoreBreakdown(json['barter_score_breakdown']),
     );
+  }
+
+  static int _parseInt(dynamic v) {
+    if (v == null) return 0;
+    if (v is int) return v;
+    if (v is double) return v.toInt();
+    if (v is String) return int.tryParse(v) ?? 0;
+    return 0;
+  }
+
+  static double _parseDouble(dynamic v) {
+    if (v == null) return 0.0;
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
+    if (v is String) return double.tryParse(v) ?? 0.0;
+    return 0.0;
+  }
+
+  static Map<String, int> _parseScoreBreakdown(dynamic v) {
+    if (v is Map) {
+      return v.map((k, val) => MapEntry(k.toString(), (val as num?)?.toInt() ?? 0));
+    }
+    return const {};
   }
 }
 

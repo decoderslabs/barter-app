@@ -11,6 +11,10 @@ class OfferListItemDto {
     required this.status,
     this.contentAsk = const {},
     this.createdAt,
+    this.brandLogoUrl,
+    this.niche,
+    this.deadline,
+    this.matchScore,
   });
 
   final String id;
@@ -24,6 +28,10 @@ class OfferListItemDto {
   final String status;
   final Map<String, dynamic> contentAsk;
   final String? createdAt;
+  final String? brandLogoUrl;
+  final String? niche;
+  final String? deadline;
+  final dynamic matchScore;
 
   factory OfferListItemDto.fromJson(Map<String, dynamic> json) => OfferListItemDto(
         id: json['id']?.toString() ?? '',
@@ -37,6 +45,10 @@ class OfferListItemDto {
         status: json['status'] as String? ?? '',
         contentAsk: Map<String, dynamic>.from(json['content_ask'] as Map? ?? const {}),
         createdAt: json['created_at'] as String?,
+        brandLogoUrl: json['brand_logo_url'] as String?,
+        niche: json['niche'] as String?,
+        deadline: json['deadline'] as String?,
+        matchScore: json['match_score'],
       );
 
   static int _parseInt(dynamic value) {
@@ -61,12 +73,18 @@ class OfferDetailDto extends OfferListItemDto {
     required super.status,
     super.contentAsk,
     super.createdAt,
+    super.brandLogoUrl,
+    super.niche,
+    super.deadline,
+    super.matchScore,
     this.description = '',
     this.images = const [],
     this.rightsTier = 'none',
     this.brandCompanyName,
     this.proposalCount = 0,
     this.isDrops = false,
+    this.brandCoverUrl,
+    this.eligibilityRequirements = const {},
   });
 
   final String description;
@@ -75,6 +93,8 @@ class OfferDetailDto extends OfferListItemDto {
   final String? brandCompanyName;
   final int proposalCount;
   final bool isDrops;
+  final String? brandCoverUrl;
+  final Map<String, dynamic> eligibilityRequirements;
 
   factory OfferDetailDto.fromJson(Map<String, dynamic> json) => OfferDetailDto(
         id: json['id']?.toString() ?? '',
@@ -88,11 +108,18 @@ class OfferDetailDto extends OfferListItemDto {
         status: json['status'] as String? ?? '',
         contentAsk: Map<String, dynamic>.from(json['content_ask'] as Map? ?? const {}),
         createdAt: json['created_at'] as String?,
+        brandLogoUrl: json['brand_logo_url'] as String?,
+        niche: json['niche'] as String?,
+        deadline: json['deadline'] as String?,
+        matchScore: json['match_score'],
         description: json['description'] as String? ?? '',
         images: List<String>.from(json['images'] as List? ?? const []),
         rightsTier: json['rights_tier'] as String? ?? 'none',
         brandCompanyName: json['brand_company_name'] as String?,
         proposalCount: OfferListItemDto._parseInt(json['proposal_count']),
         isDrops: json['is_drops'] as bool? ?? false,
+        brandCoverUrl: json['brand_cover_url'] as String?,
+        eligibilityRequirements: Map<String, dynamic>.from(
+            json['eligibility_requirements'] as Map? ?? const {}),
       );
 }

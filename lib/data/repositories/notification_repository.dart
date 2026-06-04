@@ -13,10 +13,10 @@ class NotificationRepository {
   }
 
   Future<void> markRead(String id) async {
-    await _client.postJson('/notifications/$id/read');
+    await _client.patchJson('/notifications/$id/read');
   }
 
   Future<void> markAllRead() async {
-    await _client.postJson('/notifications/read-all');
+    await _client.patchJson('/notifications/read-all');
   }
 }

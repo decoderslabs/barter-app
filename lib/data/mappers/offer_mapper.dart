@@ -18,7 +18,7 @@ class OfferMapper {
     return OfferModel(
       id: dto.id,
       brandName: dto.brandName.isNotEmpty ? dto.brandName : dto.brandUsername,
-      brandLogoUrl: logoUrl ?? '',
+      brandLogoUrl: logoUrl ?? dto.brandLogoUrl ?? '',
       title: dto.title,
       estimatedValueLabel: _formatValue(dto.estimatedValue, dto.currency),
       offerTypeLabel: _typeLabels[dto.type] ?? dto.type,
@@ -29,11 +29,11 @@ class OfferMapper {
   }
 
   static OfferModel fromDetail(OfferDetailDto dto) {
-    final hero = dto.images.isNotEmpty ? dto.images.first : null;
+    final hero = dto.images.isNotEmpty ? dto.images.first : dto.brandCoverUrl;
     return OfferModel(
       id: dto.id,
       brandName: dto.brandCompanyName ?? dto.brandName,
-      brandLogoUrl: hero ?? '',
+      brandLogoUrl: dto.brandLogoUrl ?? hero ?? '',
       title: dto.title,
       estimatedValueLabel: _formatValue(dto.estimatedValue, dto.currency),
       offerTypeLabel: _typeLabels[dto.type] ?? dto.type,
