@@ -87,14 +87,47 @@ class _NicheSelectionScreenState extends ConsumerState<NicheSelectionScreen> {
     ),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(authProvider).user;
+      final existingNiches = user?.creatorProfile?.niches ?? [];
+      if (existingNiches.isNotEmpty) {
+        setState(() {
+          for (var i = 0; i < _niches.length; i++) {
+            final n = _niches[i];
+            final matches = existingNiches.any(
+              (en) => en.toLowerCase() == n.name.toLowerCase() ||
+                      n.name.toLowerCase().contains(en.toLowerCase()) ||
+                      en.toLowerCase().contains(n.name.toLowerCase()),
+            );
+            _niches[i] = n.copyWith(isSelected: matches);
+          }
+        });
+      }
+    });
+  }
+
   Future<void> _onContinue() async {
     final selectedNiches = _niches.where((n) => n.isSelected).map((n) => n.name).toList();
+
+    if (selectedNiches.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select at least 1 niche'),
+          backgroundColor: context.barter.error,
+        ),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
       final session = ref.read(sessionProvider.notifier);
       await session.persistNiches(selectedNiches);
+      await ref.read(authProvider.notifier).refreshUser();
 
       if (mounted) {
         context.push('/creator/onboarding/interests');

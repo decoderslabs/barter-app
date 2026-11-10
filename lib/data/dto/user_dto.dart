@@ -219,18 +219,21 @@ class CreatorProfileDto {
     required this.id,
     this.niches = const [],
     this.contentTypes = const [],
+    this.interests = const [],
     this.tier = 'nano',
   });
 
   final String id;
   final List<String> niches;
   final List<String> contentTypes;
+  final List<String> interests;
   final String tier;
 
   factory CreatorProfileDto.fromJson(Map<String, dynamic> json) => CreatorProfileDto(
         id: json['id']?.toString() ?? '',
         niches: List<String>.from(json['niches'] as List? ?? const []),
         contentTypes: List<String>.from(json['content_types'] as List? ?? const []),
+        interests: List<String>.from(json['interests'] as List? ?? const []),
         tier: json['tier'] as String? ?? 'nano',
       );
 }
@@ -251,7 +254,9 @@ class SocialAccountDto {
   final double? engagementRate;
 
   factory SocialAccountDto.fromJson(Map<String, dynamic> json) => SocialAccountDto(
-        id: json['id']?.toString() ?? '',
+        id: json['id'] != null && json['id'].toString().isNotEmpty
+            ? json['id'].toString()
+            : (json['platform'] as String? ?? ''),
         platform: json['platform'] as String? ?? '',
         handle: json['handle'] as String? ?? json['username'] as String? ?? '',
         followers: _parseInt(json['followers']),

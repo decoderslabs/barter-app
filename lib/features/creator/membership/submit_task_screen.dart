@@ -23,7 +23,7 @@ class _SubmitTaskScreenState extends ConsumerState<SubmitTaskScreen> {
 
   bool get _validUrl {
     final value = _url.text.trim();
-    final re = RegExp(r'^https?:\/\/(www\.)?(instagram\.com|tiktok\.com)\/.+', caseSensitive: false);
+    final re = RegExp(r'^https?:\/\/(www\.)?(instagram\.com|tiktok\.com|youtube\.com|youtu\.be|twitter\.com|x\.com)\/.+', caseSensitive: false);
     return re.hasMatch(value);
   }
 
@@ -182,8 +182,8 @@ class _SubmitTaskScreenState extends ConsumerState<SubmitTaskScreen> {
       final inner = e is Error ? null : e;
       final str = inner?.toString() ?? '';
       if (str.contains('profile_incomplete')) {
-        msg = 'Complete your profile to 80% first.';
-        action = () => context.go('/creator/onboarding/complete');
+        msg = 'Please complete your profile first to unlock membership tasks.';
+        action = () => context.go('/creator/onboarding/profile');
         actionLabel = 'Complete Profile';
       } else if (str.contains('membership_required')) {
         msg = 'You need an approved membership task.';

@@ -48,12 +48,15 @@ class _ConnectSocialsScreenState extends ConsumerState<ConnectSocialsScreen> {
           ),
         );
 
-        final isConnected = existingAccount.id.isNotEmpty;
+        final isConnected = existingAccount.handle.isNotEmpty || existingAccount.id.isNotEmpty;
+        final cleanHandle = existingAccount.handle.startsWith('@')
+            ? existingAccount.handle
+            : '@${existingAccount.handle}';
 
         return SocialPlatform(
           id: config.id,
           name: config.name,
-          handle: isConnected ? '@${existingAccount.handle}' : '',
+          handle: isConnected ? cleanHandle : '',
           icon: config.icon,
           status: isConnected ? SocialStatus.connected : SocialStatus.disconnected,
           followers: isConnected && existingAccount.followers != null
@@ -162,9 +165,13 @@ class _ConnectSocialsScreenState extends ConsumerState<ConnectSocialsScreen> {
   }
 
   Future<Map<String, String>?> _showConnectDialog(String platformId) async {
-    final usernameController = TextEditingController();
-    final followersController = TextEditingController();
-    final engagementController = TextEditingController();
+    final user = ref.read(authProvider).user;
+    final defaultHandle = user != null
+        ? (user.username.contains('@') ? user.username.split('@').first : user.username)
+        : '';
+    final usernameController = TextEditingController(text: defaultHandle);
+    final followersController = TextEditingController(text: '8500');
+    final engagementController = TextEditingController(text: '4.2');
 
     return showDialog<Map<String, String>>(
       context: context,
@@ -289,7 +296,21 @@ class _ConnectSocialsScreenState extends ConsumerState<ConnectSocialsScreen> {
                 ),
               ),
               ElevatedButton(
-                onPressed: _isLoading ? null : () => context.go('/creator/membership/earn'),
+                onPressed: _isLoading
+                    ? null
+                    : () {
+                        final hasConnected = _platforms.any((p) => p.status == SocialStatus.connected);
+                        if (!hasConnected) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('Please connect at least 1 social account to claim membership'),
+                              backgroundColor: context.barter.error,
+                            ),
+                          );
+                          return;
+                        }
+                        context.go('/creator/membership/earn');
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: bc.primary,
                   foregroundColor: bc.onPrimary,

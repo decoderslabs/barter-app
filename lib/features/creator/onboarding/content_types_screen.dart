@@ -70,17 +70,50 @@ class _ContentTypesScreenState extends ConsumerState<ContentTypesScreen> {
     ),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(authProvider).user;
+      final existingTypes = user?.creatorProfile?.contentTypes ?? [];
+      if (existingTypes.isNotEmpty) {
+        setState(() {
+          for (var i = 0; i < _contentTypes.length; i++) {
+            final c = _contentTypes[i];
+            final matches = existingTypes.any(
+              (et) => et.toLowerCase() == c.name.toLowerCase() ||
+                      c.name.toLowerCase().contains(et.toLowerCase()) ||
+                      et.toLowerCase().contains(c.name.toLowerCase()),
+            );
+            _contentTypes[i] = c.copyWith(isSelected: matches);
+          }
+        });
+      }
+    });
+  }
+
   Future<void> _onContinue() async {
     final selectedContentTypes = _contentTypes
         .where((c) => c.isSelected)
         .map((c) => c.name)
         .toList();
 
+    if (selectedContentTypes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select at least 1 content type'),
+          backgroundColor: context.barter.error,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
       final session = ref.read(sessionProvider.notifier);
       await session.persistContentTypes(selectedContentTypes);
+      await ref.read(authProvider.notifier).refreshUser();
 
       if (mounted) {
         context.push('/creator/onboarding/socials');

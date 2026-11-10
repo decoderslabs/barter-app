@@ -308,6 +308,7 @@ class SessionNotifier extends StateNotifier<SessionState> {
     await _auth.updateCreatorProfile(
       niches: state.selectedNiches.toList(),
       contentTypes: state.selectedContentTypes.toList(),
+      interests: state.selectedInterests.toList(),
     );
   }
 
@@ -317,25 +318,44 @@ class SessionNotifier extends StateNotifier<SessionState> {
     String? bio,
     String? locationCity,
     String? locationCountry,
+    String? profilePhotoUrl,
   }) async {
     await _auth.updateProfile(
       name: name,
       bio: bio,
       locationCity: locationCity,
       locationCountry: locationCountry,
+      profilePhotoUrl: profilePhotoUrl,
     );
   }
 
   /// Persist niche selections
   Future<void> persistNiches(List<String> niches) async {
-    await _auth.updateCreatorProfile(niches: niches, contentTypes: state.selectedContentTypes.toList());
+    state = state.copyWith(selectedNiches: niches.toSet());
+    await _auth.updateCreatorProfile(
+      niches: niches,
+      contentTypes: state.selectedContentTypes.toList(),
+      interests: state.selectedInterests.toList(),
+    );
+  }
+
+  /// Persist interest selections
+  Future<void> persistInterests(List<String> interests) async {
+    state = state.copyWith(selectedInterests: interests.toSet());
+    await _auth.updateCreatorProfile(
+      niches: state.selectedNiches.toList(),
+      contentTypes: state.selectedContentTypes.toList(),
+      interests: interests,
+    );
   }
 
   /// Persist content type selections
   Future<void> persistContentTypes(List<String> contentTypes) async {
+    state = state.copyWith(selectedContentTypes: contentTypes.toSet());
     await _auth.updateCreatorProfile(
       niches: state.selectedNiches.toList(),
       contentTypes: contentTypes,
+      interests: state.selectedInterests.toList(),
     );
   }
 
@@ -347,8 +367,10 @@ class SessionNotifier extends StateNotifier<SessionState> {
     bool verified = false,
     double? engagementRate,
   }) async {
+    final cleanHandle = username.startsWith('@') ? username : '@$username';
     await _auth.addSocialAccount({
-      'platform': platform,
+      'platform': platform.toLowerCase(),
+      'handle': cleanHandle,
       'username': username,
       'followers': followers,
       'verified': verified,

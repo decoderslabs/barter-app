@@ -56,27 +56,54 @@ class _InterestsSelectionScreenState extends ConsumerState<InterestsSelectionScr
 
   bool _isConfirmed = false;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(authProvider).user;
+      final sessionInterests = ref.read(sessionProvider).selectedInterests;
+      final existingInterests = (user?.creatorProfile?.interests.isNotEmpty ?? false)
+          ? user!.creatorProfile!.interests
+          : sessionInterests.toList();
+
+      if (existingInterests.isNotEmpty) {
+        setState(() {
+          for (var i = 0; i < _interests.length; i++) {
+            final item = _interests[i];
+            final matches = existingInterests.any(
+              (ei) => ei.toLowerCase() == item.name.toLowerCase() ||
+                      item.name.toLowerCase().contains(ei.toLowerCase()) ||
+                      ei.toLowerCase().contains(item.name.toLowerCase()),
+            );
+            _interests[i] = item.copyWith(isSelected: matches);
+          }
+        });
+      }
+    });
+  }
+
   Future<void> _onFinishOnboarding() async {
     final selectedInterests = _interests
         .where((i) => i.isSelected)
         .map((i) => i.name)
         .toList();
 
+    if (selectedInterests.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select at least 1 interest'),
+          backgroundColor: context.barter.error,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
       final session = ref.read(sessionProvider.notifier);
-
-      // Toggle interests in session state
-      for (final interest in selectedInterests) {
-        session.toggleInterest(interest);
-      }
-
-      // Persist all creator onboarding data to backend
-      await session.persistCreatorOnboarding();
-
-      // TODO: Store interests in user meta via separate API call
-      // await session.persistInterests(selectedInterests);
+      await session.persistInterests(selectedInterests);
+      await ref.read(authProvider.notifier).refreshUser();
 
       if (mounted) {
         context.push('/creator/onboarding/content-types');

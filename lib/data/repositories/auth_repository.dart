@@ -78,14 +78,17 @@ class AuthRepository {
   }
 
   Future<void> updateCreatorProfile({
-    required List<String> niches,
-    required List<String> contentTypes,
+    List<String>? niches,
+    List<String>? contentTypes,
+    List<String>? interests,
   }) async {
-    // WordPress custom endpoint uses POST not PATCH.
-    // TODO(django-cutover): change back to patchJson.
+    final body = <String, dynamic>{};
+    if (niches != null) body['niches'] = niches;
+    if (contentTypes != null) body['content_types'] = contentTypes;
+    if (interests != null) body['interests'] = interests;
     await _client.postJson(
       '/users/me/creator-profile',
-      body: {'niches': niches, 'content_types': contentTypes},
+      body: body,
     );
   }
 

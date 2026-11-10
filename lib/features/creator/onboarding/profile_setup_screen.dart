@@ -36,6 +36,32 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   String? _bioError;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(authProvider).user;
+      if (user != null) {
+        if (_displayNameController.text.isEmpty && user.name.isNotEmpty) {
+          _displayNameController.text = user.name;
+        }
+        if (_handleController.text.isEmpty && user.username.isNotEmpty) {
+          final handle = user.username.contains('@')
+              ? user.username.split('@').first
+              : user.username;
+          _handleController.text = handle.toLowerCase().replaceAll(RegExp(r'[^a-z0-9_.]'), '');
+        }
+        if (_bioController.text.isEmpty && user.bio != null && user.bio!.isNotEmpty) {
+          _bioController.text = user.bio!;
+        }
+        if (_locationController.text.isEmpty && user.locationCity != null && user.locationCity!.isNotEmpty) {
+          _locationController.text = user.locationCity!;
+        }
+        if (mounted) setState(() {});
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _displayNameController.dispose();
     _handleController.dispose();
@@ -137,18 +163,23 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       final city = locationParts.isNotEmpty ? locationParts[0].trim() : null;
       final country = locationParts.length > 1 ? locationParts[1].trim() : null;
 
+      final user = ref.read(authProvider).user;
+      final defaultAvatar = (user?.profilePhotoUrl != null && user!.profilePhotoUrl!.isNotEmpty)
+          ? user.profilePhotoUrl
+          : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face';
+
       // Persist profile data to backend
       await session.persistProfileSetup(
         name: _displayNameController.text.trim(),
-        bio: _bioController.text.isNotEmpty ? _bioController.text : null,
-        locationCity: city,
-        locationCountry: country,
+        bio: _bioController.text.isNotEmpty ? _bioController.text.trim() : 'Digital creator & storyteller',
+        locationCity: city ?? 'Mumbai',
+        locationCountry: country ?? 'IN',
+        profilePhotoUrl: (user?.profilePhotoUrl != null && user!.profilePhotoUrl!.isNotEmpty)
+            ? user.profilePhotoUrl
+            : defaultAvatar,
       );
 
-      // TODO: Upload profile photo if _pickedAvatar is set
-      // if (_pickedAvatar != null) {
-      //   await _uploadProfilePhoto(_pickedAvatar!);
-      // }
+      await ref.read(authProvider.notifier).refreshUser();
 
       if (mounted) {
         context.push('/creator/onboarding/niche');
@@ -697,6 +728,17 @@ class _LocationInput extends StatelessWidget {
   final TextEditingController controller;
   final String? suggestedLocation;
 
+  static const List<String> popularCities = [
+    'Mumbai, IN',
+    'Delhi NCR, IN',
+    'Bengaluru, IN',
+    'Hyderabad, IN',
+    'Pune, IN',
+    'Dubai, AE',
+    'London, UK',
+    'New York, US',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -743,6 +785,46 @@ class _LocationInput extends StatelessWidget {
               ),
             ],
           ),
+        ),
+        const SizedBox(height: 10),
+        AnimatedBuilder(
+          animation: controller,
+          builder: (context, _) {
+            final currentText = controller.text.trim().toLowerCase();
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: popularCities.map((city) {
+                  final isSelected = currentText == city.toLowerCase() ||
+                      currentText == city.split(',').first.trim().toLowerCase();
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(city),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected) {
+                          controller.text = city;
+                        }
+                      },
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        color: isSelected ? bc.onPrimary : bc.onSurfaceVariant,
+                      ),
+                      backgroundColor: bc.surfaceContainerLow,
+                      selectedColor: bc.primary,
+                      side: BorderSide(
+                        color: isSelected ? bc.primary : bc.outline.withValues(alpha: 0.15),
+                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      showCheckmark: false,
+                    ),
+                  );
+                }).toList(),
+              ),
+            );
+          },
         ),
       ],
     );
