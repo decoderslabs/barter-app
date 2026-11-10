@@ -366,6 +366,7 @@ class SessionNotifier extends StateNotifier<SessionState> {
     required int followers,
     bool verified = false,
     double? engagementRate,
+    String? proofUrl,
   }) async {
     final cleanHandle = username.startsWith('@') ? username : '@$username';
     await _auth.addSocialAccount({
@@ -375,6 +376,7 @@ class SessionNotifier extends StateNotifier<SessionState> {
       'followers': followers,
       'verified': verified,
       if (engagementRate != null) 'engagement_rate': engagementRate,
+      if (proofUrl != null && proofUrl.isNotEmpty) 'proof_url': proofUrl,
     });
   }
 

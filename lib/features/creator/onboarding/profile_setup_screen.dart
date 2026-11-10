@@ -45,10 +45,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           _displayNameController.text = user.name;
         }
         if (_handleController.text.isEmpty && user.username.isNotEmpty) {
-          final handle = user.username.contains('@')
-              ? user.username.split('@').first
-              : user.username;
-          _handleController.text = handle.toLowerCase().replaceAll(RegExp(r'[^a-z0-9_.]'), '');
+          _handleController.text = user.username.toLowerCase().replaceAll(RegExp(r'[^a-z0-9_.]'), '');
         }
         if (_bioController.text.isEmpty && user.bio != null && user.bio!.isNotEmpty) {
           _bioController.text = user.bio!;
@@ -595,7 +592,7 @@ class _HandleInput extends StatelessWidget {
                   controller: controller,
                   onChanged: onChanged,
                   decoration: InputDecoration(
-                    hintText: suggestedHandle ?? 'elenarossi',
+                    hintText: suggestedHandle ?? '(ideally your instagram username)',
                     hintStyle: TextStyle(color: bc.onSurfaceVariant.withValues(alpha: 0.4)),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 16),

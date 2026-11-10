@@ -1,6 +1,8 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../data/dto/user_dto.dart';
@@ -67,6 +69,7 @@ class _ConnectSocialsScreenState extends ConsumerState<ConnectSocialsScreen> {
               : '',
           color: config.color,
           accountId: existingAccount.id,
+          proofUrl: existingAccount.proofUrl,
         );
       }).toList();
     });
@@ -82,29 +85,19 @@ class _ConnectSocialsScreenState extends ConsumerState<ConnectSocialsScreen> {
   }
 
   Future<void> _onConnectPlatform(String platformId) async {
+    final result = await _showConnectDialog(platformId);
+    if (result == null) return;
+
     setState(() => _isLoading = true);
 
     try {
-      final auth = ref.read(authRepositoryProvider);
-
-      // TODO: Implement OAuth flow
-      // 1. Get OAuth URL from backend
-      // final oauthUrl = await auth.getOAuthUrl(platformId);
-      // 2. Open OAuth flow (using url_launcher or webview)
-      // 3. Handle callback and extract tokens
-      // 4. Exchange tokens for account info
-
-      // For now, simulate OAuth flow with dialog for manual entry
-      final result = await _showConnectDialog(platformId);
-      if (result == null) return;
-
-      // Connect account via API
       final session = ref.read(sessionProvider.notifier);
       await session.connectSocialAccount(
         platform: platformId,
         username: result['username']!,
-        followers: int.parse(result['followers']!),
-        engagementRate: double.parse(result['engagement']!),
+        followers: int.tryParse(result['followers'] ?? '') ?? 10000,
+        engagementRate: double.tryParse(result['engagement'] ?? '') ?? 4.5,
+        proofUrl: result['proof_url'],
       );
 
       // Refresh user data to get updated social accounts
@@ -115,7 +108,10 @@ class _ConnectSocialsScreenState extends ConsumerState<ConnectSocialsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$platformId connected successfully!')),
+          SnackBar(
+            content: Text('$platformId connected with proof!'),
+            backgroundColor: context.barter.primary,
+          ),
         );
       }
     } catch (e) {
@@ -128,7 +124,9 @@ class _ConnectSocialsScreenState extends ConsumerState<ConnectSocialsScreen> {
         );
       }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -160,67 +158,35 @@ class _ConnectSocialsScreenState extends ConsumerState<ConnectSocialsScreen> {
         );
       }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<Map<String, String>?> _showConnectDialog(String platformId) async {
     final user = ref.read(authProvider).user;
-    final defaultHandle = user != null
-        ? (user.username.contains('@') ? user.username.split('@').first : user.username)
-        : '';
-    final usernameController = TextEditingController(text: defaultHandle);
-    final followersController = TextEditingController(text: '8500');
-    final engagementController = TextEditingController(text: '4.2');
+    final defaultHandle = user?.username ?? '';
+    final platformMatch = _platforms.firstWhere(
+      (p) => p.id == platformId,
+      orElse: () => SocialPlatform(
+        id: platformId,
+        name: platformId.toUpperCase(),
+        handle: '',
+        icon: Symbols.share,
+        status: SocialStatus.disconnected,
+        followers: '',
+        engagement: '',
+        color: Colors.blue,
+      ),
+    );
 
     return showDialog<Map<String, String>>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Connect $platformId'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: usernameController,
-              decoration: const InputDecoration(
-                labelText: 'Username',
-                hintText: 'your_handle',
-              ),
-            ),
-            TextField(
-              controller: followersController,
-              decoration: const InputDecoration(
-                labelText: 'Followers',
-                hintText: '10000',
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              controller: engagementController,
-              decoration: const InputDecoration(
-                labelText: 'Engagement Rate (%)',
-                hintText: '4.5',
-              ),
-              keyboardType: TextInputType.number,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context, {
-                'username': usernameController.text,
-                'followers': followersController.text,
-                'engagement': engagementController.text,
-              });
-            },
-            child: const Text('Connect'),
-          ),
-        ],
+      builder: (context) => _ConnectSocialProofDialog(
+        platformId: platformId,
+        platformName: platformMatch.name,
+        initialHandle: defaultHandle,
       ),
     );
   }
@@ -552,6 +518,32 @@ class _ConnectedCard extends StatelessWidget {
               ),
               Row(
                 children: [
+                  if (platform.proofUrl != null && platform.proofUrl!.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F5E9),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: const Color(0xFFA5D6A7)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Symbols.verified, size: 12, color: Color(0xFF2E7D32)),
+                          SizedBox(width: 4),
+                          Text(
+                            'Proof Attached',
+                            style: TextStyle(
+                              color: Color(0xFF2E7D32),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
@@ -931,6 +923,7 @@ class SocialPlatform {
   final String engagement;
   final Color color;
   final String accountId;
+  final String? proofUrl;
 
   SocialPlatform({
     required this.id,
@@ -942,6 +935,7 @@ class SocialPlatform {
     required this.engagement,
     required this.color,
     this.accountId = '',
+    this.proofUrl,
   });
 
   SocialPlatform copyWith({
@@ -954,6 +948,7 @@ class SocialPlatform {
     String? engagement,
     Color? color,
     String? accountId,
+    String? proofUrl,
   }) {
     return SocialPlatform(
       id: id ?? this.id,
@@ -965,6 +960,7 @@ class SocialPlatform {
       engagement: engagement ?? this.engagement,
       color: color ?? this.color,
       accountId: accountId ?? this.accountId,
+      proofUrl: proofUrl ?? this.proofUrl,
     );
   }
 }
@@ -976,4 +972,398 @@ class _PlatformConfig {
   final Color color;
 
   _PlatformConfig(this.id, this.name, this.icon, this.color);
+}
+
+class _ConnectSocialProofDialog extends ConsumerStatefulWidget {
+  const _ConnectSocialProofDialog({
+    required this.platformId,
+    required this.platformName,
+    required this.initialHandle,
+  });
+
+  final String platformId;
+  final String platformName;
+  final String initialHandle;
+
+  @override
+  ConsumerState<_ConnectSocialProofDialog> createState() =>
+      _ConnectSocialProofDialogState();
+}
+
+class _ConnectSocialProofDialogState
+    extends ConsumerState<_ConnectSocialProofDialog> {
+  late final TextEditingController _usernameController;
+  final _followersController = TextEditingController(text: '10000');
+  final _engagementController = TextEditingController(text: '4.5');
+
+  XFile? _proofFile;
+  Uint8List? _proofBytes;
+  bool _isUploading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _usernameController = TextEditingController(text: widget.initialHandle);
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _followersController.dispose();
+    _engagementController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickProof() async {
+    try {
+      final picker = ImagePicker();
+      final file = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 85,
+      );
+      if (file != null) {
+        final bytes = await file.readAsBytes();
+        setState(() {
+          _proofFile = file;
+          _proofBytes = bytes;
+          _error = null;
+        });
+      }
+    } catch (e) {
+      setState(() => _error = 'Could not select image: $e');
+    }
+  }
+
+  Future<void> _onSubmit() async {
+    final handle = _usernameController.text.trim();
+    final followers = _followersController.text.trim();
+    final engagement = _engagementController.text.trim();
+
+    if (handle.isEmpty) {
+      setState(() => _error = 'Please enter your handle/username');
+      return;
+    }
+    if (followers.isEmpty) {
+      setState(() => _error = 'Please enter your follower count');
+      return;
+    }
+
+    setState(() => _isUploading = true);
+
+    String? uploadedUrl;
+    try {
+      if (_proofBytes != null && _proofFile != null) {
+        uploadedUrl = await ref.read(authRepositoryProvider).uploadMedia(
+              bytes: _proofBytes!,
+              filename: _proofFile!.name,
+            );
+      }
+
+      if (mounted) {
+        Navigator.pop(context, {
+          'username': handle,
+          'followers': followers,
+          'engagement': engagement.isNotEmpty ? engagement : '4.5',
+          'proof_url': uploadedUrl ?? '',
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+          _error = 'Upload failed: $e';
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bc = context.barter;
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: bc.surfaceContainerLowest,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Connect ${widget.platformName}',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Symbols.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Upload your logged-in profile or creator dashboard screenshot to verify account ownership.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: bc.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                ),
+                const SizedBox(height: 20),
+                // Handle Field
+                Text(
+                  'Username / Handle',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: bc.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _usernameController,
+                  decoration: InputDecoration(
+                    hintText: '(ideally your instagram username)',
+                    prefixText: '@ ',
+                    filled: true,
+                    fillColor: bc.surfaceContainerLow,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                // Followers & Engagement row
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Followers',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: bc.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          TextField(
+                            controller: _followersController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              hintText: '10000',
+                              filled: true,
+                              fillColor: bc.surfaceContainerLow,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Engagement Rate (%)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: bc.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          TextField(
+                            controller: _engagementController,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: InputDecoration(
+                              hintText: '4.5',
+                              filled: true,
+                              fillColor: bc.surfaceContainerLow,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                // Proof Upload Box
+                Text(
+                  'Account Ownership Proof',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: bc.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                InkWell(
+                  onTap: _isUploading ? null : _pickProof,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: _proofBytes != null
+                          ? const Color(0xFFE8F5E9)
+                          : bc.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: _proofBytes != null
+                            ? const Color(0xFF81C784)
+                            : bc.outlineVariant.withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: _proofBytes != null
+                        ? Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.memory(
+                                  _proofBytes!,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Row(
+                                      children: [
+                                        Icon(Symbols.check_circle, color: Color(0xFF2E7D32), size: 16),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          'Screenshot Selected',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF2E7D32),
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      _proofFile?.name ?? 'screenshot.png',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: bc.onSurfaceVariant,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _pickProof,
+                                child: const Text('Change'),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            children: [
+                              Icon(
+                                Symbols.add_photo_alternate,
+                                size: 36,
+                                color: bc.primary,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Upload Profile / Dashboard Screenshot',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: bc.primary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Screenshot showing you logged in as @${_usernameController.text.isNotEmpty ? _usernameController.text : "handle"}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: bc.onSurfaceVariant.withValues(alpha: 0.7),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    _error!,
+                    style: TextStyle(color: bc.error, fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                ],
+                const SizedBox(height: 24),
+                // Submit Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isUploading ? null : _onSubmit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: bc.primary,
+                      foregroundColor: bc.onPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: _isUploading
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  color: bc.onPrimary,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              const Text('Uploading & Verifying...'),
+                            ],
+                          )
+                        : const Text(
+                            'Verify & Connect',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

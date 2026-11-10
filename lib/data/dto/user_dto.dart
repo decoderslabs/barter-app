@@ -245,6 +245,7 @@ class SocialAccountDto {
     required this.handle,
     this.followers,
     this.engagementRate,
+    this.proofUrl,
   });
 
   final String id;
@@ -252,6 +253,7 @@ class SocialAccountDto {
   final String handle;
   final int? followers;
   final double? engagementRate;
+  final String? proofUrl;
 
   factory SocialAccountDto.fromJson(Map<String, dynamic> json) => SocialAccountDto(
         id: json['id'] != null && json['id'].toString().isNotEmpty
@@ -261,6 +263,7 @@ class SocialAccountDto {
         handle: json['handle'] as String? ?? json['username'] as String? ?? '',
         followers: _parseInt(json['followers']),
         engagementRate: _parseDouble(json['engagement_rate']),
+        proofUrl: json['proof_url'] as String?,
       );
 
   static int? _parseInt(dynamic value) {

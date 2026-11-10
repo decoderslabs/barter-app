@@ -133,6 +133,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   BarterLabeledField(
                     controller: _username,
                     label: 'Username',
+                    hint: '(ideally your instagram username)',
                   ),
                   const SizedBox(height: 16),
                   Row(

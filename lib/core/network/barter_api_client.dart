@@ -98,6 +98,27 @@ class BarterApiClient {
     );
   }
 
+  Future<Map<String, dynamic>> uploadFile(
+    String path, {
+    required List<int> bytes,
+    required String filename,
+    String fieldName = 'file',
+    bool auth = true,
+  }) async {
+    final formData = FormData.fromMap({
+      fieldName: MultipartFile.fromBytes(bytes, filename: filename),
+    });
+    final response = await _dio.post<dynamic>(
+      path,
+      data: formData,
+      options: Options(
+        extra: {'auth': auth},
+        headers: {'Content-Type': 'multipart/form-data'},
+      ),
+    );
+    return _asMap(response.data);
+  }
+
   List<dynamic> _parsePaginatedResults(dynamic data) {
     if (data is Map<String, dynamic> && data['results'] is List) {
       return data['results'] as List<dynamic>;

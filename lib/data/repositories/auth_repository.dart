@@ -113,6 +113,24 @@ class AuthRepository {
     await _client.postJson('/users/me/fcm-token', body: {'token': token});
   }
 
+  /// Upload media (images/videos)
+  /// POST /media/upload
+  Future<String> uploadMedia({
+    required List<int> bytes,
+    required String filename,
+  }) async {
+    final res = await _client.uploadFile(
+      '/media/upload',
+      bytes: bytes,
+      filename: filename,
+    );
+    final url = res['url'] as String?;
+    if (url == null || url.isEmpty) {
+      throw ApiException('Media upload failed: no URL in response');
+    }
+    return url;
+  }
+
   /// Update basic user profile information
   /// PATCH /users/me
   Future<void> updateProfile({
