@@ -21,17 +21,22 @@ class DealListItemDto {
   final String? deadline;
   final String? createdAt;
 
-  factory DealListItemDto.fromJson(Map<String, dynamic> json) => DealListItemDto(
-        id: json['id']?.toString() ?? '',
-        offerTitle: json['offer_title'] as String? ?? '',
-        brandUsername: json['brand_username'] as String? ?? '',
-        creatorUsername: json['creator_username'] as String? ?? '',
-        status: json['status'] as String? ?? '',
-        dealFee: json['deal_fee']?.toString(),
-        currency: json['currency'] as String?,
-        deadline: json['deadline'] as String?,
-        createdAt: json['created_at'] as String?,
-      );
+  factory DealListItemDto.fromJson(Map<String, dynamic> json) {
+    final offer = json['offer'] as Map<String, dynamic>?;
+    final brand = json['brand'] as Map<String, dynamic>?;
+    final creator = json['creator'] as Map<String, dynamic>?;
+    return DealListItemDto(
+      id: json['id']?.toString() ?? '',
+      offerTitle: json['offer_title'] as String? ?? offer?['title'] as String? ?? '',
+      brandUsername: json['brand_username'] as String? ?? brand?['username'] as String? ?? '',
+      creatorUsername: json['creator_username'] as String? ?? creator?['username'] as String? ?? '',
+      status: json['status'] as String? ?? '',
+      dealFee: json['deal_fee']?.toString(),
+      currency: json['currency'] as String?,
+      deadline: json['deadline'] as String?,
+      createdAt: json['created_at'] as String?,
+    );
+  }
 }
 
 class DealDetailDto {
@@ -65,43 +70,54 @@ class DealDetailDto {
   final String? completedAt;
   final String? contractUrl;
 
-  factory DealDetailDto.fromJson(Map<String, dynamic> json) => DealDetailDto(
-        id: json['id']?.toString() ?? '',
-        status: json['status'] as String? ?? '',
-        brandUsername: json['brand_username'] as String? ?? '',
-        brandName: json['brand_name'] as String? ?? '',
-        creatorUsername: json['creator_username'] as String? ?? '',
-        creatorName: json['creator_name'] as String? ?? '',
-        offerTitle: json['offer_title'] as String? ?? '',
-        agreedTerms: Map<String, dynamic>.from(json['agreed_terms'] as Map? ?? const {}),
-        deadline: json['deadline'] as String?,
-        shippedAt: json['shipped_at'] as String?,
-        deliveredAt: json['delivered_at'] as String?,
-        completedAt: json['completed_at'] as String?,
-        contractUrl: json['contract_url'] as String?,
-      );
+  factory DealDetailDto.fromJson(Map<String, dynamic> json) {
+    final offer = json['offer'] as Map<String, dynamic>?;
+    final brand = json['brand'] as Map<String, dynamic>?;
+    final creator = json['creator'] as Map<String, dynamic>?;
+    return DealDetailDto(
+      id: json['id']?.toString() ?? '',
+      status: json['status'] as String? ?? '',
+      brandUsername: json['brand_username'] as String? ?? brand?['username'] as String? ?? '',
+      brandName: json['brand_name'] as String? ?? brand?['name'] as String? ?? '',
+      creatorUsername: json['creator_username'] as String? ?? creator?['username'] as String? ?? '',
+      creatorName: json['creator_name'] as String? ?? creator?['name'] as String? ?? '',
+      offerTitle: json['offer_title'] as String? ?? offer?['title'] as String? ?? '',
+      agreedTerms: json['agreed_terms'] is Map ? Map<String, dynamic>.from(json['agreed_terms'] as Map) : const {},
+      deadline: json['deadline'] as String?,
+      shippedAt: json['shipped_at'] as String?,
+      deliveredAt: json['delivered_at'] as String?,
+      completedAt: json['completed_at'] as String?,
+      contractUrl: json['contract_url'] as String?,
+    );
+  }
 }
 
 class DealMessageDto {
   const DealMessageDto({
     required this.id,
+    required this.senderId,
     required this.senderUsername,
     required this.senderName,
     required this.body,
     required this.createdAt,
+    this.attachmentUrl,
   });
 
   final String id;
+  final String senderId;
   final String senderUsername;
   final String senderName;
   final String body;
   final String createdAt;
+  final String? attachmentUrl;
 
   factory DealMessageDto.fromJson(Map<String, dynamic> json) => DealMessageDto(
         id: json['id']?.toString() ?? '',
+        senderId: json['sender_id']?.toString() ?? '',
         senderUsername: json['sender_username'] as String? ?? '',
         senderName: json['sender_name'] as String? ?? '',
         body: json['body'] as String? ?? '',
         createdAt: json['created_at'] as String? ?? '',
+        attachmentUrl: json['attachment_url'] as String?,
       );
 }

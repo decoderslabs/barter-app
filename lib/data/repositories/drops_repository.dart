@@ -1,6 +1,5 @@
 import '../../core/network/barter_api_client.dart';
 import '../dto/drops_dto.dart';
-import '../dto/paginated_response.dart';
 
 class DropsRepository {
   DropsRepository({BarterApiClient? client}) : _client = client ?? BarterApiClient();
@@ -8,8 +7,8 @@ class DropsRepository {
   final BarterApiClient _client;
 
   Future<List<DropsCampaignDto>> listCampaigns() async {
-    final data = await _client.getJson('/drops');
-    return PaginatedResponse.fromJson(data, DropsCampaignDto.fromJson).results;
+    final list = await _client.getJsonList('/drops', auth: false);
+    return list.map((e) => DropsCampaignDto.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   Future<DropsCampaignDto> getCampaign(String id) async {
@@ -23,8 +22,8 @@ class DropsRepository {
   }
 
   Future<List<DropsApplicationDto>> listApplications(String campaignId) async {
-    final data = await _client.getJson('/drops/$campaignId/applications');
-    return PaginatedResponse.fromJson(data, DropsApplicationDto.fromJson).results;
+    final list = await _client.getJsonList('/drops/$campaignId/applications');
+    return list.map((e) => DropsApplicationDto.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   Future<void> apply(String campaignId, String pitch) async {

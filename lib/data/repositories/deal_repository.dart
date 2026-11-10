@@ -1,6 +1,5 @@
 import '../../core/network/barter_api_client.dart';
 import '../dto/deal_dto.dart';
-import '../dto/paginated_response.dart';
 import '../mappers/deal_mapper.dart';
 import '../models/deal_room_model.dart';
 
@@ -10,18 +9,24 @@ class DealRepository {
   final BarterApiClient _client;
 
   Future<List<DealListItemDto>> listDeals() async {
-    final data = await _client.getJson('/deals');
-    return PaginatedResponse.fromJson(data, DealListItemDto.fromJson).results;
+    final list = await _client.getJsonList('/deals');
+    return list.map((e) => DealListItemDto.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   Future<DealRoomModel> getDealRoom(String dealId) async {
     final dealData = await _client.getJson('/deals/$dealId');
     final deal = DealDetailDto.fromJson(dealData);
+    final brand = dealData['brand'] as Map<String, dynamic>?;
+    final creator = dealData['creator'] as Map<String, dynamic>?;
+    final brandLogo = brand?['brand_profile']?['logo_url'] as String? ??
+        brand?['logo_url'] as String? ?? '';
+    final creatorAvatar = creator?['profile_photo_url'] as String? ?? '';
     final messagesRaw = await _client.getJsonList('/deals/$dealId/messages');
     final messages = messagesRaw
         .map((e) => DealMessageDto.fromJson(e as Map<String, dynamic>))
         .toList();
-    return DealMapper.toDealRoom(deal, messages);
+    return DealMapper.toDealRoom(deal, messages,
+        brandLogoUrl: brandLogo, creatorAvatarUrl: creatorAvatar);
   }
 
   Future<void> sendMessage(String dealId, String body) async {
@@ -67,7 +72,7 @@ class DealRepository {
   }
 
   Future<void> rateDeal(String dealId, Map<String, dynamic> rating) async {
-    await _client.postJson('/ratings/$dealId/rate', body: rating);
+    await _client.postJson('/deals/$dealId/rate', body: rating);
   }
 
   Future<String?> firstDealId() async {

@@ -32,11 +32,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     super.dispose();
   }
 
-  void _navigateAfterAuth(AppRole role) {
-    if (role == AppRole.brand) {
-      context.go('/brand/dashboard');
+  void _navigateAfterAuth(AuthState state) {
+    if (_isRegister) {
+      context.go('/creator/onboarding/profile');
     } else {
-      context.go('/creator/feed');
+      context.go(state.initialRoute);
     }
   }
 
@@ -77,7 +77,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           duration: const Duration(seconds: 2),
         ),
       );
-      _navigateAfterAuth(state.role);
+      _navigateAfterAuth(state);
     }
   }
 

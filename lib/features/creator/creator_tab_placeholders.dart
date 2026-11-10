@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/dto/deal_dto.dart';
+import '../../data/dto/drops_dto.dart';
+import '../../data/models/offer_model.dart';
+import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../widgets/barter_network_image.dart';
 
-class CreatorDropsTabScreen extends StatelessWidget {
+class CreatorDropsTabScreen extends ConsumerWidget {
   const CreatorDropsTabScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
     final theme = Theme.of(context);
-    
+    final dropsAsync = ref.watch(dropsProvider);
+    final offersAsync = ref.watch(offersProvider);
+
     return Scaffold(
       backgroundColor: bc.background,
       body: CustomScrollView(
@@ -50,7 +57,7 @@ class CreatorDropsTabScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  
+
                   // Search Bar
                   Container(
                     decoration: BoxDecoration(
@@ -67,26 +74,8 @@ class CreatorDropsTabScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  
-                  // Filter Chips
-                  SizedBox(
-                    height: 48,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        _buildFilterChip(context, bc, theme, label: 'Type: SaaS', isActive: true),
-                        const SizedBox(width: 12),
-                        _buildFilterChip(context, bc, theme, label: 'Value: \$500+', isActive: false),
-                        const SizedBox(width: 12),
-                        _buildFilterChip(context, bc, theme, label: 'Niche: Tech', isActive: false),
-                        const SizedBox(width: 12),
-                        _buildFilterChip(context, bc, theme, label: 'Platform: IG', isActive: false),
-                      ],
-                    ),
-                  ),
                   const SizedBox(height: 40),
-                  
+
                   // Barter Drops Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -123,38 +112,33 @@ class CreatorDropsTabScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
-                  // Drop Cards Horizontal
-                  SizedBox(
-                    height: 200,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        _buildDropCard(context, bc, theme,
-                          title: 'Alpha Wear Pro',
-                          subtitle: 'Exclusive Gym Launch',
-                          value: '\$1,200',
-                          badge: '4 Slots Left',
-                          icon: Icons.auto_awesome,
-                          iconColor: bc.tertiary,
-                          iconBg: bc.tertiaryContainer,
-                        ),
-                        const SizedBox(width: 24),
-                        _buildDropCard(context, bc, theme,
-                          title: 'Skyline Resorts',
-                          subtitle: 'Bali Explorer Drop',
-                          value: '\$4,500',
-                          badge: 'Ending Soon',
-                          icon: Icons.flight_takeoff,
-                          iconColor: bc.primary,
-                          iconBg: bc.primaryFixed,
-                          isEndingSoon: true,
-                        ),
-                      ],
+
+                  // Drop Cards Horizontal — live data
+                  dropsAsync.when(
+                    loading: () => const SizedBox(
+                      height: 200,
+                      child: Center(child: CircularProgressIndicator()),
                     ),
+                    error: (e, _) => Text('$e',
+                        style: TextStyle(color: bc.error)),
+                    data: (drops) => drops.isEmpty
+                        ? Text('No drops available',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                                color: bc.onSurfaceVariant))
+                        : SizedBox(
+                            height: 200,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: drops.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(width: 24),
+                              itemBuilder: (context, i) =>
+                                  _DropCard(bc: bc, theme: theme, drop: drops[i]),
+                            ),
+                          ),
                   ),
                   const SizedBox(height: 40),
-                  
+
                   // Featured Exchanges Section
                   RichText(
                     text: TextSpan(
@@ -165,40 +149,36 @@ class CreatorDropsTabScreen extends StatelessWidget {
                         const TextSpan(text: 'Featured '),
                         TextSpan(
                           text: 'Exchanges',
-                          style: TextStyle(color: bc.secondary.withValues(alpha: 0.5)),
+                          style: TextStyle(
+                              color: bc.secondary.withValues(alpha: 0.5)),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
-                  // Offer Card 1
-                  _buildOfferCard(context, bc, theme,
-                    brandName: 'StreamFlow AI',
-                    brandType: 'SaaS',
-                    brandDesc: 'Content Automation Suite',
-                    title: 'Scale your content creation with lifetime pro access.',
-                    description: "We're looking for high-quality video creators to showcase our new AI video editor. You get lifetime access and 3 feature spots.",
-                    value: '\$2,400 Est. Value',
-                    deliverable: '3x Reels / TikTok',
-                    platforms: ['IG', 'TT'],
-                    isVerified: true,
-                    brandLogo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCquinfoPTqPDiR6oc-limfncVK9lRZq1p5nRup5kRBuS0lczo3dV2BWRIko3djLsXLXVs2DDKqG5OAw4aLgkeXA41PHx3RtBBLbiiPITBZNuNfuq-k9fMx4lBwpA2BcPaSekzPW9uY8B_2GuIa-qkaKWKzmPCYbnagTEUDzmITVxOA-MTYZJ1ZdfwuMhv95npObqyaNNbOIS_Te3qxDGPc5QuPgP-HmnbPHB6NbMgRU3ONSwHr-VUrcuk1QxhModHKVSJtkZ2afhM',
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Offer Card 2
-                  _buildOfferCard(context, bc, theme,
-                    brandName: 'Luna Horology',
-                    brandType: 'Product',
-                    brandDesc: 'Luxury Timepieces',
-                    title: 'The "Stellar" Collection launch partnership.',
-                    description: 'High-end lifestyle photography for our upcoming collection. Product shipping worldwide. Looking for aesthetic-driven creators.',
-                    value: '\$850 Est. Value',
-                    deliverable: '5x Hi-Res Photos',
-                    platforms: ['X', 'IN'],
-                    isVerified: false,
-                    brandLogo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDjSjEgkQfsBNIvUqLlhVl2sar4YdAOZuuV_NCc56AR90Yzv6s3FD3yxM-V-RDQY4InxwWexj3Qq9pLu6eWlUjv3ktUfFszub1PxLtorAsA40uDqcS65rBd0b5PU3xk5O1HbV8w5xgvBFIAHAPoR9czWDiEx0eJ_VOS_h3UbHgN9MGmLCC1XgLNRWavL56SsG0ed0Sz8ElH0vWHaWcK04wbIlxQNJOE87adKQ_ex_A-h_nkMIAJWhw2rYFGikrHLcHAXY2wMV2vAEw',
+
+                  // Offer Cards — live data
+                  offersAsync.when(
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Text('$e',
+                        style: TextStyle(color: bc.error)),
+                    data: (payload) {
+                      final offers = payload.offers;
+                      if (offers.isEmpty) {
+                        return Text('No offers available',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                                color: bc.onSurfaceVariant));
+                      }
+                      return Column(
+                        children: [
+                          for (int i = 0; i < offers.length; i++) ...[
+                            if (i > 0) const SizedBox(height: 24),
+                            _OfferCard(bc: bc, theme: theme, offer: offers[i]),
+                          ],
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 100), // Space for bottom nav
                 ],
@@ -209,240 +189,249 @@ class CreatorDropsTabScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildFilterChip(
-    BuildContext context,
-    BarterColors bc,
-    ThemeData theme, {
-    required String label,
-    required bool isActive,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        color: isActive ? bc.primary : bc.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (isActive) ...[
-            Icon(Icons.filter_list, size: 18, color: bc.onPrimary),
-            const SizedBox(width: 8),
+class _DropCard extends StatelessWidget {
+  const _DropCard({
+    required this.bc,
+    required this.theme,
+    required this.drop,
+  });
+
+  final BarterColors bc;
+  final ThemeData theme;
+  final DropsCampaignDto drop;
+
+  @override
+  Widget build(BuildContext context) {
+    final slots = drop.slotsRemaining ?? (drop.totalSlots - drop.filledSlots);
+    final isEndingSoon = slots <= 5;
+    final badge = slots > 0 ? '$slots Slots Left' : 'Full';
+    final value = drop.estimatedValue != null && drop.estimatedValue! > 0
+        ? '${drop.currency ?? 'INR'} ${drop.estimatedValue!.toStringAsFixed(0)}'
+        : drop.currency ?? 'INR';
+
+    return GestureDetector(
+      onTap: () => context.push('/creator/feed'),
+      child: Container(
+        width: 280,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: bc.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: bc.onSurface.withValues(alpha: 0.06),
+              blurRadius: 40,
+              offset: const Offset(0, -10),
+            ),
           ],
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: isActive ? bc.onPrimary : bc.onSurface,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: isEndingSoon
+                        ? bc.error.withValues(alpha: 0.15)
+                        : bc.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.auto_awesome,
+                    color: isEndingSoon ? bc.onError : bc.onPrimary,
+                    size: 24,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isEndingSoon
+                        ? bc.error.withValues(alpha: 0.1)
+                        : bc.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    badge,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: isEndingSoon ? bc.error : bc.primary,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDropCard(
-    BuildContext context,
-    BarterColors bc,
-    ThemeData theme, {
-    required String title,
-    required String subtitle,
-    required String value,
-    required String badge,
-    required IconData icon,
-    required Color iconColor,
-    required Color iconBg,
-    bool isEndingSoon = false,
-  }) {
-    return Container(
-      width: 280,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: bc.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: bc.onSurface.withValues(alpha: 0.06),
-            blurRadius: 40,
-            offset: const Offset(0, -10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: iconColor, size: 24),
+            const SizedBox(height: 16),
+            Text(
+              drop.brandName ?? drop.name,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: bc.onSurface,
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isEndingSoon ? bc.error.withValues(alpha: 0.1) : bc.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  badge,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: isEndingSoon ? bc.error : bc.primary,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              drop.title ?? drop.name,
+              style: theme.textTheme.bodySmall?.copyWith(color: bc.secondary),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text(
+                  value,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: bc.primary,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: bc.onSurface,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: bc.secondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Text(
-                value,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  color: bc.primary,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(width: 8),
+                Text(
+                  'Value Drop',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: bc.outline,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Value Drop',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: bc.outline,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildOfferCard(
-    BuildContext context,
-    BarterColors bc,
-    ThemeData theme, {
-    required String brandName,
-    required String brandType,
-    required String brandDesc,
-    required String title,
-    required String description,
-    required String value,
-    required String deliverable,
-    required List<String> platforms,
-    required bool isVerified,
-    required String brandLogo,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: isVerified ? bc.surfaceContainerLowest : bc.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(40),
-        border: isVerified 
-            ? Border.all(color: bc.outlineVariant.withValues(alpha: 0.05))
-            : Border.all(color: bc.outlineVariant.withValues(alpha: 0.1)),
-        boxShadow: isVerified ? [
-          BoxShadow(
-            color: bc.onSurface.withValues(alpha: 0.03),
-            blurRadius: 50,
-            offset: const Offset(0, 20),
-          ),
-        ] : null,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Brand Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: isVerified ? bc.surfaceContainer : bc.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: BarterNetworkImage(
-                        url: brandLogo,
-                        fit: BoxFit.cover,
-                        memCacheWidth: 112,
-                        memCacheHeight: 112,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+class _OfferCard extends StatelessWidget {
+  const _OfferCard({
+    required this.bc,
+    required this.theme,
+    required this.offer,
+  });
+
+  final BarterColors bc;
+  final ThemeData theme;
+  final OfferModel offer;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/creator/offer/${offer.id}'),
+      child: Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: bc.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(40),
+          border: Border.all(color: bc.outlineVariant.withValues(alpha: 0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: bc.onSurface.withValues(alpha: 0.03),
+              blurRadius: 50,
+              offset: const Offset(0, 20),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Brand Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            brandName,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: bc.onSurface,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: isVerified ? bc.tertiaryContainer : bc.secondary,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              brandType,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: isVerified ? bc.onTertiaryContainer : bc.onSecondary,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                          ),
-                        ],
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: bc.surfaceContainer,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: offer.brandLogoUrl.isNotEmpty
+                              ? BarterNetworkImage(
+                                  url: offer.brandLogoUrl,
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: 112,
+                                  memCacheHeight: 112,
+                                )
+                              : Center(
+                                  child: Text(
+                                    offer.brandName.isNotEmpty
+                                        ? offer.brandName[0].toUpperCase()
+                                        : '?',
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      color: bc.onSurface,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                        ),
                       ),
-                      Text(
-                        brandDesc,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: bc.secondary,
+                      const SizedBox(width: 16),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    offer.brandName,
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: bc.onSurface,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: bc.tertiaryContainer,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    offer.offerTypeLabel.toUpperCase(),
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: bc.onTertiaryContainer,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              offer.verifiedLabel,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: bc.secondary,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ],
-              ),
-              if (isVerified)
+                ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 6),
                   decoration: BoxDecoration(
                     color: bc.primary.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(20),
@@ -452,7 +441,7 @@ class CreatorDropsTabScreen extends StatelessWidget {
                       Icon(Icons.verified, size: 16, color: bc.primary),
                       const SizedBox(width: 6),
                       Text(
-                        'Good match',
+                        'Live',
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: bc.primary,
                           fontWeight: FontWeight.bold,
@@ -462,121 +451,86 @@ class CreatorDropsTabScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          // Offer Details
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: bc.onSurface,
-                  height: 1.2,
-                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            // Offer Title
+            Text(
+              offer.title,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: bc.onSurface,
+                height: 1.2,
               ),
-              const SizedBox(height: 12),
-              Text(
-                description,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: bc.secondary,
-                  height: 1.6,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          // Value & Deliverables
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: bc.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.payments, color: bc.primary, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      value,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: bc.onSurface,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: bc.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.videocam, color: bc.tertiary, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      deliverable,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: bc.onSurface,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          // Footer
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: platforms.map((p) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: p == 'IG' ? bc.surfaceVariant : (p == 'X' ? bc.onBackground : bc.surfaceVariant),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: bc.surfaceContainerLowest, width: 2),
-                    ),
-                    child: Center(
-                      child: Text(
-                        p,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: p == 'X' ? bc.onPrimary : bc.onSurface,
+            ),
+            const SizedBox(height: 24),
+            // Value & Requirement Tags
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: bc.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.payments, color: bc.primary, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        offer.estimatedValueLabel,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: bc.onSurface,
                           fontWeight: FontWeight.bold,
-                          fontSize: 10,
                         ),
                       ),
+                    ],
+                  ),
+                ),
+                if (offer.requirementTags.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: bc.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.videocam, color: bc.tertiary, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          offer.requirementTags.first,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: bc.onSurface,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                )).toList(),
-              ),
-              ElevatedButton(
-                onPressed: () => context.push('/creator/feed'),
+              ],
+            ),
+            const SizedBox(height: 24),
+            // View Offer Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => context.push('/creator/offer/${offer.id}'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isVerified ? bc.primary : bc.onBackground,
-                  foregroundColor: isVerified ? bc.onPrimary : bc.onPrimary,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  backgroundColor: offer.invertedCta ? bc.onBackground : bc.primary,
+                  foregroundColor: bc.onPrimary,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 32, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
                   elevation: 0,
-                  shadowColor: bc.primary.withValues(alpha: 0.2),
                 ),
                 child: Text(
                   'View Offer',
@@ -585,21 +539,22 @@ class CreatorDropsTabScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class CreatorDealsTabScreen extends StatelessWidget {
+class CreatorDealsTabScreen extends ConsumerWidget {
   const CreatorDealsTabScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
     final theme = Theme.of(context);
+    final dealsAsync = ref.watch(myDealsProvider);
     
     return Scaffold(
       backgroundColor: bc.background,
@@ -640,101 +595,58 @@ class CreatorDealsTabScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
                   
-                  // Stats Overview
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(context, bc, theme,
-                          label: 'Active',
-                          value: '3',
-                          color: bc.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildStatCard(context, bc, theme,
-                          label: 'Pending',
-                          value: '2',
-                          color: bc.tertiary,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildStatCard(context, bc, theme,
-                          label: 'Completed',
-                          value: '15',
-                          color: bc.secondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 40),
-                  
-                  // Active Deals Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                    'Active Deals',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: bc.onBackground,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => context.push('/creator/feed'),
-                    child: Text(
-                      'View All',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: bc.tertiary,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-                  
-                  // Deal Card 1
-                  _buildDealCard(context, bc, theme,
-                    brandName: 'LuxeTech',
-                    brandLogo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDyPYZKUfpQ9kvvPt1qcS0iOUEtQzFCxpUDp_Ouoj2xKx8dNsJoOwQJRIwv6GVuz-m4ghJZJq07hGxvAtWdiiOFxBiFv3gHjIeov8izvkxTTrP7Qa0A8VOIf4yBLiwRY71GuTRlOb8lv_TGG6J81grAkllxpV6pxkdnslSAOHFC5Ce6qIi4dKE72H-d1rtd1HPWUixHEbHXeE4-qzJLv5u7RGW_ZWUTe0B4zxSXags4RbELgcFfuDs9tsbsyiZZ8ws6FRZNUm9Xff8',
-                    title: 'Quantum Series Launch Campaign',
-                    status: 'In Transit',
-                    statusColor: bc.primaryContainer,
-                    statusTextColor: bc.onPrimary,
-                    value: '\$1,200',
-                    dueDate: 'Oct 14, 2023',
-                    progress: 0.75,
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Deal Card 2
-                  _buildDealCard(context, bc, theme,
-                    brandName: 'Aether',
-                    brandLogo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBToh0F-MrjKT1r1O_lmTOA_0mHB6n_TJdJ3a9zRoaX7Yp9QuHOH-I2jl47IL3Q6Wjhb180wCBh159LeKM4eGsI4ALnpVXD44uLtt4ywDGSTh5L6IlRf1HKLY4-VLx2PCTYo0ORsMLeJLjtb5mmnVuPHfcEAWGeaV6xXXq4q-XrnBFTgEsBmmdcLDLCo1_JsFvlMx4-k0VdO9V3gGmDZdQ9T7NYowyDA1BJmuZ-vOscA2fVz6HTmHlgsUgabVRSV7aKRYuTxFJVk_0',
-                    title: 'Aesthetic Footwear Editorial',
-                    status: 'Draft Review',
-                    statusColor: bc.secondaryContainer,
-                    statusTextColor: bc.secondary,
-                    value: '\$2,500',
-                    dueDate: 'Oct 16, 2023',
-                    progress: 0.5,
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Deal Card 3
-                  _buildDealCard(context, bc, theme,
-                    brandName: 'Nook',
-                    brandLogo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuChF02KUs3rz3G7B1crSCnTKkjD7if1u5TpplyO6mG5VdpPMirzM4JVaabhCZ4sjKi0dekqMT_Qy6-tPXcUxq_Z-OzMe7kIXYGUjH2UyECvsdzvmgVz8UmW9-KY1_G4yoHbcdMUsW0_SOJBP2Fb7k1byV1DbkvEge3-3SbB5A9wihtgCFrTTA0oTMUQUbq9fMVg9VPVZ5l03Ap0q-60shQkkfG5BR_IDuMuh8oKPpnOzb22qav6F5Evr7eKbUKtm24Bsk2VU9DH8pg',
-                    title: 'Minimalist Home Integration',
-                    status: 'Signed',
-                    statusColor: bc.tertiaryContainer,
-                    statusTextColor: bc.onTertiaryContainer,
-                    value: '\$850',
-                    dueDate: 'Oct 18, 2023',
-                    progress: 0.25,
+                  // Stats Overview — live counts
+                  dealsAsync.when(
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Text('$e'),
+                    data: (deals) {
+                      final active    = deals.where((d) => d.status == 'active').length;
+                      final pending   = deals.where((d) => d.status == 'pending_membership' || d.status == 'delivered').length;
+                      final completed = deals.where((d) => d.status == 'complete').length;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: _buildStatCard(context, bc, theme, label: 'Active',    value: '$active',    color: bc.primary)),
+                              const SizedBox(width: 16),
+                              Expanded(child: _buildStatCard(context, bc, theme, label: 'Pending',   value: '$pending',   color: bc.tertiary)),
+                              const SizedBox(width: 16),
+                              Expanded(child: _buildStatCard(context, bc, theme, label: 'Completed', value: '$completed', color: bc.secondary)),
+                            ],
+                          ),
+                          const SizedBox(height: 40),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Active Deals', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: bc.onBackground)),
+                              TextButton(
+                                onPressed: () => context.push('/creator/feed'),
+                                child: Text('View All', style: theme.textTheme.labelMedium?.copyWith(color: bc.tertiary, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          if (deals.isEmpty)
+                            Center(child: Text('No deals yet', style: theme.textTheme.bodyMedium?.copyWith(color: bc.onSurfaceVariant)))
+                          else
+                            ...deals.map((deal) => Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: _buildDealCard(context, bc, theme,
+                                brandName: deal.brandUsername,
+                                brandLogo: '',
+                                title: deal.offerTitle,
+                                status: deal.status.replaceAll('_', ' ').toUpperCase(),
+                                statusColor: _statusColor(deal.status, bc),
+                                statusTextColor: bc.onPrimary,
+                                value: deal.dealFee != null ? '${deal.currency ?? ''} ${deal.dealFee}' : '—',
+                                dueDate: deal.deadline ?? deal.createdAt ?? '',
+                                onTap: () => context.push('/deal/${deal.id}'),
+                              ),
+                            )),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 100), // Space for bottom nav
                 ],
@@ -782,6 +694,16 @@ class CreatorDealsTabScreen extends StatelessWidget {
     );
   }
 
+  Color _statusColor(String status, BarterColors bc) {
+    switch (status) {
+      case 'active':              return bc.primaryContainer;
+      case 'complete':            return bc.secondary;
+      case 'delivered':           return bc.tertiaryContainer;
+      case 'revision_requested':  return bc.error;
+      default:                    return bc.surfaceContainerHigh;
+    }
+  }
+
   Widget _buildDealCard(
     BuildContext context,
     BarterColors bc,
@@ -794,9 +716,12 @@ class CreatorDealsTabScreen extends StatelessWidget {
     required Color statusTextColor,
     required String value,
     required String dueDate,
-    required double progress,
+    double progress = 0.5,
+    VoidCallback? onTap,
   }) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: bc.surfaceContainerLowest,
@@ -960,7 +885,7 @@ class CreatorDealsTabScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              onPressed: () => context.push('/deal/demo'),
+              onPressed: onTap,
               style: OutlinedButton.styleFrom(
                 backgroundColor: bc.surfaceContainerHigh,
                 foregroundColor: bc.onSurface,
@@ -980,7 +905,7 @@ class CreatorDealsTabScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 
@@ -1046,13 +971,14 @@ Color _bcOnTertiaryContainer(BarterColors bc) => bc.onTertiaryContainer;
 Color _bcSurfaceContainerHigh(BarterColors bc) => bc.surfaceContainerHigh;
 Color _bcSecondary(BarterColors bc) => bc.secondary;
 
-class CreatorInboxTabScreen extends StatelessWidget {
+class CreatorInboxTabScreen extends ConsumerWidget {
   const CreatorInboxTabScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
     final theme = Theme.of(context);
+    final proposalsAsync = ref.watch(proposalsListProvider);
     
     return Scaffold(
       backgroundColor: bc.background,
@@ -1095,84 +1021,36 @@ class CreatorInboxTabScreen extends StatelessWidget {
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
-          // Lazy-loaded proposals and declined card
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            sliver: SliverList.separated(
-              separatorBuilder: (_, __) => const SizedBox(height: 48),
-              itemCount: _kProposals.length,
-              itemBuilder: (context, i) {
-                final p = _kProposals[i];
-                return _buildProposalCard(context, bc, theme,
-                  name: p.name,
-                  isVerified: p.isVerified,
-                  badge: p.badge,
-                  badgeColor: p.badgeColor(bc),
-                  badgeTextColor: p.badgeTextColor(bc),
-                  igFollowers: p.igFollowers,
-                  tikTok: p.tikTok,
-                  engagement: p.engagement,
-                  barterScore: p.barterScore,
-                  imageRotation: p.imageRotation,
-                  imageUrl: p.imageUrl,
-                );
-              },
-            ),
-          ),
-          // Declined proposal card
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(24, 48, 24, 0),
-            sliver: SliverToBoxAdapter(
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: bc.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: bc.surfaceContainer,
-                      ),
-                      child: ClipOval(
-                        child: BarterNetworkImage(
-                          url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDMD0K0D1JoWFINTBrYqJQdjiICmMxQW89gybIyKrB8HRpNkP4z0XXgdFQCCJov4Mr774_ENlJ361b6GOZVWFHwtfowExI0fOD4P3ybu1mojhWiNlPmZn8ppKzDiERPti1azVLeqzZUWwxrfoq3vdBRkuFw5e4R9s2rDYH5cw-WX5OPBXD-okUzZGHI4dOu-1UaVqMEmY9U86Mrme_vijrFuIgHU70oaJqreGfXWjzPlJzA3qRetWE2lWLv6xbbYg5pY8Cyx0I0lJI',
-                          fit: BoxFit.cover,
-                          memCacheWidth: 96,
-                          memCacheHeight: 96,
-                        ),
-                      ),
+          proposalsAsync.when(
+            loading: () => const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
+            error: (e, _) => SliverFillRemaining(child: Center(child: Text('$e'))),
+            data: (proposals) => proposals.isEmpty
+                ? const SliverFillRemaining(child: Center(child: Text('No proposals yet')))
+                : SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    sliver: SliverList.separated(
+                      separatorBuilder: (_, __) => const SizedBox(height: 24),
+                      itemCount: proposals.length,
+                      itemBuilder: (context, i) {
+                        final p = proposals[i];
+                        return _buildProposalCard(context, bc, theme,
+                          name: p.creatorUsername,
+                          isVerified: false,
+                          badge: p.status.toUpperCase(),
+                          badgeColor: bc.tertiaryContainer,
+                          badgeTextColor: bc.onTertiaryContainer,
+                          igFollowers: '—',
+                          tikTok: '—',
+                          engagement: '—',
+                          barterScore: '—',
+                          imageRotation: 0,
+                          imageUrl: '',
+                          proposalId: p.id,
+                          offerTitle: p.offerTitle,
+                        );
+                      },
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Luna Gray',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: bc.onBackground,
-                            ),
-                          ),
-                          Text(
-                            'Declined 2h ago',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: bc.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(Icons.close, color: bc.outline),
-                  ],
-                ),
-              ),
-            ),
+                  ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
@@ -1195,6 +1073,8 @@ class CreatorInboxTabScreen extends StatelessWidget {
     required String barterScore,
     required double imageRotation,
     required String imageUrl,
+    String? proposalId,
+    String? offerTitle,
   }) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -1259,6 +1139,13 @@ class CreatorInboxTabScreen extends StatelessWidget {
               ],
             ],
           ),
+          if (offerTitle != null && offerTitle.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              offerTitle,
+              style: theme.textTheme.bodySmall?.copyWith(color: bc.onSurfaceVariant),
+            ),
+          ],
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -1296,7 +1183,7 @@ class CreatorInboxTabScreen extends StatelessWidget {
           Column(
             children: [
               ElevatedButton.icon(
-                onPressed: () => context.push('/deal/sample/review'),
+                onPressed: proposalId != null ? () => context.push('/deal/$proposalId/review') : null,
                 icon: const Icon(Icons.handshake),
                 label: Text(
                   'Accept Proposal',
@@ -1318,7 +1205,7 @@ class CreatorInboxTabScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => context.push('/deal/sample/counter-offer'),
+                      onPressed: proposalId != null ? () => context.push('/deal/$proposalId/counter-offer') : null,
                       style: OutlinedButton.styleFrom(
                         backgroundColor: bc.surfaceContainerHigh,
                         foregroundColor: bc.onBackground,

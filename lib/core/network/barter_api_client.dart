@@ -112,11 +112,32 @@ class BarterApiClient {
   }
 
   Future<void> _refreshTokens() async {
-    // WordPress JWT tokens do not have a refresh endpoint.
-    // On expiry, clear tokens and force re-login.
-    // TODO(django-cutover): restore POST /api/auth/token/refresh/ logic here.
-    await _tokenStorage.clear();
-    throw ApiException('Session expired. Please sign in again.', statusCode: 401);
+    final refresh = await _tokenStorage.refreshToken;
+    if (refresh == null || refresh.isEmpty) {
+      await _tokenStorage.clear();
+      throw ApiException('Session expired. Please sign in again.', statusCode: 401);
+    }
+    try {
+      final response = await Dio().post<dynamic>(
+        '${ApiConfig.baseUrl}/auth/refresh',
+        data: {'refresh_token': refresh},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+      final data = response.data as Map<String, dynamic>;
+      final access = data['access_token'] as String?;
+      final newRefresh = data['refresh_token'] as String?;
+      if (access == null) {
+        await _tokenStorage.clear();
+        throw ApiException('Session expired. Please sign in again.', statusCode: 401);
+      }
+      await _tokenStorage.saveTokens(
+        access: access,
+        refresh: newRefresh ?? refresh,
+      );
+    } on DioException catch (_) {
+      await _tokenStorage.clear();
+      throw ApiException('Session expired. Please sign in again.', statusCode: 401);
+    }
   }
 }
 
@@ -165,19 +186,32 @@ class _AuthInterceptor extends Interceptor {
 
   DioException _wrapError(DioException err) {
     final data = err.response?.data;
+    final statusCode = err.response?.statusCode;
     String message = err.message ?? 'Request failed';
+    String? errorCode;
+
     if (data is Map) {
-      if (data['detail'] != null) {
+      // WP REST API error shape: { "code": "profile_incomplete", "message": "...", "data": {...} }
+      if (data['code'] != null) {
+        errorCode = data['code'].toString();
+        message = data['message']?.toString() ?? message;
+      } else if (data['detail'] != null) {
         message = data['detail'].toString();
-      } else if (data.isNotEmpty) {
+      } else if ((data as Map).isNotEmpty) {
         message = data.entries.map((e) => '${e.key}: ${e.value}').join(', ');
       }
     }
+
     return DioException(
       requestOptions: err.requestOptions,
       response: err.response,
       type: err.type,
-      error: ApiException(message, statusCode: err.response?.statusCode, details: data),
+      error: ApiException(
+        message,
+        statusCode: statusCode,
+        details: data,
+        errorCode: errorCode,
+      ),
     );
   }
 }

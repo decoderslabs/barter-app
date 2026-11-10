@@ -115,10 +115,10 @@ class BrandRepository {
   }
 
   Future<List<Map<String, dynamic>>> loadInbox({String? status}) async {
-    final data = await _client.getJson(
+    final list = await _client.getJsonList(
       '/brands/inbox',
       queryParameters: {if (status != null) 'status': status},
     );
-    return (data['results'] as List).cast<Map<String, dynamic>>();
+    return list.cast<Map<String, dynamic>>();
   }
 }

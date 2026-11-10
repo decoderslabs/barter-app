@@ -22,7 +22,9 @@ import '../features/creator/creator_home_feed_screen.dart';
 import '../features/creator/creator_shell.dart';
 import '../features/creator/creator_tab_placeholders.dart';
 import '../features/creator/membership/earn_membership_screen.dart';
+import '../features/creator/membership/pending_approval_screen.dart';
 import '../features/creator/membership/submit_task_screen.dart';
+import '../features/creator/onboarding/profile_completion_screen.dart';
 import '../features/creator/onboarding/profile_setup_screen.dart';
 import '../features/creator/onboarding/niche_selection_screen.dart';
 import '../features/creator/onboarding/interests_selection_screen.dart';
@@ -265,6 +267,11 @@ GoRouter createRouter() {
         ],
       ),
       GoRoute(
+        path: '/deal/rating-confirmation',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const RatingConfirmationScreen(),
+      ),
+      GoRoute(
         path: '/deal/:id',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => DealRoomScreen(
@@ -320,6 +327,10 @@ GoRouter createRouter() {
             },
             routes: [
               GoRoute(
+                path: 'complete',
+                builder: (context, state) => const ProfileCompletionScreen(),
+              ),
+              GoRoute(
                 path: 'profile',
                 builder: (context, state) => const ProfileSetupScreen(),
               ),
@@ -340,6 +351,13 @@ GoRouter createRouter() {
                 builder: (context, state) => const ConnectSocialsScreen(),
               ),
             ],
+          ),
+          GoRoute(
+            path: 'offer/:id',
+            redirect: (context, state) {
+              final id = state.pathParameters['id'];
+              return '/creator/offers/$id';
+            },
           ),
           GoRoute(
             path: 'offers/:id',
@@ -365,6 +383,17 @@ GoRouter createRouter() {
           GoRoute(
             path: 'membership/earn',
             builder: (context, state) => const EarnMembershipScreen(),
+          ),
+          GoRoute(
+            path: 'membership/pending',
+            builder: (context, state) {
+              final url = state.uri.queryParameters['url'];
+              final taskTitle = state.uri.queryParameters['taskTitle'];
+              return PendingApprovalScreen(
+                submittedUrl: url,
+                taskTitle: taskTitle,
+              );
+            },
           ),
           GoRoute(
             path: 'membership/submit/:taskId',

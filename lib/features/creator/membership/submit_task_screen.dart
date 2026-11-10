@@ -155,14 +155,50 @@ class _SubmitTaskScreenState extends ConsumerState<SubmitTaskScreen> {
 
   Future<void> _submit(BuildContext context, BarterColors bc) async {
     final repo = ref.read(membershipRepositoryProvider);
-    await repo.submitTask(
-      taskId: widget.taskId,
-      postUrl: _url.text.trim(),
-      note: _note.text.trim(),
+    final postUrl = _url.text.trim();
+    try {
+      await repo.submitTask(
+        taskId: widget.taskId,
+        postUrl: postUrl,
+        note: _note.text.trim(),
+      );
+      ref.invalidate(membershipProvider);
+      if (!context.mounted) return;
+      context.go(
+        '/creator/membership/pending?url=${Uri.encodeComponent(postUrl)}',
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      _handleError(context, e);
+    }
+  }
+
+  void _handleError(BuildContext context, Object e) {
+    String msg = e.toString();
+    VoidCallback? action;
+    String? actionLabel;
+
+    if (e is Exception) {
+      final inner = e is Error ? null : e;
+      final str = inner?.toString() ?? '';
+      if (str.contains('profile_incomplete')) {
+        msg = 'Complete your profile to 80% first.';
+        action = () => context.go('/creator/onboarding/complete');
+        actionLabel = 'Complete Profile';
+      } else if (str.contains('membership_required')) {
+        msg = 'You need an approved membership task.';
+      }
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        action: action != null && actionLabel != null
+            ? SnackBarAction(label: actionLabel, onPressed: action)
+            : null,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
-    ref.invalidate(membershipProvider);
-    if (!context.mounted) return;
-    _showSubmitted(context, bc);
   }
 
   void _showSubmitted(BuildContext context, BarterColors bc) {

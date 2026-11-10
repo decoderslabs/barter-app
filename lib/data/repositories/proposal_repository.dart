@@ -1,5 +1,4 @@
 import '../../core/network/barter_api_client.dart';
-import '../dto/paginated_response.dart';
 import '../dto/proposal_dto.dart';
 
 class ProposalRepository {
@@ -8,8 +7,8 @@ class ProposalRepository {
   final BarterApiClient _client;
 
   Future<List<ProposalListItemDto>> listProposals() async {
-    final data = await _client.getJson('/proposals');
-    return PaginatedResponse.fromJson(data, ProposalListItemDto.fromJson).results;
+    final list = await _client.getJsonList('/proposals');
+    return list.map((e) => ProposalListItemDto.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   Future<ProposalDetailDto> getProposal(String id) async {

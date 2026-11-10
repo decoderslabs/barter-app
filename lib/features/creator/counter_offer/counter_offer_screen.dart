@@ -1,35 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../core/routing/deal_route.dart';
+import '../../../data/dto/proposal_dto.dart';
+import '../../../providers/api_providers.dart';
+import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
 import '../../../widgets/barter_appbar.dart';
 
-class CounterOfferScreen extends StatefulWidget {
+class CounterOfferScreen extends ConsumerStatefulWidget {
   const CounterOfferScreen({super.key});
 
   @override
-  State<CounterOfferScreen> createState() => _CounterOfferScreenState();
+  ConsumerState<CounterOfferScreen> createState() => _CounterOfferScreenState();
 }
 
-class _CounterOfferScreenState extends State<CounterOfferScreen> {
-  final List<DeliverableItem> _deliverables = [
-    DeliverableItem(
-      icon: Symbols.video_library,
-      value: '2x TikTok Reels (15-30s)',
-      type: 'Video Content',
-    ),
-    DeliverableItem(
-      icon: Symbols.photo_camera,
-      value: '3x Instagram Story Frames',
-      type: 'Image / Series',
-    ),
+class _CounterOfferScreenState extends ConsumerState<CounterOfferScreen> {
+  List<DeliverableItem> _deliverables = [
+    DeliverableItem(icon: Symbols.video_library, value: '2x TikTok Reels (15-30s)', type: 'Video Content'),
+    DeliverableItem(icon: Symbols.photo_camera, value: '3x Instagram Story Frames', type: 'Image / Series'),
   ];
+  bool _submitting = false;
+
+  Future<void> _submit(String note) async {
+    final proposalId = dealIdFromRoute(context);
+    if (proposalId == null) return;
+    setState(() => _submitting = true);
+    try {
+      final deliverablesList = _deliverables.map((d) => d.value).toList();
+      await ref.read(proposalRepositoryProvider).counterProposal(
+        proposalId: proposalId,
+        deliverables: {'items': deliverablesList},
+        timelineIsoDate: DateTime.now().add(const Duration(days: 14)).toIso8601String(),
+        note: note.isNotEmpty ? note : null,
+      );
+      if (mounted) context.pop();
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final bc = context.barter;
+    final proposalId = dealIdFromRoute(context);
+    final proposalAsync = proposalId != null
+        ? ref.watch(proposalDetailProvider(proposalId))
+        : null;
 
+    return proposalAsync == null
+        ? Scaffold(backgroundColor: bc.background, body: const Center(child: CircularProgressIndicator()))
+        : proposalAsync.when(
+            loading: () => Scaffold(backgroundColor: bc.background, body: const Center(child: CircularProgressIndicator())),
+            error: (e, _) => Scaffold(backgroundColor: bc.background, body: Center(child: Text('$e'))),
+            data: (proposal) => _buildBody(context, bc, proposal),
+          );
+  }
+
+  Widget _buildBody(BuildContext context, bc, ProposalDetailDto proposal) {
     return Scaffold(
       backgroundColor: bc.background,
       appBar: BarterAppBar(
@@ -46,7 +78,7 @@ class _CounterOfferScreenState extends State<CounterOfferScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _HeaderSection(bc: bc),
+            _HeaderSection(bc: bc, proposal: proposal),
             const SizedBox(height: 40),
             _DeliverablesSection(
               deliverables: _deliverables,
@@ -93,7 +125,7 @@ class _CounterOfferScreenState extends State<CounterOfferScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ElevatedButton(
-              onPressed: () => context.push('/deal/sample/review'),
+              onPressed: _submitting ? null : () => _submit(''),
               style: ElevatedButton.styleFrom(
                 backgroundColor: bc.primary,
                 foregroundColor: bc.onPrimary,
@@ -130,9 +162,10 @@ class _CounterOfferScreenState extends State<CounterOfferScreen> {
 }
 
 class _HeaderSection extends StatelessWidget {
-  const _HeaderSection({required this.bc});
+  const _HeaderSection({required this.bc, required this.proposal});
 
   final BarterColors bc;
+  final ProposalDetailDto proposal;
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +181,7 @@ class _HeaderSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                'Round 1 of 3',
+                'Round ${proposal.roundNumber}',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: bc.onTertiaryContainer,
                       fontWeight: FontWeight.bold,
@@ -159,7 +192,7 @@ class _HeaderSection extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              '• Negotiating with @alexa_vibe',
+                '• ${proposal.offerTitle.isNotEmpty ? proposal.offerTitle : "Negotiating"}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: bc.onSurfaceVariant.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w600,

@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
 
-class ContentTypesScreen extends StatefulWidget {
+class ContentTypesScreen extends ConsumerStatefulWidget {
   const ContentTypesScreen({super.key});
 
   @override
-  State<ContentTypesScreen> createState() => _ContentTypesScreenState();
+  ConsumerState<ContentTypesScreen> createState() => _ContentTypesScreenState();
 }
 
-class _ContentTypesScreenState extends State<ContentTypesScreen> {
+class _ContentTypesScreenState extends ConsumerState<ContentTypesScreen> {
+  bool _isLoading = false;
   final List<ContentTypeOption> _contentTypes = [
     ContentTypeOption(
       id: '1',
@@ -66,6 +69,37 @@ class _ContentTypesScreenState extends State<ContentTypesScreen> {
       isFullWidth: true,
     ),
   ];
+
+  Future<void> _onContinue() async {
+    final selectedContentTypes = _contentTypes
+        .where((c) => c.isSelected)
+        .map((c) => c.name)
+        .toList();
+
+    setState(() => _isLoading = true);
+
+    try {
+      final session = ref.read(sessionProvider.notifier);
+      await session.persistContentTypes(selectedContentTypes);
+
+      if (mounted) {
+        context.push('/creator/onboarding/socials');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save content types: $e'),
+            backgroundColor: context.barter.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +190,7 @@ class _ContentTypesScreenState extends State<ContentTypesScreen> {
               Expanded(
                 flex: 2,
                 child: ElevatedButton(
-                  onPressed: () => context.push('/creator/onboarding/socials'),
+                  onPressed: _isLoading ? null : _onContinue,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: bc.primary,
                     foregroundColor: bc.onPrimary,
@@ -165,12 +199,21 @@ class _ContentTypesScreenState extends State<ContentTypesScreen> {
                     elevation: 10,
                     shadowColor: bc.primary.withValues(alpha: 0.2),
                   ),
-                  child: Text(
-                    'Continue',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
+                  child: _isLoading
+                      ? SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: bc.onPrimary,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          'Continue',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
-                  ),
                 ),
               ),
             ],

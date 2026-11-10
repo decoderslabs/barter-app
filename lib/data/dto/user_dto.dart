@@ -1,3 +1,81 @@
+class ProfileTaskDto {
+  const ProfileTaskDto({
+    required this.id,
+    required this.label,
+    required this.completed,
+    required this.weight,
+    this.current,
+    this.required,
+  });
+
+  final String id;
+  final String label;
+  final bool completed;
+  final int weight;
+  final int? current;
+  final int? required;
+
+  factory ProfileTaskDto.fromJson(Map<String, dynamic> json) => ProfileTaskDto(
+        id: json['id'] as String? ?? '',
+        label: json['label'] as String? ?? '',
+        completed: json['completed'] as bool? ?? false,
+        weight: (json['weight'] as num?)?.toInt() ?? 0,
+        current: (json['current'] as num?)?.toInt(),
+        required: (json['required'] as num?)?.toInt(),
+      );
+}
+
+class ProfileCompletionDto {
+  const ProfileCompletionDto({
+    required this.percentage,
+    required this.tasksCompleted,
+    required this.totalTasks,
+    required this.requiredPercentage,
+    required this.canAccessMembership,
+    required this.tasks,
+  });
+
+  final int percentage;
+  final int tasksCompleted;
+  final int totalTasks;
+  final int requiredPercentage;
+  final bool canAccessMembership;
+  final List<ProfileTaskDto> tasks;
+
+  factory ProfileCompletionDto.fromJson(Map<String, dynamic> json) =>
+      ProfileCompletionDto(
+        percentage: (json['percentage'] as num?)?.toInt() ?? 0,
+        tasksCompleted: (json['tasks_completed'] as num?)?.toInt() ?? 0,
+        totalTasks: (json['total_tasks'] as num?)?.toInt() ?? 0,
+        requiredPercentage: (json['required_percentage'] as num?)?.toInt() ?? 80,
+        canAccessMembership: json['can_access_membership'] as bool? ?? false,
+        tasks: (json['tasks'] as List<dynamic>? ?? const [])
+            .map((e) => ProfileTaskDto.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+class NextStepDto {
+  const NextStepDto({
+    required this.code,
+    required this.message,
+    required this.actionUrl,
+    this.priority,
+  });
+
+  final String code;
+  final String message;
+  final String actionUrl;
+  final int? priority;
+
+  factory NextStepDto.fromJson(Map<String, dynamic> json) => NextStepDto(
+        code: json['code'] as String? ?? '',
+        message: json['message'] as String? ?? '',
+        actionUrl: json['action_url'] as String? ?? '',
+        priority: (json['priority'] as num?)?.toInt(),
+      );
+}
+
 class UserDto {
   const UserDto({
     required this.id,
@@ -19,6 +97,9 @@ class UserDto {
     this.totalReach = 0,
     this.avgEngagementRate = 0.0,
     this.barterScoreBreakdown = const {},
+    this.profileCompletion,
+    this.nextSteps = const [],
+    this.canSubmitMembership = false,
   });
 
   final String id;
@@ -40,6 +121,9 @@ class UserDto {
   final int totalReach;
   final double avgEngagementRate;
   final Map<String, int> barterScoreBreakdown;
+  final ProfileCompletionDto? profileCompletion;
+  final List<NextStepDto> nextSteps;
+  final bool canSubmitMembership;
 
   factory UserDto.fromJson(Map<String, dynamic> json) {
     return UserDto(
@@ -68,6 +152,14 @@ class UserDto {
       totalReach: _parseInt(json['total_reach']),
       avgEngagementRate: _parseDouble(json['avg_engagement_rate']),
       barterScoreBreakdown: _parseScoreBreakdown(json['barter_score_breakdown']),
+      profileCompletion: json['profile_completion'] != null
+          ? ProfileCompletionDto.fromJson(
+              json['profile_completion'] as Map<String, dynamic>)
+          : null,
+      nextSteps: (json['next_steps'] as List<dynamic>? ?? const [])
+          .map((e) => NextStepDto.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      canSubmitMembership: json['can_submit_membership'] as bool? ?? false,
     );
   }
 
@@ -161,7 +253,7 @@ class SocialAccountDto {
   factory SocialAccountDto.fromJson(Map<String, dynamic> json) => SocialAccountDto(
         id: json['id']?.toString() ?? '',
         platform: json['platform'] as String? ?? '',
-        handle: json['handle'] as String? ?? '',
+        handle: json['handle'] as String? ?? json['username'] as String? ?? '',
         followers: _parseInt(json['followers']),
         engagementRate: _parseDouble(json['engagement_rate']),
       );

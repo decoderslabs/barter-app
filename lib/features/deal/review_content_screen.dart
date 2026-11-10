@@ -1,16 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../core/routing/deal_route.dart';
+import '../../data/models/deal_room_model.dart';
+import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../widgets/barter_network_image.dart';
 
-class ReviewContentScreen extends StatelessWidget {
+class ReviewContentScreen extends ConsumerWidget {
   const ReviewContentScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
+    final dealId = dealIdFromRoute(context);
+    final dealAsync = ref.watch(dealRoomProvider(dealId));
+    return dealAsync.when(
+      loading: () => Scaffold(backgroundColor: bc.background, body: const Center(child: CircularProgressIndicator())),
+      error: (e, _) => Scaffold(backgroundColor: bc.background, body: Center(child: Text('$e'))),
+      data: (deal) => _ReviewContentBody(bc: bc, deal: deal),
+    );
+  }
+}
+
+class _ReviewContentBody extends StatelessWidget {
+  const _ReviewContentBody({required this.bc, required this.deal});
+  final BarterColors bc;
+  final DealRoomModel deal;
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bc.background,
       appBar: AppBar(
@@ -87,7 +107,7 @@ class ReviewContentScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Rahul, please review the high-fidelity deliverables submitted by Sarah Jenkins for the Summer Collection campaign.',
+              'Please review the deliverables submitted by ${deal.creatorName.isNotEmpty ? deal.creatorName : "the creator"} for "${deal.offerTitle}".',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: bc.onSurfaceVariant,
                   ),
@@ -110,7 +130,7 @@ class ReviewContentScreen extends StatelessWidget {
                     ),
                     child: ClipOval(
                       child: BarterNetworkImage(
-                        url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCLrhlk4BgCafAab-i9I9JyDXWVsB7pcqgO_nUruE2lTF5sMuwdPQTphUs_BXqFOvR9F91fc1H2N7BXtMhyug8ral2dbx0DW4dDtExeUI_upNeOs33TD9F5nU46c7Mj6buPnACP90QsDRcZ5fTI53SbGV6--C3NaAqIuWfaadezhSc75MG5PB2-Iz5YofpYJUV6awCRGDlFO8LFcqAkh5FBb32LxkQGgXtm28LYOpoeOwmS_FMxUNV_tK6OYi6rZkluh1899R5WMLg',
+                        url: deal.creatorAvatarUrl,
                       ),
                     ),
                   ),
@@ -129,7 +149,7 @@ class ReviewContentScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Sarah Jenkins',
+                          deal.creatorName.isNotEmpty ? deal.creatorName : 'Creator',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -166,7 +186,7 @@ class ReviewContentScreen extends StatelessWidget {
             const SizedBox(height: 32),
             _DeliverablesList(bc: bc),
             const SizedBox(height: 24),
-            _DealFeeCard(bc: bc),
+            _DealFeeCard(bc: bc, deal: deal),
           ],
         ),
       ),
@@ -429,9 +449,10 @@ class _DeliverableItem extends StatelessWidget {
 }
 
 class _DealFeeCard extends StatelessWidget {
-  const _DealFeeCard({required this.bc});
+  const _DealFeeCard({required this.bc, required this.deal});
 
   final BarterColors bc;
+  final DealRoomModel deal;
 
   @override
   Widget build(BuildContext context) {
@@ -454,7 +475,7 @@ class _DealFeeCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '\$2,450.00',
+            '${deal.currency} ${deal.dealFee}',
             style: Theme.of(context).textTheme.displayMedium?.copyWith(
                   color: bc.onPrimary,
                   fontWeight: FontWeight.bold,
@@ -464,7 +485,7 @@ class _DealFeeCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => context.push('/deal/shipping'),
+              onPressed: () => context.push('/deal/${deal.dealId}/shipping'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: bc.primary,
                 foregroundColor: bc.onPrimary,
@@ -479,7 +500,7 @@ class _DealFeeCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              onPressed: () => context.push('/deal/revision'),
+              onPressed: () => context.push('/deal/${deal.dealId}/revision'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: bc.onPrimary,
                 side: BorderSide(color: bc.onPrimary.withValues(alpha: 0.2)),

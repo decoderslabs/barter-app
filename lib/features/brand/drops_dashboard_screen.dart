@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../data/dto/drops_dto.dart';
+import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../theme/responsive_extension.dart';
 import '../../widgets/barter_card.dart';
@@ -14,8 +16,18 @@ class DropsDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
     final wide = context.isWide;
+    final dropsAsync = ref.watch(dropsProvider);
 
-    return Scaffold(
+    return dropsAsync.when(
+      loading: () => Scaffold(backgroundColor: bc.background, body: const Center(child: CircularProgressIndicator())),
+      error: (e, _) => Scaffold(backgroundColor: bc.background, body: Center(child: Text('$e'))),
+      data: (drops) {
+        final campaign = drops.isNotEmpty ? drops.first : null;
+        final filledSlots = campaign?.filledSlots ?? 0;
+        final totalSlots = campaign?.totalSlots ?? 1;
+        final fillPct = totalSlots > 0 ? filledSlots / totalSlots : 0.0;
+        final remaining = campaign?.slotsRemaining ?? (totalSlots - filledSlots);
+        return Scaffold(
       backgroundColor: bc.background,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/brand/drops/create'),
@@ -36,32 +48,20 @@ class DropsDashboardScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'US-B03 Active Mode',
+                        campaign != null ? 'DROP #${campaign.id}' : 'NO ACTIVE DROP',
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
                               color: bc.primary,
                               letterSpacing: 2,
                             ),
                       ),
                       const SizedBox(height: 8),
-                      Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: 'Summer Drops ',
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                            TextSpan(
-                              text: 'Campaign',
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                    color: bc.primaryContainer,
-                                  ),
-                            ),
-                          ],
-                        ),
+                      Text(
+                        campaign?.name ?? 'Drops Dashboard',
+                        style: Theme.of(context).textTheme.headlineMedium,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Real-time operational health for the Premium Skincare launch sequence.',
+                        campaign?.description ?? campaign?.goal ?? 'No active campaign',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: bc.onSurfaceVariant,
                             ),
@@ -112,34 +112,68 @@ class DropsDashboardScreen extends ConsumerWidget {
                 children: [
                   Expanded(
                     flex: 2,
-                    child: _SlotProgressCard(bc: bc),
+                    child: _SlotProgressCard(
+                      bc: bc,
+                      filledSlots: filledSlots,
+                      totalSlots: totalSlots,
+                      fillPct: fillPct,
+                      remaining: remaining,
+                    ),
                   ),
                   const SizedBox(width: 24),
                   Expanded(
-                    child: _PerformanceMetricsCard(bc: bc),
+                    child: _PerformanceMetricsCard(
+                      bc: bc,
+                      applicationCount: campaign?.applicationCount ?? 0,
+                      estimatedValue: campaign?.estimatedValue,
+                      currency: campaign?.currency ?? 'INR',
+                    ),
                   ),
                 ],
               )
             else ...[
-              _SlotProgressCard(bc: bc),
+              _SlotProgressCard(
+                bc: bc,
+                filledSlots: filledSlots,
+                totalSlots: totalSlots,
+                fillPct: fillPct,
+                remaining: remaining,
+              ),
               const SizedBox(height: 16),
-              _PerformanceMetricsCard(bc: bc),
+              _PerformanceMetricsCard(
+                bc: bc,
+                applicationCount: campaign?.applicationCount ?? 0,
+                estimatedValue: campaign?.estimatedValue,
+                currency: campaign?.currency ?? 'INR',
+              ),
             ],
             const SizedBox(height: 24),
-            _CreatorPipelineCard(bc: bc),
+            _CreatorPipelineCard(bc: bc, drops: drops),
             const SizedBox(height: 24),
-            _RecentActivityCard(bc: bc),
+            _RecentActivityCard(bc: bc, drops: drops),
           ],
         ),
       ),
+        );
+      },
     );
   }
 }
 
 class _SlotProgressCard extends StatelessWidget {
-  const _SlotProgressCard({required this.bc});
+  const _SlotProgressCard({
+    required this.bc,
+    required this.filledSlots,
+    required this.totalSlots,
+    required this.fillPct,
+    required this.remaining,
+  });
 
   final BarterColors bc;
+  final int filledSlots;
+  final int totalSlots;
+  final double fillPct;
+  final int remaining;
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +193,7 @@ class _SlotProgressCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '43 of 100 creators onboarded',
+            '$filledSlots of $totalSlots creators onboarded',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: bc.onSurfaceVariant,
                 ),
@@ -171,15 +205,15 @@ class _SlotProgressCard extends StatelessWidget {
                 SizedBox(
                   width: 160,
                   height: 160,
-                  child: _DonutChart(bc: bc),
+                  child: _DonutChart(bc: bc, fillPct: fillPct, filledSlots: filledSlots),
                 ),
                 const SizedBox(width: 24),
                 Expanded(
                   child: Column(
                     children: [
-                      _StatTile(label: 'Available', value: '57', bc: bc),
+                      _StatTile(label: 'Available', value: '$remaining', bc: bc),
                       const SizedBox(height: 12),
-                      _StatTile(label: 'In Review', value: '12', bc: bc, valueColor: bc.tertiary),
+                      _StatTile(label: 'Filled', value: '$filledSlots', bc: bc, valueColor: bc.tertiary),
                     ],
                   ),
                 ),
@@ -192,15 +226,15 @@ class _SlotProgressCard extends StatelessWidget {
                   child: SizedBox(
                     width: 140,
                     height: 140,
-                    child: _DonutChart(bc: bc),
+                    child: _DonutChart(bc: bc, fillPct: fillPct, filledSlots: filledSlots),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: _StatTile(label: 'Available', value: '57', bc: bc)),
+                    Expanded(child: _StatTile(label: 'Available', value: '$remaining', bc: bc)),
                     const SizedBox(width: 12),
-                    Expanded(child: _StatTile(label: 'In Review', value: '12', bc: bc, valueColor: bc.tertiary)),
+                    Expanded(child: _StatTile(label: 'Filled', value: '$filledSlots', bc: bc, valueColor: bc.tertiary)),
                   ],
                 ),
               ],
@@ -212,8 +246,10 @@ class _SlotProgressCard extends StatelessWidget {
 }
 
 class _DonutChart extends StatelessWidget {
-  const _DonutChart({required this.bc});
+  const _DonutChart({required this.bc, required this.fillPct, required this.filledSlots});
   final BarterColors bc;
+  final double fillPct;
+  final int filledSlots;
 
   @override
   Widget build(BuildContext context) {
@@ -222,7 +258,7 @@ class _DonutChart extends StatelessWidget {
       children: [
         SizedBox.expand(
           child: CircularProgressIndicator(
-            value: 0.43,
+            value: fillPct.clamp(0.0, 1.0),
             strokeWidth: 14,
             backgroundColor: bc.surfaceContainerLow,
             color: bc.primary,
@@ -232,7 +268,7 @@ class _DonutChart extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '43%',
+              '${(fillPct * 100).round()}%',
               style: Theme.of(context).textTheme.displaySmall?.copyWith(
                     fontWeight: FontWeight.w900,
                   ),
@@ -294,9 +330,17 @@ class _StatTile extends StatelessWidget {
 }
 
 class _PerformanceMetricsCard extends StatelessWidget {
-  const _PerformanceMetricsCard({required this.bc});
+  const _PerformanceMetricsCard({
+    required this.bc,
+    required this.applicationCount,
+    required this.estimatedValue,
+    required this.currency,
+  });
 
   final BarterColors bc;
+  final int applicationCount;
+  final double? estimatedValue;
+  final String currency;
 
   @override
   Widget build(BuildContext context) {
@@ -315,13 +359,13 @@ class _PerformanceMetricsCard extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 24),
-          _MetricRow(label: 'Total Reach', value: '1.2M', bc: bc),
+          _MetricRow(label: 'Applications', value: '$applicationCount', bc: bc),
           const SizedBox(height: 16),
-          _MetricRow(label: 'Engagement', value: '8.4%', bc: bc),
+          _MetricRow(label: 'Est. Value', value: estimatedValue != null ? '$currency ${estimatedValue!.toStringAsFixed(0)}' : '—', bc: bc),
           const SizedBox(height: 16),
-          _MetricRow(label: 'Conversions', value: '324', bc: bc),
+          _MetricRow(label: 'Reach', value: '—', bc: bc),
           const SizedBox(height: 16),
-          _MetricRow(label: 'ROI', value: '4.2x', bc: bc, valueColor: bc.success),
+          _MetricRow(label: 'Engagement', value: '—', bc: bc, valueColor: bc.success),
         ],
       ),
     );
@@ -365,9 +409,10 @@ class _MetricRow extends StatelessWidget {
 }
 
 class _CreatorPipelineCard extends StatelessWidget {
-  const _CreatorPipelineCard({required this.bc});
+  const _CreatorPipelineCard({required this.bc, required this.drops});
 
   final BarterColors bc;
+  final List<DropsCampaignDto> drops;
 
   @override
   Widget build(BuildContext context) {
@@ -400,13 +445,14 @@ class _CreatorPipelineCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _PipelineRow(label: 'Applications', count: 124, color: bc.primary),
-          const SizedBox(height: 12),
-          _PipelineRow(label: 'In Review', count: 45, color: bc.tertiary),
-          const SizedBox(height: 12),
-          _PipelineRow(label: 'Approved', count: 38, color: bc.success),
-          const SizedBox(height: 12),
-          _PipelineRow(label: 'Published', count: 43, color: bc.secondary),
+          ...drops.take(4).map((d) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _PipelineRow(
+              label: d.name,
+              count: d.applicationCount,
+              color: d.status == 'live' ? bc.success : d.status == 'draft' ? bc.warning : bc.primary,
+            ),
+          )),
         ],
       ),
     );
@@ -458,9 +504,10 @@ class _PipelineRow extends StatelessWidget {
 }
 
 class _RecentActivityCard extends StatelessWidget {
-  const _RecentActivityCard({required this.bc});
+  const _RecentActivityCard({required this.bc, required this.drops});
 
   final BarterColors bc;
+  final List<DropsCampaignDto> drops;
 
   @override
   Widget build(BuildContext context) {
@@ -479,26 +526,18 @@ class _RecentActivityCard extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 20),
-          _ActivityItem(
-            icon: Symbols.person_add,
-            title: 'Sarah Chen applied to Summer Drops',
-            time: '2 min ago',
-            bc: bc,
-          ),
-          const SizedBox(height: 16),
-          _ActivityItem(
-            icon: Symbols.check_circle,
-            title: 'Marcus Johnson approved for campaign',
-            time: '15 min ago',
-            bc: bc,
-          ),
-          const SizedBox(height: 16),
-          _ActivityItem(
-            icon: Symbols.publish,
-            title: 'New content published by Priya Sharma',
-            time: '1 hour ago',
-            bc: bc,
-          ),
+          if (drops.isEmpty)
+            Text('No recent activity', style: Theme.of(context).textTheme.bodyMedium)
+          else
+            ...drops.take(3).map((d) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _ActivityItem(
+                icon: d.status == 'live' ? Symbols.campaign : Symbols.draft,
+                title: '${d.name} — ${d.filledSlots}/${d.totalSlots} slots filled',
+                time: d.status.toUpperCase(),
+                bc: bc,
+              ),
+            )),
         ],
       ),
     );

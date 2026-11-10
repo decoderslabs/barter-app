@@ -31,13 +31,15 @@ class DealsAnalyticsDto {
   final List<Map<String, dynamic>> contentPerformance;
   final List<Map<String, dynamic>> topCreators;
 
-  factory DealsAnalyticsDto.fromJson(Map<String, dynamic> json) => DealsAnalyticsDto(
-        totalDeals: _parseInt(json['total_deals']),
-        activeDeals: _parseInt(json['active_deals']),
-        completedDeals: _parseInt(json['completed_deals']),
+  factory DealsAnalyticsDto.fromJson(Map<String, dynamic> json) {
+    final byStatus = json['deals_by_status'] as Map? ?? {};
+    return DealsAnalyticsDto(
+        totalDeals: _parseInt(json['total_deals'] ?? json['total_created']),
+        activeDeals: _parseInt(json['active_deals'] ?? byStatus['active']),
+        completedDeals: _parseInt(json['completed_deals'] ?? json['total_completed'] ?? byStatus['complete']),
         completionRate: _parseDouble(json['completion_rate']),
-        avgDealValue: json['avg_deal_value'],
-        recentDeals30Days: _parseInt(json['recent_deals_30_days']),
+        avgDealValue: json['avg_deal_value'] ?? json['total_barter_value'],
+        recentDeals30Days: _parseInt(json['recent_deals_30_days'] ?? json['total_created']),
         kpis: _parseListOfMaps(json['kpis']),
         reachChartTitle: json['reach_chart_title'] as String? ?? '',
         reachChart: _parseListOfMaps(json['reach_chart']),
@@ -47,6 +49,7 @@ class DealsAnalyticsDto {
         contentPerformance: _parseListOfMaps(json['content_performance']),
         topCreators: _parseListOfMaps(json['top_creators']),
       );
+  }
 
   static List<Map<String, dynamic>> _parseListOfMaps(dynamic value) {
     if (value is List) {

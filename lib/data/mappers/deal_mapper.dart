@@ -21,6 +21,13 @@ class DealMapper {
       daysRemaining: _daysRemaining(deal.deadline),
       agreementDateLabel: _formatDate(deal.deadline),
       messages: messages.map(_message).toList(),
+      status: deal.status,
+      offerTitle: deal.offerTitle,
+      creatorName: deal.creatorName,
+      dealFee: int.tryParse(deal.agreedTerms['deal_fee']?.toString() ?? '0') ?? 0,
+      currency: deal.agreedTerms['currency']?.toString() ?? 'INR',
+      shippedAt: deal.shippedAt,
+      deliveredAt: deal.deliveredAt,
     );
   }
 
@@ -71,10 +78,12 @@ class DealMapper {
     } catch (_) {}
     return DealMessageModel(
       id: dto.id,
+      senderId: dto.senderId,
       from: dto.senderName.isNotEmpty ? dto.senderName : dto.senderUsername,
       text: dto.body,
       time: dt != null ? DateFormat.jm().format(dt.toLocal()) : dto.createdAt,
       avatarUrl: '',
+      attachmentUrl: dto.attachmentUrl,
     );
   }
 

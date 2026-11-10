@@ -16,6 +16,10 @@ class ProfileSetupScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
 }
 
+// TODO: Add image upload functionality
+// TODO: Add username availability check
+// TODO: Add location autocomplete using Google Places API
+
 class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final TextEditingController _displayNameController = TextEditingController();
   final TextEditingController _handleController = TextEditingController();
@@ -24,6 +28,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _formKey = GlobalKey<FormState>();
 
   XFile? _pickedAvatar;
+  bool _isLoading = false;
 
   // Validation errors
   String? _displayNameError;
@@ -111,17 +116,56 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
            _handleController.text.trim().isNotEmpty;
   }
 
-  void _onSaveAndContinue() {
-    if (_isFormValid) {
-      context.push('/creator/onboarding/niche');
-    } else {
-      // Show error snackbar
+  Future<void> _onSaveAndContinue() async {
+    if (!_isFormValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please fix the errors before continuing'),
           backgroundColor: context.barter.error,
         ),
       );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final session = ref.read(sessionProvider.notifier);
+
+      // Parse location into city and country
+      final locationParts = _locationController.text.split(',');
+      final city = locationParts.isNotEmpty ? locationParts[0].trim() : null;
+      final country = locationParts.length > 1 ? locationParts[1].trim() : null;
+
+      // Persist profile data to backend
+      await session.persistProfileSetup(
+        name: _displayNameController.text.trim(),
+        bio: _bioController.text.isNotEmpty ? _bioController.text : null,
+        locationCity: city,
+        locationCountry: country,
+      );
+
+      // TODO: Upload profile photo if _pickedAvatar is set
+      // if (_pickedAvatar != null) {
+      //   await _uploadProfilePhoto(_pickedAvatar!);
+      // }
+
+      if (mounted) {
+        context.push('/creator/onboarding/niche');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save profile: $e'),
+            backgroundColor: context.barter.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -223,6 +267,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 bc: bc,
                 onSave: _onSaveAndContinue,
                 onSkip: () => context.push('/creator/onboarding/niche'),
+                isLoading: _isLoading,
               ),
               const SizedBox(height: 100),
             ],
@@ -709,18 +754,20 @@ class _ActionButtons extends StatelessWidget {
     required this.bc,
     required this.onSave,
     required this.onSkip,
+    this.isLoading = false,
   });
 
   final BarterColors bc;
   final VoidCallback onSave;
   final VoidCallback onSkip;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         ElevatedButton(
-          onPressed: onSave,
+          onPressed: isLoading ? null : onSave,
           style: ElevatedButton.styleFrom(
             backgroundColor: bc.primary,
             foregroundColor: bc.onPrimary,
@@ -729,16 +776,25 @@ class _ActionButtons extends StatelessWidget {
             elevation: 10,
             shadowColor: bc.primary.withValues(alpha: 0.4),
           ),
-          child: Text(
-            'Save and Continue',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+          child: isLoading
+              ? SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    color: bc.onPrimary,
+                    strokeWidth: 2,
+                  ),
+                )
+              : Text(
+                  'Save and Continue',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-          ),
         ),
         const SizedBox(height: 16),
         TextButton(
-          onPressed: onSkip,
+          onPressed: isLoading ? null : onSkip,
           child: Text(
             'I\'ll do this later',
             style: Theme.of(context).textTheme.labelLarge?.copyWith(

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../data/dto/offer_dto.dart';
+import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../theme/responsive_extension.dart';
 
@@ -69,47 +71,26 @@ class BrandCampaignsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          // Lazy-loaded campaign cards
-          SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: wide ? 48 : 20),
-            sliver: SliverList.separated(
-              itemCount: 3,
-              itemBuilder: (context, index) {
-                final campaigns = [
-                  (
-                    title: 'Summer Drops 2024',
-                    status: 'Active',
-                    statusColor: bc.success,
-                    creatorsCount: 24,
-                    deadline: 'Aug 15, 2024',
+          ref.watch(myOffersProvider).when(
+            loading: () => const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
+            error: (e, _) => SliverFillRemaining(child: Center(child: Text('$e'))),
+            data: (offers) => offers.isEmpty
+                ? const SliverFillRemaining(child: Center(child: Text('No campaigns yet')))
+                : SliverPadding(
+                    padding: EdgeInsets.symmetric(horizontal: wide ? 48 : 20),
+                    sliver: SliverList.separated(
+                      itemCount: offers.length,
+                      itemBuilder: (context, index) {
+                        final o = offers[index];
+                        return _CampaignCard(
+                          offer: o,
+                          bc: bc,
+                          onTap: () => context.go('/brand/drops'),
+                        );
+                      },
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                    ),
                   ),
-                  (
-                    title: 'Back to School Collab',
-                    status: 'Draft',
-                    statusColor: bc.warning,
-                    creatorsCount: 0,
-                    deadline: 'Sep 1, 2024',
-                  ),
-                  (
-                    title: 'Holiday Collection',
-                    status: 'Planning',
-                    statusColor: bc.tertiary,
-                    creatorsCount: 8,
-                    deadline: 'Nov 20, 2024',
-                  ),
-                ];
-                final c = campaigns[index];
-                return _CampaignCard(
-                  title: c.title,
-                  status: c.status,
-                  statusColor: c.statusColor,
-                  creatorsCount: c.creatorsCount,
-                  deadline: c.deadline,
-                  onTap: () => context.go('/brand/drops'),
-                );
-              },
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-            ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 120)),
         ],
@@ -119,25 +100,24 @@ class BrandCampaignsScreen extends ConsumerWidget {
 }
 
 class _CampaignCard extends StatelessWidget {
-  const _CampaignCard({
-    required this.title,
-    required this.status,
-    required this.statusColor,
-    required this.creatorsCount,
-    required this.deadline,
-    this.onTap,
-  });
+  const _CampaignCard({required this.offer, required this.bc, this.onTap});
 
-  final String title;
-  final String status;
-  final Color statusColor;
-  final int creatorsCount;
-  final String deadline;
+  final OfferListItemDto offer;
+  final BarterColors bc;
   final VoidCallback? onTap;
+
+  Color _statusColor() {
+    switch (offer.status) {
+      case 'live':    return bc.success;
+      case 'draft':   return bc.warning;
+      case 'paused':  return bc.error;
+      default:        return bc.tertiary;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final bc = context.barter;
+    final statusColor = _statusColor();
     return Material(
       color: bc.surfaceContainerLowest,
       borderRadius: BorderRadius.circular(24),
@@ -148,9 +128,7 @@ class _CampaignCard extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: bc.outlineVariant.withValues(alpha: 0.15),
-            ),
+            border: Border.all(color: bc.outlineVariant.withValues(alpha: 0.15)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,55 +142,37 @@ class _CampaignCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
-                      status.toUpperCase(),
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontSize: 10,
-                            color: statusColor,
-                          ),
+                      offer.status.toUpperCase(),
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 10, color: statusColor),
                     ),
                   ),
                   const Spacer(),
-                  Icon(
-                    Symbols.more_vert,
-                    color: bc.onSurfaceVariant.withValues(alpha: 0.45),
-                    size: 20,
+                  Text(
+                    offer.brandName,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: bc.onSurfaceVariant),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                offer.title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Icon(
-                    Symbols.group,
-                    size: 16,
-                    color: bc.onSurfaceVariant.withValues(alpha: 0.6),
-                  ),
+                  Icon(Symbols.inventory_2, size: 16, color: bc.onSurfaceVariant.withValues(alpha: 0.6)),
                   const SizedBox(width: 6),
                   Text(
-                    '$creatorsCount creators',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: bc.onSurfaceVariant,
-                        ),
+                    '${offer.quantityRemaining} slots remaining',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: bc.onSurfaceVariant),
                   ),
                   const SizedBox(width: 20),
-                  Icon(
-                    Symbols.calendar_today,
-                    size: 16,
-                    color: bc.onSurfaceVariant.withValues(alpha: 0.6),
-                  ),
+                  Icon(Symbols.payments, size: 16, color: bc.onSurfaceVariant.withValues(alpha: 0.6)),
                   const SizedBox(width: 6),
                   Text(
-                    deadline,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: bc.onSurfaceVariant,
-                        ),
+                    '${offer.currency} ${offer.estimatedValue}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: bc.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -220,6 +180,6 @@ class _CampaignCard extends StatelessWidget {
           ),
         ),
       ),
-    );  
+    );
   }
 }

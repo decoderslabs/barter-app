@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
 
-class InterestsSelectionScreen extends StatefulWidget {
+class InterestsSelectionScreen extends ConsumerStatefulWidget {
   const InterestsSelectionScreen({super.key});
 
   @override
-  State<InterestsSelectionScreen> createState() => _InterestsSelectionScreenState();
+  ConsumerState<InterestsSelectionScreen> createState() => _InterestsSelectionScreenState();
 }
 
-class _InterestsSelectionScreenState extends State<InterestsSelectionScreen> {
+class _InterestsSelectionScreenState extends ConsumerState<InterestsSelectionScreen> {
+  bool _isLoading = false;
   final List<InterestOption> _interests = [
     InterestOption(
       id: '1',
@@ -52,6 +55,47 @@ class _InterestsSelectionScreenState extends State<InterestsSelectionScreen> {
   ];
 
   bool _isConfirmed = false;
+
+  Future<void> _onFinishOnboarding() async {
+    final selectedInterests = _interests
+        .where((i) => i.isSelected)
+        .map((i) => i.name)
+        .toList();
+
+    setState(() => _isLoading = true);
+
+    try {
+      final session = ref.read(sessionProvider.notifier);
+
+      // Toggle interests in session state
+      for (final interest in selectedInterests) {
+        session.toggleInterest(interest);
+      }
+
+      // Persist all creator onboarding data to backend
+      await session.persistCreatorOnboarding();
+
+      // TODO: Store interests in user meta via separate API call
+      // await session.persistInterests(selectedInterests);
+
+      if (mounted) {
+        context.push('/creator/onboarding/content-types');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to finish onboarding: $e'),
+            backgroundColor: context.barter.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,10 +177,19 @@ class _InterestsSelectionScreenState extends State<InterestsSelectionScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ElevatedButton.icon(
-                onPressed: _isConfirmed ? () => context.go('/creator/feed') : null,
-                icon: Icon(Symbols.rocket_launch, color: bc.onPrimary),
+                onPressed: _isConfirmed && !_isLoading ? _onFinishOnboarding : null,
+                icon: _isLoading
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: bc.onPrimary,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Icon(Symbols.rocket_launch, color: bc.onPrimary),
                 label: Text(
-                  'Finish Onboarding',
+                  _isLoading ? 'Finishing...' : 'Finish Onboarding',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),

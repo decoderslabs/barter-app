@@ -13,6 +13,12 @@ class ApiConfig {
     defaultValue: 'http://backend-barter.local/wp-json/jwt-auth/v1/token',
   );
 
+  // Community WhatsApp invite URL
+  static const String communityWhatsAppUrl = String.fromEnvironment(
+    'COMMUNITY_WHATSAPP_URL',
+    defaultValue: 'https://chat.whatsapp.com/BarterCreatorClub',
+  );
+
   static String apiPath(String path) {
     final normalized = path.startsWith('/') ? path : '/$path';
     return '$baseUrl$normalized';

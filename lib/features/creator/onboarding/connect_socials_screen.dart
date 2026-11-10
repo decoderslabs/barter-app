@@ -1,59 +1,222 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../data/dto/user_dto.dart';
+import '../../../providers/api_providers.dart';
+import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
 
-class ConnectSocialsScreen extends StatefulWidget {
+class ConnectSocialsScreen extends ConsumerStatefulWidget {
   const ConnectSocialsScreen({super.key});
 
   @override
-  State<ConnectSocialsScreen> createState() => _ConnectSocialsScreenState();
+  ConsumerState<ConnectSocialsScreen> createState() => _ConnectSocialsScreenState();
 }
 
-class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
-  final List<SocialPlatform> _platforms = [
-    SocialPlatform(
-      id: '1',
-      name: 'Instagram',
-      handle: '@creator_studio',
-      icon: Symbols.photo_camera,
-      status: SocialStatus.connected,
-      followers: '124K',
-      engagement: '4.2%',
-      color: const Color(0xFFE1306C),
-    ),
-    SocialPlatform(
-      id: '2',
-      name: 'TikTok',
-      handle: '',
-      icon: Symbols.music_note,
-      status: SocialStatus.syncing,
-      followers: '',
-      engagement: '',
-      color: const Color(0xFF000000),
-    ),
-    SocialPlatform(
-      id: '3',
-      name: 'YouTube',
-      handle: '',
-      icon: Symbols.smart_display,
-      status: SocialStatus.disconnected,
-      followers: '',
-      engagement: '',
-      color: const Color(0xFFFF0000),
-    ),
-    SocialPlatform(
-      id: '4',
-      name: 'LinkedIn',
-      handle: '',
-      icon: Symbols.work,
-      status: SocialStatus.disconnected,
-      followers: '',
-      engagement: '',
-      color: const Color(0xFF0077B5),
-    ),
-  ];
+class _ConnectSocialsScreenState extends ConsumerState<ConnectSocialsScreen> {
+  bool _isLoading = false;
+  List<SocialPlatform> _platforms = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSocialAccounts();
+  }
+
+  void _loadSocialAccounts() {
+    final user = ref.read(authProvider).user;
+    final accounts = user?.socialAccounts ?? [];
+
+    // Define available platforms
+    final availablePlatforms = [
+      _PlatformConfig('instagram', 'Instagram', Symbols.photo_camera, const Color(0xFFE1306C)),
+      _PlatformConfig('tiktok', 'TikTok', Symbols.music_note, const Color(0xFF000000)),
+      _PlatformConfig('youtube', 'YouTube', Symbols.smart_display, const Color(0xFFFF0000)),
+      _PlatformConfig('linkedin', 'LinkedIn', Symbols.work, const Color(0xFF0077B5)),
+    ];
+
+    setState(() {
+      _platforms = availablePlatforms.map((config) {
+        final existingAccount = accounts.firstWhere(
+          (a) => a.platform.toLowerCase() == config.id,
+          orElse: () => const SocialAccountDto(
+            id: '',
+            platform: '',
+            handle: '',
+          ),
+        );
+
+        final isConnected = existingAccount.id.isNotEmpty;
+
+        return SocialPlatform(
+          id: config.id,
+          name: config.name,
+          handle: isConnected ? '@${existingAccount.handle}' : '',
+          icon: config.icon,
+          status: isConnected ? SocialStatus.connected : SocialStatus.disconnected,
+          followers: isConnected && existingAccount.followers != null
+              ? _formatFollowers(existingAccount.followers!)
+              : '',
+          engagement: isConnected && existingAccount.engagementRate != null
+              ? '${existingAccount.engagementRate!.toStringAsFixed(1)}%'
+              : '',
+          color: config.color,
+          accountId: existingAccount.id,
+        );
+      }).toList();
+    });
+  }
+
+  String _formatFollowers(int count) {
+    if (count >= 1000000) {
+      return '${(count / 1000000).toStringAsFixed(1)}M';
+    } else if (count >= 1000) {
+      return '${(count / 1000).toStringAsFixed(0)}K';
+    }
+    return count.toString();
+  }
+
+  Future<void> _onConnectPlatform(String platformId) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final auth = ref.read(authRepositoryProvider);
+
+      // TODO: Implement OAuth flow
+      // 1. Get OAuth URL from backend
+      // final oauthUrl = await auth.getOAuthUrl(platformId);
+      // 2. Open OAuth flow (using url_launcher or webview)
+      // 3. Handle callback and extract tokens
+      // 4. Exchange tokens for account info
+
+      // For now, simulate OAuth flow with dialog for manual entry
+      final result = await _showConnectDialog(platformId);
+      if (result == null) return;
+
+      // Connect account via API
+      final session = ref.read(sessionProvider.notifier);
+      await session.connectSocialAccount(
+        platform: platformId,
+        username: result['username']!,
+        followers: int.parse(result['followers']!),
+        engagementRate: double.parse(result['engagement']!),
+      );
+
+      // Refresh user data to get updated social accounts
+      await ref.read(authProvider.notifier).refreshUser();
+
+      // Reload local state
+      _loadSocialAccounts();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$platformId connected successfully!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to connect $platformId: $e'),
+            backgroundColor: context.barter.error,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _onDisconnectPlatform(String platformId) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final session = ref.read(sessionProvider.notifier);
+      await session.disconnectSocialAccount(platformId);
+
+      // Refresh user data
+      await ref.read(authProvider.notifier).refreshUser();
+
+      // Reload local state
+      _loadSocialAccounts();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$platformId disconnected')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to disconnect $platformId: $e'),
+            backgroundColor: context.barter.error,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<Map<String, String>?> _showConnectDialog(String platformId) async {
+    final usernameController = TextEditingController();
+    final followersController = TextEditingController();
+    final engagementController = TextEditingController();
+
+    return showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Connect $platformId'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: usernameController,
+              decoration: const InputDecoration(
+                labelText: 'Username',
+                hintText: 'your_handle',
+              ),
+            ),
+            TextField(
+              controller: followersController,
+              decoration: const InputDecoration(
+                labelText: 'Followers',
+                hintText: '10000',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: engagementController,
+              decoration: const InputDecoration(
+                labelText: 'Engagement Rate (%)',
+                hintText: '4.5',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context, {
+                'username': usernameController.text,
+                'followers': followersController.text,
+                'engagement': engagementController.text,
+              });
+            },
+            child: const Text('Connect'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,27 +258,8 @@ class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
             const SizedBox(height: 40),
             _SocialPlatformsGrid(
               platforms: _platforms,
-              onConnect: (id) {
-                setState(() {
-                  final index = _platforms.indexWhere((p) => p.id == id);
-                  if (index != -1) {
-                    _platforms[index] = _platforms[index].copyWith(
-                      status: SocialStatus.syncing,
-                    );
-                    // Simulate sync delay
-                    Future.delayed(const Duration(seconds: 2), () {
-                      setState(() {
-                        _platforms[index] = _platforms[index].copyWith(
-                          status: SocialStatus.connected,
-                          handle: '@creator_youtube',
-                          followers: '45K',
-                          engagement: '3.8%',
-                        );
-                      });
-                    });
-                  }
-                });
-              },
+              onConnect: _onConnectPlatform,
+              onDisconnect: _onDisconnectPlatform,
               bc: bc,
             ),
             const SizedBox(height: 48),
@@ -145,20 +289,30 @@ class _ConnectSocialsScreenState extends State<ConnectSocialsScreen> {
                 ),
               ),
               ElevatedButton(
-                onPressed: () => context.push('/creator/onboarding/content-types'),
+                onPressed: _isLoading ? null : () => context.go('/creator/membership/earn'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: bc.primary,
                   foregroundColor: bc.onPrimary,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
                 ),
-                child: Text(
-                  'Continue',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
+                child: _isLoading
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: bc.onPrimary,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        'Claim Membership',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: bc.onPrimary,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                            ),
                       ),
-                ),
               ),
             ],
           ),
@@ -261,11 +415,13 @@ class _SocialPlatformsGrid extends StatelessWidget {
   const _SocialPlatformsGrid({
     required this.platforms,
     required this.onConnect,
+    required this.onDisconnect,
     required this.bc,
   });
 
   final List<SocialPlatform> platforms;
   final ValueChanged<String> onConnect;
+  final ValueChanged<String> onDisconnect;
   final BarterColors bc;
 
   @override
@@ -285,6 +441,7 @@ class _SocialPlatformsGrid extends StatelessWidget {
         return _SocialPlatformCard(
           platform: platform,
           onConnect: onConnect,
+          onDisconnect: onDisconnect,
           bc: bc,
         );
       },
@@ -296,18 +453,24 @@ class _SocialPlatformCard extends StatelessWidget {
   const _SocialPlatformCard({
     required this.platform,
     required this.onConnect,
+    required this.onDisconnect,
     required this.bc,
   });
 
   final SocialPlatform platform;
   final ValueChanged<String> onConnect;
+  final ValueChanged<String> onDisconnect;
   final BarterColors bc;
 
   @override
   Widget build(BuildContext context) {
     switch (platform.status) {
       case SocialStatus.connected:
-        return _ConnectedCard(platform: platform, bc: bc);
+        return _ConnectedCard(
+          platform: platform,
+          onDisconnect: onDisconnect,
+          bc: bc,
+        );
       case SocialStatus.syncing:
         return _SyncingCard(platform: platform, bc: bc);
       case SocialStatus.disconnected:
@@ -321,9 +484,14 @@ class _SocialPlatformCard extends StatelessWidget {
 }
 
 class _ConnectedCard extends StatelessWidget {
-  const _ConnectedCard({required this.platform, required this.bc});
+  const _ConnectedCard({
+    required this.platform,
+    required this.onDisconnect,
+    required this.bc,
+  });
 
   final SocialPlatform platform;
+  final ValueChanged<String> onDisconnect;
   final BarterColors bc;
 
   @override
@@ -361,21 +529,35 @@ class _ConnectedCard extends StatelessWidget {
                   size: 28,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: bc.primary.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  'Connected',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: bc.primary,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
-                        fontSize: 10,
-                      ),
-                ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: bc.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      'Connected',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: bc.primary,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                            fontSize: 10,
+                          ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: () => onDisconnect(platform.id),
+                    icon: Icon(
+                      Symbols.close,
+                      color: bc.error,
+                      size: 20,
+                    ),
+                    tooltip: 'Disconnect',
+                  ),
+                ],
               ),
             ],
           ),
@@ -727,6 +909,7 @@ class SocialPlatform {
   final String followers;
   final String engagement;
   final Color color;
+  final String accountId;
 
   SocialPlatform({
     required this.id,
@@ -737,6 +920,7 @@ class SocialPlatform {
     required this.followers,
     required this.engagement,
     required this.color,
+    this.accountId = '',
   });
 
   SocialPlatform copyWith({
@@ -748,6 +932,7 @@ class SocialPlatform {
     String? followers,
     String? engagement,
     Color? color,
+    String? accountId,
   }) {
     return SocialPlatform(
       id: id ?? this.id,
@@ -758,6 +943,16 @@ class SocialPlatform {
       followers: followers ?? this.followers,
       engagement: engagement ?? this.engagement,
       color: color ?? this.color,
+      accountId: accountId ?? this.accountId,
     );
   }
+}
+
+class _PlatformConfig {
+  final String id;
+  final String name;
+  final IconData icon;
+  final Color color;
+
+  _PlatformConfig(this.id, this.name, this.icon, this.color);
 }

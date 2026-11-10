@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
 import '../../../widgets/barter_appbar.dart';
 import '../../../widgets/barter_network_image.dart';
 
-class KPIShowcaseScreen extends StatelessWidget {
+class KPIShowcaseScreen extends ConsumerWidget {
   const KPIShowcaseScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
+    final user = ref.watch(authProvider).user;
 
     return Scaffold(
       backgroundColor: bc.background,
@@ -42,13 +45,13 @@ class KPIShowcaseScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _HeroSection(bc: bc),
+            _HeroSection(bc: bc, user: user),
             const SizedBox(height: 48),
-            _KPIBentoGrid(bc: bc),
+            _KPIBentoGrid(bc: bc, user: user),
             const SizedBox(height: 48),
-            _ExpertiseSection(bc: bc),
+            _ExpertiseSection(bc: bc, user: user),
             const SizedBox(height: 48),
-            _PortfolioSection(bc: bc),
+            _PortfolioSection(bc: bc, user: user),
             const SizedBox(height: 120),
           ],
         ),
@@ -80,9 +83,10 @@ class KPIShowcaseScreen extends StatelessWidget {
 }
 
 class _HeroSection extends StatelessWidget {
-  const _HeroSection({required this.bc});
+  const _HeroSection({required this.bc, this.user});
 
   final BarterColors bc;
+  final dynamic user;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +109,7 @@ class _HeroSection extends StatelessWidget {
             child: Stack(
               children: [
                 BarterNetworkImage(
-                  url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDsLxBezek163nUahIo7zu95w--ajopqaqTVikKcTYZE9_nbFTGnSOkEGG8ck9gF6hHewPq7VulCpg6yNdTN9yk3S2NZGvalKPrUL8aTGoVu69j2QNy7PhApJRM_HLPfujLzOWLgdJaoJaMMVbaHNSpk9oVzMuZt0MKndicq0tG8MCvkS_TxHApriw0P_ewp5jzAvn5Y9dYbpukM4zsRYnPy-D7ijwrUzP-K18T6yOgYo5PvydyK6FDDN5M3QsYoW_8thYJRHgHjmA',
+                  url: user?.coverPhotoUrl ?? user?.profilePhotoUrl ?? 'https://picsum.photos/400/400',
                   fit: BoxFit.cover,
                 ),
                 Positioned(
@@ -145,7 +149,7 @@ class _HeroSection extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    'Verified Creator',
+                                    user?.isVerified == true ? 'Verified Creator' : 'Creator',
                                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                                           color: bc.onTertiaryContainer,
                                           fontWeight: FontWeight.bold,
@@ -160,7 +164,7 @@ class _HeroSection extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Kabir Singh',
+                          user?.name ?? 'Creator',
                           style: Theme.of(context).textTheme.displayMedium?.copyWith(
                                 color: bc.surface,
                                 fontWeight: FontWeight.bold,
@@ -168,7 +172,7 @@ class _HeroSection extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '@kabir_tech',
+                          user?.username != null ? '@${user!.username}' : '',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 color: bc.surface.withValues(alpha: 0.8),
                                 fontWeight: FontWeight.w500,
@@ -323,9 +327,28 @@ class _HeroSection extends StatelessWidget {
 }
 
 class _KPIBentoGrid extends StatelessWidget {
-  const _KPIBentoGrid({required this.bc});
+  const _KPIBentoGrid({required this.bc, this.user});
 
   final BarterColors bc;
+  final dynamic user;
+
+  String _buildLocationText(dynamic user) {
+    final niches = user?.creatorProfile?.niches ?? [];
+    final city = user?.locationCity;
+    final country = user?.locationCountry;
+
+    final locationParts = <String>[];
+    if (niches.isNotEmpty) {
+      locationParts.add(niches.take(2).join(' & '));
+    }
+    if (city != null && city.isNotEmpty) {
+      locationParts.add(city);
+    } else if (country != null && country.isNotEmpty) {
+      locationParts.add(country);
+    }
+
+    return locationParts.isNotEmpty ? locationParts.join(' • ') : 'Creator Profile';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -755,9 +778,10 @@ class _TikTokCard extends StatelessWidget {
 }
 
 class _ExpertiseSection extends StatelessWidget {
-  const _ExpertiseSection({required this.bc});
+  const _ExpertiseSection({required this.bc, required this.user});
 
   final BarterColors bc;
+  final dynamic user;
 
   @override
   Widget build(BuildContext context) {
@@ -1002,9 +1026,10 @@ class _ContentFormatPill extends StatelessWidget {
 }
 
 class _PortfolioSection extends StatelessWidget {
-  const _PortfolioSection({required this.bc});
+  const _PortfolioSection({required this.bc, required this.user});
 
   final BarterColors bc;
+  final dynamic user;
 
   @override
   Widget build(BuildContext context) {

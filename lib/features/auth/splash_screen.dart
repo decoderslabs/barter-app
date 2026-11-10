@@ -42,11 +42,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   void _navigate(AuthState auth) {
     if (auth.isAuthenticated) {
-      if (auth.role == AppRole.brand) {
-        context.go('/brand/dashboard');
-      } else {
-        context.go('/creator/feed');
-      }
+      context.go(auth.initialRoute);
     } else {
       context.go('/welcome');
     }

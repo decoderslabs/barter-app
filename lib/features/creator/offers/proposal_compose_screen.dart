@@ -382,7 +382,7 @@ class _ProposalComposeScreenState extends ConsumerState<ProposalComposeScreen> {
                 ),
                 const SizedBox(height: 56),
                 OutlinedButton.icon(
-                  onPressed: () => context.push('/creator/proposal/sample/preview'),
+                  onPressed: () => _showPreviewModal(context, bc),
                   icon: Icon(Symbols.visibility, color: bc.onSurface, size: 20),
                   label: const Text('Preview Proposal'),
                   style: OutlinedButton.styleFrom(
@@ -433,6 +433,77 @@ class _ProposalComposeScreenState extends ConsumerState<ProposalComposeScreen> {
         _selectedPlatforms.add(platform);
       }
     });
+  }
+
+  void _showPreviewModal(BuildContext context, BarterColors bc) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: bc.surfaceContainerLowest,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: bc.outlineVariant.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Proposal Preview',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              Text('EDITORIAL PITCH', style: TextStyle(color: bc.primary, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1.5)),
+              const SizedBox(height: 6),
+              Text(
+                _pitch.text.trim().isEmpty ? 'No pitch entered yet.' : _pitch.text.trim(),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
+              ),
+              const SizedBox(height: 16),
+              Text('TIMELINE', style: TextStyle(color: bc.primary, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1.5)),
+              const SizedBox(height: 6),
+              Text(_dateLabel, style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 16),
+              Text('PLATFORMS', style: TextStyle(color: bc.primary, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1.5)),
+              const SizedBox(height: 6),
+              Text(_selectedPlatforms.join(', '), style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _sendProposal(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: bc.primary,
+                    foregroundColor: bc.onPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                  ),
+                  child: const Text('Confirm & Send Proposal'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

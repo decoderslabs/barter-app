@@ -22,24 +22,19 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    // WordPress JWT-Auth plugin uses a separate login URL and {username, password} body.
-    // TODO(django-cutover): change back to POST /api/auth/login/ with {email, password}.
-    try {
-      final response = await Dio().post<dynamic>(
-        ApiConfig.loginUrl,
-        data: {'username': email, 'password': password},
-        options: Options(headers: {'Content-Type': 'application/json'}),
-      );
-      final data = response.data as Map<String, dynamic>;
-      final token = data['token'] as String?;
-      if (token == null) throw ApiException('Login failed: no token in response');
-      // WP JWT has no separate refresh token — store the same token for both keys.
-      await _tokens.saveTokens(access: token, refresh: token);
-      return getMe();
-    } on DioException catch (e) {
-      final msg = (e.response?.data as Map?)?['message'] as String? ?? e.message ?? 'Login failed';
-      throw ApiException(msg, statusCode: e.response?.statusCode);
+    final data = await _client.postJson(
+      '/auth/login',
+      body: {'email': email, 'password': password},
+      auth: false,
+    );
+    final access = data['access_token'] as String?;
+    final refresh = data['refresh_token'] as String?;
+    if (access == null) throw ApiException('Login failed: no token in response');
+    await _tokens.saveTokens(access: access, refresh: refresh ?? access);
+    if (data['user'] != null) {
+      return UserDto.fromJson(data['user'] as Map<String, dynamic>);
     }
+    return getMe();
   }
 
   Future<UserDto> register({
@@ -63,11 +58,12 @@ class AuthRepository {
     );
     final access = data['access_token'] as String?;
     final refresh = data['refresh_token'] as String?;
-    if (access != null) {
-      await _tokens.saveTokens(access: access, refresh: refresh ?? access);
-      return getMe();
+    if (access == null) throw ApiException('Registration failed: no token in response');
+    await _tokens.saveTokens(access: access, refresh: refresh ?? access);
+    if (data['user'] != null) {
+      return UserDto.fromJson(data['user'] as Map<String, dynamic>);
     }
-    return login(email: email, password: password);
+    return getMe();
   }
 
   Future<UserDto> getMe() async {
@@ -114,15 +110,68 @@ class AuthRepository {
     await _client.postJson('/users/me/fcm-token', body: {'token': token});
   }
 
+  /// Update basic user profile information
+  /// PATCH /users/me
+  Future<void> updateProfile({
+    String? name,
+    String? bio,
+    String? locationCity,
+    String? locationCountry,
+    String? profilePhotoUrl,
+    String? coverPhotoUrl,
+  }) async {
+    final body = <String, dynamic>{};
+    if (name != null) body['name'] = name;
+    if (bio != null) body['bio'] = bio;
+    if (locationCity != null) body['location_city'] = locationCity;
+    if (locationCountry != null) body['location_country'] = locationCountry;
+    if (profilePhotoUrl != null) body['profile_photo_url'] = profilePhotoUrl;
+    if (coverPhotoUrl != null) body['cover_photo_url'] = coverPhotoUrl;
+    
+    if (body.isNotEmpty) {
+      await _client.patchJson('/users/me', body: body);
+    }
+  }
+
   Future<void> addSocialAccount(Map<String, dynamic> accountData) async {
     await _client.postJson('/users/me/social-accounts', body: accountData);
   }
 
+  /// Remove a connected social account
+  /// DELETE /users/me/social-accounts/{platform}
+  Future<void> removeSocialAccount(String platform) async {
+    await _client.delete('/users/me/social-accounts/$platform');
+  }
+
+  /// Verify social account ownership via verification code
+  /// POST /users/me/social-accounts/{platform}/verify
+  Future<bool> verifySocialAccount(String platform, {String? verificationCode}) async {
+    final data = await _client.postJson(
+      '/users/me/social-accounts/$platform/verify',
+      body: verificationCode != null ? {'code': verificationCode} : {},
+    );
+    return data['verified'] as bool? ?? false;
+  }
+
+  /// Get OAuth URL for social platform connection
   Future<String> getOAuthUrl(String platform) async {
     final data = await _client.getJson('/auth/oauth/$platform/url');
     return data['auth_url'] as String? ??
         data['url'] as String? ??
         data['authorization_url'] as String? ??
         '';
+  }
+
+  /// GET /users/me/profile-stats — barter score, deals history, completion
+  Future<Map<String, dynamic>> getProfileStats() async {
+    return _client.getJson('/users/me/profile-stats');
+  }
+
+  /// GET /users/me/deals-history — paginated
+  Future<Map<String, dynamic>> getDealsHistory({int page = 1, int perPage = 10}) async {
+    return _client.getJson(
+      '/users/me/deals-history',
+      queryParameters: {'page': page, 'per_page': perPage},
+    );
   }
 }

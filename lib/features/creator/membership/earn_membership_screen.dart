@@ -81,6 +81,46 @@ class _EarnMembershipScreenState extends ConsumerState<EarnMembershipScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
+                if (status.pendingVerification) ...[
+                  InkWell(
+                    onTap: () => context.push('/creator/membership/pending'),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF3E0),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFFFB74D)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Symbols.hourglass_top, color: Color(0xFFE65100)),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Application Under Review',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFFE65100),
+                                  ),
+                                ),
+                                Text(
+                                  'Tap to view status & join WhatsApp community',
+                                  style: TextStyle(fontSize: 12, color: Color(0xFFE65100)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Symbols.chevron_right, color: Color(0xFFE65100)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
                 Text(
                   'Pick content tasks, post live, submit your URL, and unlock collaboration access without paying cash.',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -403,13 +443,20 @@ class _TaskBriefSheet extends StatelessWidget {
           children: [
             Text(task.title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900)),
             const SizedBox(height: 8),
-            Text(task.brief.whatToCreate, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: bc.onSurfaceVariant, height: 1.45)),
-            const SizedBox(height: 24),
-            _BriefList(title: 'Key messages', items: task.brief.keyMessages, bc: bc),
-            const SizedBox(height: 20),
-            _BriefList(title: "Don'ts", items: task.brief.donts, bc: bc),
-            const SizedBox(height: 20),
-            _BriefList(title: 'Required tags', items: task.brief.requiredTags, bc: bc),
+            if (task.brief.whatToCreate.isNotEmpty)
+              Text(task.brief.whatToCreate, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: bc.onSurfaceVariant, height: 1.45)),
+            if (task.brief.keyMessages.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              _BriefList(title: 'Key messages', items: task.brief.keyMessages, bc: bc),
+            ],
+            if (task.brief.donts.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              _BriefList(title: "Don'ts", items: task.brief.donts, bc: bc),
+            ],
+            if (task.brief.requiredTags.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              _BriefList(title: 'Required tags', items: task.brief.requiredTags, bc: bc),
+            ],
             const SizedBox(height: 28),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(),

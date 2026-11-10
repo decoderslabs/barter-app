@@ -1,25 +1,31 @@
 class DealMessageModel {
   const DealMessageModel({
     required this.id,
+    required this.senderId,
     required this.from,
     required this.text,
     required this.time,
     required this.avatarUrl,
+    this.attachmentUrl,
   });
 
   final String id;
+  final String senderId;
   final String from;
   final String text;
   final String time;
   final String avatarUrl;
+  final String? attachmentUrl;
 
   factory DealMessageModel.fromJson(Map<String, dynamic> j) {
     return DealMessageModel(
       id: j['id'] as String,
+      senderId: j['senderId'] as String? ?? '',
       from: j['from'] as String,
       text: j['text'] as String,
       time: j['time'] as String,
       avatarUrl: j['avatarUrl'] as String,
+      attachmentUrl: j['attachmentUrl'] as String?,
     );
   }
 }
@@ -55,6 +61,13 @@ class DealRoomModel {
     required this.daysRemaining,
     required this.agreementDateLabel,
     required this.messages,
+    this.status = '',
+    this.offerTitle = '',
+    this.creatorName = '',
+    this.dealFee = 0,
+    this.currency = 'INR',
+    this.shippedAt,
+    this.deliveredAt,
   });
 
   final String dealId;
@@ -66,6 +79,13 @@ class DealRoomModel {
   final int daysRemaining;
   final String agreementDateLabel;
   final List<DealMessageModel> messages;
+  final String status;
+  final String offerTitle;
+  final String creatorName;
+  final int dealFee;
+  final String currency;
+  final String? shippedAt;
+  final String? deliveredAt;
 
   factory DealRoomModel.fromJson(Map<String, dynamic> j) {
     return DealRoomModel(

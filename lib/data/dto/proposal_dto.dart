@@ -19,16 +19,19 @@ class ProposalListItemDto {
   final int roundNumber;
   final String? createdAt;
 
-  factory ProposalListItemDto.fromJson(Map<String, dynamic> json) =>
-      ProposalListItemDto(
-        id: json['id']?.toString() ?? '',
-        offerTitle: json['offer_title'] as String? ?? '',
-        offerBrandUsername: json['offer_brand_username'] as String? ?? '',
-        creatorUsername: json['creator_username'] as String? ?? '',
-        status: json['status'] as String? ?? 'pending',
-        roundNumber: _parseInt(json['round_number']),
-        createdAt: json['created_at'] as String?,
-      );
+  factory ProposalListItemDto.fromJson(Map<String, dynamic> json) {
+    final offer = json['offer'] as Map<String, dynamic>?;
+    final creator = json['creator'] as Map<String, dynamic>?;
+    return ProposalListItemDto(
+      id: json['id']?.toString() ?? '',
+      offerTitle: json['offer_title'] as String? ?? offer?['title'] as String? ?? '',
+      offerBrandUsername: json['offer_brand_username'] as String? ?? '',
+      creatorUsername: json['creator_username'] as String? ?? creator?['username'] as String? ?? '',
+      status: json['status'] as String? ?? 'pending',
+      roundNumber: _parseInt(json['round_number'] ?? json['round']),
+      createdAt: json['created_at'] as String?,
+    );
+  }
 
   static int _parseInt(dynamic value) {
     if (value == null) return 1;
@@ -66,19 +69,23 @@ class ProposalDetailDto {
   final int roundNumber;
   final bool canCounter;
 
-  factory ProposalDetailDto.fromJson(Map<String, dynamic> json) => ProposalDetailDto(
-        id: json['id']?.toString() ?? '',
-        offerId: (json['offer_id'] ?? json['offer'])?.toString() ?? '',
-        offerTitle: json['offer_title'] as String? ?? '',
-        creatorUsername: json['creator_username'] as String? ?? '',
-        creatorName: json['creator_name'] as String? ?? '',
-        pitch: json['pitch'] as String? ?? '',
-        deliverables: _parseDeliverables(json['deliverables']),
-        timeline: json['timeline'] as String? ?? '',
-        status: json['status'] as String? ?? 'pending',
-        roundNumber: ProposalListItemDto._parseInt(json['round_number']),
-        canCounter: json['can_counter'] as bool? ?? false,
-      );
+  factory ProposalDetailDto.fromJson(Map<String, dynamic> json) {
+    final offer = json['offer'] as Map<String, dynamic>?;
+    final creator = json['creator'] as Map<String, dynamic>?;
+    return ProposalDetailDto(
+      id: json['id']?.toString() ?? '',
+      offerId: json['offer_id']?.toString() ?? offer?['id']?.toString() ?? '',
+      offerTitle: json['offer_title'] as String? ?? offer?['title'] as String? ?? '',
+      creatorUsername: json['creator_username'] as String? ?? creator?['username'] as String? ?? '',
+      creatorName: json['creator_name'] as String? ?? creator?['name'] as String? ?? '',
+      pitch: json['pitch'] as String? ?? '',
+      deliverables: _parseDeliverables(json['deliverables']),
+      timeline: json['timeline'] as String? ?? '',
+      status: json['status'] as String? ?? 'pending',
+      roundNumber: ProposalListItemDto._parseInt(json['round_number'] ?? json['round']),
+      canCounter: json['can_counter'] as bool? ?? false,
+    );
+  }
 
   static Map<String, dynamic> _parseDeliverables(dynamic raw) {
     if (raw == null) return const {};

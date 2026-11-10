@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../core/routing/deal_route.dart';
+import '../../data/models/deal_room_model.dart';
+import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../widgets/barter_network_image.dart';
 
-class ShippingStatusScreen extends StatelessWidget {
+class ShippingStatusScreen extends ConsumerWidget {
   const ShippingStatusScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
+    final dealId = dealIdFromRoute(context);
+    final dealAsync = ref.watch(dealRoomProvider(dealId));
     return Scaffold(
       backgroundColor: bc.background,
       appBar: AppBar(
@@ -41,68 +47,72 @@ class ShippingStatusScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: bc.tertiaryContainer,
-                    borderRadius: BorderRadius.circular(6),
+      body: dealAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('$e')),
+        data: (deal) => SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: bc.tertiaryContainer,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      deal.status.toUpperCase().replaceAll('_', ' '),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: bc.onTertiaryContainer,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 2,
+                            fontSize: 10,
+                          ),
+                    ),
                   ),
-                  child: Text(
-                    'Active Exchange',
+                  const SizedBox(width: 8),
+                  Text(
+                    'ID: #${deal.dealId}',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: bc.onTertiaryContainer,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 2,
+                          color: bc.outline,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.5,
                           fontSize: 10,
                         ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'ID: #BT-8821',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: bc.outline,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.5,
-                        fontSize: 10,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text.rich(
-              TextSpan(
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      height: 1.05,
-                    ),
-                children: [
-                  const TextSpan(text: 'Track your '),
-                  TextSpan(text: 'Delivery.', style: TextStyle(color: bc.primary)),
                 ],
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'The brand has received your details and is preparing your exchange items.',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: bc.onSurfaceVariant.withValues(alpha: 0.8),
-                  ),
-            ),
-            const SizedBox(height: 32),
-            _StatusCard(bc: bc),
-            const SizedBox(height: 32),
-            _ActionButtons(bc: bc),
-            const SizedBox(height: 32),
-            _BrandContextCard(bc: bc),
-          ],
+              const SizedBox(height: 16),
+              Text.rich(
+                TextSpan(
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        height: 1.05,
+                      ),
+                  children: [
+                    const TextSpan(text: 'Track your '),
+                    TextSpan(text: 'Delivery.', style: TextStyle(color: bc.primary)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Tracking the shipment for "${deal.offerTitle}".',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: bc.onSurfaceVariant.withValues(alpha: 0.8),
+                    ),
+              ),
+              const SizedBox(height: 32),
+              _StatusCard(bc: bc, deal: deal),
+              const SizedBox(height: 32),
+              _ActionButtons(bc: bc, dealId: deal.dealId),
+              const SizedBox(height: 32),
+              _BrandContextCard(bc: bc, deal: deal),
+            ],
+          ),
         ),
       ),
     );
@@ -110,9 +120,10 @@ class ShippingStatusScreen extends StatelessWidget {
 }
 
 class _StatusCard extends StatelessWidget {
-  const _StatusCard({required this.bc});
+  const _StatusCard({required this.bc, required this.deal});
 
   final BarterColors bc;
+  final DealRoomModel deal;
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +160,7 @@ class _StatusCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Marked as Shipped',
+                    deal.shippedAt != null ? 'Marked as Shipped' : 'Awaiting Shipment',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -191,7 +202,7 @@ class _StatusCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '7734 •••• •••• 9921',
+                      deal.shippedAt ?? 'Not yet shipped',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             fontFamily: 'monospace',
                             fontWeight: FontWeight.bold,
@@ -234,7 +245,8 @@ class _StatusCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Alex Rivers\n48•• •••••• •••• Ave, Suite ••\nLos Angeles, CA 90210',
+                      deal.creatorName.isNotEmpty ? deal.creatorName : 'Creator',
+                      // real shipping address via /deals/{id}/shipping-address
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: bc.onSurface,
                             height: 1.4,
@@ -252,9 +264,10 @@ class _StatusCard extends StatelessWidget {
 }
 
 class _ActionButtons extends StatelessWidget {
-  const _ActionButtons({required this.bc});
+  const _ActionButtons({required this.bc, required this.dealId});
 
   final BarterColors bc;
+  final String dealId;
 
   @override
   Widget build(BuildContext context) {
@@ -263,7 +276,7 @@ class _ActionButtons extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () => context.push('/deal/rate-close'),
+            onPressed: () => context.push('/deal/$dealId/rate-close'),
             style: ElevatedButton.styleFrom(
               backgroundColor: bc.primary,
               foregroundColor: bc.onPrimary,
@@ -323,9 +336,10 @@ class _ActionButtons extends StatelessWidget {
 }
 
 class _BrandContextCard extends StatelessWidget {
-  const _BrandContextCard({required this.bc});
+  const _BrandContextCard({required this.bc, required this.deal});
 
   final BarterColors bc;
+  final DealRoomModel deal;
 
   @override
   Widget build(BuildContext context) {
@@ -356,7 +370,7 @@ class _BrandContextCard extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: BarterNetworkImage(
-                    url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAF12_KK8hHL23K5cX9yPKuyOjuMXKP2zC4e7_pi4f7xcHuaBdD87crrkJUAc7QRWafL4N9LZ3s8ptvitUMuYEG7Tree2KTS0IBTCvzGPx5tLne0bFHwGe4Wm_iawah-0C_DYGgO2_ARjbEEtsJoqxQuosFmbMmxWiM7v5VPeiAub1jQKiQxfnBJxD9FPbfjD8ge-HNxkogsDyyfz80EhW_5OjHagAqZ-FWqWDd1_fGCjeGvFu98JTyRsuMn59qTWaCHWp9OqEuDm8',
+                    url: deal.brandLogoUrl,
                   ),
                 ),
               ),
@@ -373,14 +387,14 @@ class _BrandContextCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'VOGUE ELYSIAN',
+            deal.brandName.toUpperCase(),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Official Brand Partner',
+            deal.offerTitle.isNotEmpty ? deal.offerTitle : 'Official Brand Partner',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: bc.onSurfaceVariant.withValues(alpha: 0.7),
                 ),

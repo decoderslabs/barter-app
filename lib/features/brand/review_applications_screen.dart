@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../data/dto/proposal_dto.dart';
+import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../theme/responsive_extension.dart';
 import '../../widgets/barter_card.dart';
@@ -16,6 +18,7 @@ class ReviewApplicationsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final bc = context.barter;
     final wide = context.isWide;
+    final proposalsAsync = ref.watch(proposalsListProvider);
 
     return Scaffold(
       backgroundColor: bc.background,
@@ -61,11 +64,13 @@ class ReviewApplicationsScreen extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              'Curating the aesthetic for Summer Drop \'24. 124 pending requests.',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: bc.onSurfaceVariant,
-                                  ),
+                            proposalsAsync.when(
+                              loading: () => const Text('Loading…'),
+                              error: (_, __) => const SizedBox.shrink(),
+                              data: (p) => Text(
+                                'Summer Drop \'24 — ${p.length} pending requests.',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: bc.onSurfaceVariant),
+                              ),
                             ),
                           ],
                         ),
@@ -95,59 +100,32 @@ class ReviewApplicationsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          // Lazy-loaded application cards
-          SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: wide ? 48 : 20),
-            sliver: SliverList.separated(
-              itemCount: 4,
-              itemBuilder: (context, index) {
-                final apps = [
-                  (
-                    name: 'Sarah Chen',
-                    handle: '@sarahcreates',
-                    followers: '124K',
-                    engagement: '4.8%',
-                    score: '92',
-                    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
+          // Live application cards from proposalsListProvider
+          proposalsAsync.when(
+            loading: () => const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
+            error: (e, _) => SliverFillRemaining(child: Center(child: Text('$e'))),
+            data: (proposals) => proposals.isEmpty
+                ? const SliverFillRemaining(child: Center(child: Text('No applications yet')))
+                : SliverPadding(
+                    padding: EdgeInsets.symmetric(horizontal: wide ? 48 : 20),
+                    sliver: SliverList.separated(
+                      itemCount: proposals.length,
+                      itemBuilder: (context, index) {
+                        final p = proposals[index];
+                        return _ApplicationCard(
+                          name: p.offerTitle,
+                          handle: '@${p.creatorUsername}',
+                          followers: '—',
+                          engagement: '—',
+                          score: '—',
+                          avatarUrl: '',
+                          bc: bc,
+                          proposalId: p.id,
+                        );
+                      },
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    ),
                   ),
-                  (
-                    name: 'Marcus Johnson',
-                    handle: '@marcusj',
-                    followers: '89K',
-                    engagement: '6.2%',
-                    score: '88',
-                    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-                  ),
-                  (
-                    name: 'Priya Sharma',
-                    handle: '@priyalifestyle',
-                    followers: '203K',
-                    engagement: '3.9%',
-                    score: '85',
-                    avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
-                  ),
-                  (
-                    name: 'Alex Rivera',
-                    handle: '@arivera',
-                    followers: '156K',
-                    engagement: '5.1%',
-                    score: '91',
-                    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face',
-                  ),
-                ];
-                final a = apps[index];
-                return _ApplicationCard(
-                  name: a.name,
-                  handle: a.handle,
-                  followers: a.followers,
-                  engagement: a.engagement,
-                  score: a.score,
-                  avatarUrl: a.avatarUrl,
-                  bc: bc,
-                );
-              },
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-            ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 120)),
         ],
@@ -224,6 +202,7 @@ class _ApplicationCard extends StatelessWidget {
     required this.score,
     required this.avatarUrl,
     required this.bc,
+    this.proposalId,
   });
 
   final String name;
@@ -233,6 +212,7 @@ class _ApplicationCard extends StatelessWidget {
   final String score;
   final String avatarUrl;
   final BarterColors bc;
+  final String? proposalId;
 
   @override
   Widget build(BuildContext context) {

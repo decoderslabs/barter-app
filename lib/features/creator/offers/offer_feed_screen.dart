@@ -149,58 +149,62 @@ class _FilterChips extends StatelessWidget {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            decoration: BoxDecoration(
-              color: bc.primary,
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Row(
-              children: [
-                Icon(Symbols.filter_list, color: bc.onPrimary, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  'Type: SaaS',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: bc.onPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-              ],
-            ),
+          _BarterChip(
+            label: 'Type: SaaS',
+            bc: bc,
+            icon: Symbols.filter_list,
+            isPrimary: true,
           ),
           const SizedBox(width: 12),
-          _Chip(label: 'Value: \$500+', bc: bc),
+          _BarterChip(label: 'Value: \$500+', bc: bc),
           const SizedBox(width: 12),
-          _Chip(label: 'Niche: Tech', bc: bc),
+          _BarterChip(label: 'Niche: Tech', bc: bc),
           const SizedBox(width: 12),
-          _Chip(label: 'Platform: IG', bc: bc),
+          _BarterChip(label: 'Platform: IG', bc: bc),
         ],
       ),
     );
   }
 }
 
-class _Chip extends StatelessWidget {
-  const _Chip({required this.label, required this.bc});
+class _BarterChip extends StatelessWidget {
+  const _BarterChip({
+    required this.label,
+    required this.bc,
+    this.icon,
+    this.isPrimary = false,
+    this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+  });
 
   final String label;
   final BarterColors bc;
+  final IconData? icon;
+  final bool isPrimary;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: padding,
       decoration: BoxDecoration(
-        color: bc.surfaceContainerHigh,
+        color: isPrimary ? bc.primary : bc.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: bc.onSurface,
-              fontWeight: FontWeight.w500,
-            ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, color: isPrimary ? bc.onPrimary : bc.onSurface, size: 18),
+            const SizedBox(width: 8),
+          ],
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: isPrimary ? bc.onPrimary : bc.onSurface,
+                  fontWeight: isPrimary ? FontWeight.w600 : FontWeight.w500,
+                ),
+          ),
+        ],
       ),
     );
   }
@@ -329,22 +333,7 @@ class _DropCard extends StatelessWidget {
                 ),
                 child: Icon(icon, color: iconColor, size: 24),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: badgeColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  badge,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: badgeColor,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
-                        fontSize: 10,
-                      ),
-                ),
-              ),
+              _BarterBadge(label: badge, bc: bc, color: badgeColor),
             ],
           ),
           const SizedBox(height: 16),
@@ -544,22 +533,7 @@ class _OfferCard extends StatelessWidget {
                                 ),
                           ),
                           const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: brandTypeColor,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              brandType,
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: bc.onSecondary,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.5,
-                                    fontSize: 10,
-                                  ),
-                            ),
-                          ),
+                          _BarterBadge(label: brandType, bc: bc, color: brandTypeColor, radius: 4),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -574,32 +548,11 @@ class _OfferCard extends StatelessWidget {
                 ],
               ),
               if (isFeatured)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: bc.primary.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Symbols.verified,
-                        color: bc.primary,
-                        size: 16,
-                        fill: 1,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Good match',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: bc.primary,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.5,
-                              fontSize: 11,
-                            ),
-                      ),
-                    ],
-                  ),
+                _BarterBadge(
+                  label: 'Good match',
+                  bc: bc,
+                  color: bc.primary,
+                  icon: Symbols.verified,
                 ),
             ],
           ),
@@ -621,16 +574,18 @@ class _OfferCard extends StatelessWidget {
           const SizedBox(height: 24),
           Row(
             children: [
-              _StatChip(
-                icon: Symbols.payments,
-                label: '$value Est. Value',
+              _BarterChip(
+                label: value,
                 bc: bc,
+                icon: Symbols.payments,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
               const SizedBox(width: 12),
-              _StatChip(
-                icon: deliverableIcon,
+              _BarterChip(
                 label: deliverable,
                 bc: bc,
+                icon: deliverableIcon,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
             ],
           ),
@@ -640,45 +595,9 @@ class _OfferCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: bc.surfaceVariant,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: bc.surface, width: 2),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'IG',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: bc.surface,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10,
-                            ),
-                      ),
-                    ),
-                  ),
+                  _PlatformAvatar(label: 'IG', bc: bc, bgColor: bc.surfaceVariant),
                   const SizedBox(width: 8),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: bc.onBackground,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: bc.surface, width: 2),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'TT',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: bc.surface,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10,
-                            ),
-                      ),
-                    ),
-                  ),
+                  _PlatformAvatar(label: 'TT', bc: bc, bgColor: bc.onBackground),
                 ],
               ),
               ElevatedButton(
@@ -706,29 +625,43 @@ class _OfferCard extends StatelessWidget {
   }
 }
 
-class _StatChip extends StatelessWidget {
-  const _StatChip({required this.icon, required this.label, required this.bc});
+class _BarterBadge extends StatelessWidget {
+  const _BarterBadge({
+    required this.label,
+    required this.bc,
+    required this.color,
+    this.icon,
+    this.radius = 999,
+  });
 
-  final IconData icon;
   final String label;
   final BarterColors bc;
+  final Color color;
+  final IconData? icon;
+  final double radius;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: bc.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(12),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(radius),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: bc.primary, size: 20),
-          const SizedBox(width: 8),
+          if (icon != null) ...[
+            Icon(icon, color: color, size: 14),
+            const SizedBox(width: 6),
+          ],
           Text(
             label,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: color,
                   fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                  fontSize: 10,
                 ),
           ),
         ],
@@ -736,3 +669,39 @@ class _StatChip extends StatelessWidget {
     );
   }
 }
+
+class _PlatformAvatar extends StatelessWidget {
+  const _PlatformAvatar({
+    required this.label,
+    required this.bc,
+    required this.bgColor,
+  });
+
+  final String label;
+  final BarterColors bc;
+  final Color bgColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: bgColor,
+        shape: BoxShape.circle,
+        border: Border.all(color: bc.surface, width: 2),
+      ),
+      child: Center(
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: bc.surface,
+                fontWeight: FontWeight.bold,
+                fontSize: 10,
+              ),
+        ),
+      ),
+    );
+  }
+}
+

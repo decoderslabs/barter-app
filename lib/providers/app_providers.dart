@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/dto/drops_dto.dart';
+import '../data/dto/deal_dto.dart';
+import '../data/dto/offer_dto.dart';
+import '../data/dto/proposal_dto.dart';
 import '../data/dto/notification_dto.dart';
 import '../data/dto/user_dto.dart';
 import '../data/models/analytics_model.dart';
@@ -86,9 +89,35 @@ final proposalsListProvider = FutureProvider((ref) async {
   return repo.listProposals();
 });
 
+final proposalDetailProvider = FutureProvider.family<ProposalDetailDto, String>((ref, id) async {
+  final repo = ref.watch(proposalRepositoryProvider);
+  return repo.getProposal(id);
+});
+
+final myOffersProvider = FutureProvider<List<OfferListItemDto>>((ref) async {
+  final repo = ref.watch(offerRepositoryProvider);
+  return repo.myOffers();
+});
+
+final myDealsProvider = FutureProvider<List<DealListItemDto>>((ref) async {
+  final repo = ref.watch(dealRepositoryProvider);
+  return repo.listDeals();
+});
+
 final notificationsProvider = FutureProvider<List<NotificationDto>>((ref) async {
   final repo = ref.watch(notificationRepositoryProvider);
   return repo.listNotifications();
+});
+
+final profileStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  final repo = ref.watch(authRepositoryProvider);
+  return repo.getProfileStats();
+});
+
+final dealsHistoryProvider =
+    FutureProvider.family<Map<String, dynamic>, int>((ref, page) async {
+  final repo = ref.watch(authRepositoryProvider);
+  return repo.getDealsHistory(page: page);
 });
 
 enum AppRole { creator, brand }
@@ -105,6 +134,30 @@ class AuthState {
   final String? error;
 
   bool get isAuthenticated => user != null;
+
+  /// True when the logged-in creator hasn't reached the 80% gate yet.
+  bool get needsProfileCompletion {
+    if (user == null || user!.role == 'brand') return false;
+    final pc = user!.profileCompletion;
+    if (pc == null) return false;
+    return !pc.canAccessMembership;
+  }
+
+  /// True when profile is complete but the creator hasn't got membership yet.
+  bool get needsMembership {
+    if (user == null || user!.role == 'brand') return false;
+    final pc = user!.profileCompletion;
+    if (pc != null && !pc.canAccessMembership) return false;
+    return !user!.canSubmitMembership;
+  }
+
+  /// Resolved initial route for the authenticated user.
+  String get initialRoute {
+    if (user == null) return '/welcome';
+    if (user!.role == 'brand') return '/brand/dashboard';
+    if (needsProfileCompletion) return '/creator/onboarding/profile';
+    return '/creator/feed';
+  }
 
   AppRole get role {
     if (user == null) return AppRole.creator;
@@ -250,11 +303,67 @@ class SessionNotifier extends StateNotifier<SessionState> {
     state = state.copyWith(selectedContentTypes: _toggleSet(state.selectedContentTypes, n));
   }
 
+  /// Persist all creator onboarding selections to backend
   Future<void> persistCreatorOnboarding() async {
     await _auth.updateCreatorProfile(
       niches: state.selectedNiches.toList(),
       contentTypes: state.selectedContentTypes.toList(),
     );
+  }
+
+  /// Persist profile setup data (name, bio, location)
+  Future<void> persistProfileSetup({
+    required String name,
+    String? bio,
+    String? locationCity,
+    String? locationCountry,
+  }) async {
+    await _auth.updateProfile(
+      name: name,
+      bio: bio,
+      locationCity: locationCity,
+      locationCountry: locationCountry,
+    );
+  }
+
+  /// Persist niche selections
+  Future<void> persistNiches(List<String> niches) async {
+    await _auth.updateCreatorProfile(niches: niches, contentTypes: state.selectedContentTypes.toList());
+  }
+
+  /// Persist content type selections
+  Future<void> persistContentTypes(List<String> contentTypes) async {
+    await _auth.updateCreatorProfile(
+      niches: state.selectedNiches.toList(),
+      contentTypes: contentTypes,
+    );
+  }
+
+  /// Connect a social account
+  Future<void> connectSocialAccount({
+    required String platform,
+    required String username,
+    required int followers,
+    bool verified = false,
+    double? engagementRate,
+  }) async {
+    await _auth.addSocialAccount({
+      'platform': platform,
+      'username': username,
+      'followers': followers,
+      'verified': verified,
+      if (engagementRate != null) 'engagement_rate': engagementRate,
+    });
+  }
+
+  /// Remove a social account
+  Future<void> disconnectSocialAccount(String platform) async {
+    await _auth.removeSocialAccount(platform);
+  }
+
+  /// Verify social account ownership
+  Future<bool> verifySocialAccount(String platform, {String? code}) async {
+    return await _auth.verifySocialAccount(platform, verificationCode: code);
   }
 }
 

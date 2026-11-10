@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
 import '../../../widgets/barter_network_image.dart';
 
-class NicheSelectionScreen extends StatefulWidget {
+class NicheSelectionScreen extends ConsumerStatefulWidget {
   const NicheSelectionScreen({super.key});
 
   @override
-  State<NicheSelectionScreen> createState() => _NicheSelectionScreenState();
+  ConsumerState<NicheSelectionScreen> createState() => _NicheSelectionScreenState();
 }
 
-class _NicheSelectionScreenState extends State<NicheSelectionScreen> {
+class _NicheSelectionScreenState extends ConsumerState<NicheSelectionScreen> {
+  bool _isLoading = false;
   final List<NicheOption> _niches = [
     NicheOption(
       id: '1',
@@ -83,6 +86,34 @@ class _NicheSelectionScreenState extends State<NicheSelectionScreen> {
       isDashed: true,
     ),
   ];
+
+  Future<void> _onContinue() async {
+    final selectedNiches = _niches.where((n) => n.isSelected).map((n) => n.name).toList();
+
+    setState(() => _isLoading = true);
+
+    try {
+      final session = ref.read(sessionProvider.notifier);
+      await session.persistNiches(selectedNiches);
+
+      if (mounted) {
+        context.push('/creator/onboarding/interests');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save niches: $e'),
+            backgroundColor: context.barter.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +195,7 @@ class _NicheSelectionScreenState extends State<NicheSelectionScreen> {
         ),
         child: SafeArea(
           child: ElevatedButton(
-            onPressed: selectedCount > 0 ? () => context.push('/creator/onboarding/interests') : null,
+            onPressed: selectedCount > 0 && !_isLoading ? _onContinue : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: bc.primary,
               foregroundColor: bc.onPrimary,
@@ -173,12 +204,21 @@ class _NicheSelectionScreenState extends State<NicheSelectionScreen> {
               elevation: 8,
               shadowColor: bc.primary.withValues(alpha: 0.2),
             ),
-            child: Text(
-              'Continue to Step 3',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+            child: _isLoading
+                ? SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: bc.onPrimary,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : Text(
+                    'Continue to Step 3',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
-            ),
           ),
         ),
       ),
