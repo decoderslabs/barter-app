@@ -395,4 +395,4 @@ venv/bin/python manage.py seed_mock_data
 curl -X POST http://localhost:8000/api/auth/login/ \
   -H "Content-Type: application/json" \
   -d '{"email":"priya@creator.com","password":"password123"}'
-```
+```check 2
