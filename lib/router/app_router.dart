@@ -25,6 +25,7 @@ import '../features/creator/membership/earn_membership_screen.dart';
 import '../features/creator/membership/pending_approval_screen.dart';
 import '../features/creator/membership/submit_task_screen.dart';
 import '../features/creator/onboarding/profile_completion_screen.dart';
+import '../features/creator/onboarding/install_app_screen.dart';
 import '../features/creator/onboarding/profile_setup_screen.dart';
 import '../features/creator/onboarding/niche_selection_screen.dart';
 import '../features/creator/onboarding/interests_selection_screen.dart';
@@ -329,6 +330,10 @@ GoRouter createRouter() {
               GoRoute(
                 path: 'complete',
                 builder: (context, state) => const ProfileCompletionScreen(),
+              ),
+              GoRoute(
+                path: 'install-app',
+                builder: (context, state) => const InstallAppScreen(),
               ),
               GoRoute(
                 path: 'profile',

@@ -89,6 +89,7 @@ class UserDto {
     this.profilePhotoUrl,
     this.coverPhotoUrl,
     this.isVerified = false,
+    this.emailVerified = true,
     this.barterScore,
     this.brandProfile,
     this.creatorProfile,
@@ -113,6 +114,7 @@ class UserDto {
   final String? profilePhotoUrl;
   final String? coverPhotoUrl;
   final bool isVerified;
+  final bool emailVerified;
   final dynamic barterScore;
   final BrandProfileDto? brandProfile;
   final CreatorProfileDto? creatorProfile;
@@ -138,6 +140,7 @@ class UserDto {
       profilePhotoUrl: json['profile_photo_url'] as String?,
       coverPhotoUrl: json['cover_photo_url'] as String?,
       isVerified: json['is_verified'] as bool? ?? false,
+      emailVerified: json['email_verified'] as bool? ?? true,
       barterScore: json['barter_score'],
       brandProfile: json['brand_profile'] != null
           ? BrandProfileDto.fromJson(json['brand_profile'] as Map<String, dynamic>)

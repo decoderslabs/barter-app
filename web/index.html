@@ -6,6 +6,12 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="BARTER — editorial exchange">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#b3193d">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BARTER">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
   <title>BARTER</title>
   <link rel="manifest" href="manifest.json">
   <link rel="preload" href="flutter_bootstrap.js" as="script">
@@ -13,6 +19,26 @@
   <style>
     body { margin: 0; background: #ffffff; }
   </style>
+  <script>
+    window.deferredPwaPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      window.deferredPwaPrompt = e;
+      window.dispatchEvent(new CustomEvent('pwa-install-ready'));
+    });
+    window.triggerPwaInstall = async function() {
+      if (window.deferredPwaPrompt) {
+        window.deferredPwaPrompt.prompt();
+        const choice = await window.deferredPwaPrompt.userChoice;
+        window.deferredPwaPrompt = null;
+        return choice && choice.outcome === 'accepted';
+      }
+      return false;
+    };
+    window.isPwaInstalled = function() {
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    };
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

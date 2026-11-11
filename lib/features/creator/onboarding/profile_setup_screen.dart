@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../data/models/onboarding_config.dart';
+import '../../../providers/api_providers.dart';
 import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
 import '../../../widgets/barter_image_picker.dart';
@@ -248,6 +249,42 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (ref.watch(authProvider).user != null && !ref.watch(authProvider).user!.emailVerified) ...[
+                Container(
+                  margin: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF8E1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFFFD54F)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Symbols.mark_email_unread, color: Color(0xFFF57F17), size: 22),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Confirmation link sent to ${ref.watch(authProvider).user!.email}. Please verify your email.',
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF7F6000), fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          try {
+                            await ref.read(authRepositoryProvider).resendVerificationEmail();
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Verification email resent!')),
+                              );
+                            }
+                          } catch (_) {}
+                        },
+                        child: const Text('Resend', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               _ProgressBar(bc: bc),
               const SizedBox(height: 48),
               _Headline(bc: bc),

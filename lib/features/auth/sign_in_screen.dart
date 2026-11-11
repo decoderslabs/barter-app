@@ -34,7 +34,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   void _navigateAfterAuth(AuthState state) {
     if (_isRegister) {
-      context.go('/creator/onboarding/profile');
+      context.go('/creator/onboarding/install-app');
     } else {
       context.go(state.initialRoute);
     }

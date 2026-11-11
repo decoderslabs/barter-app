@@ -109,6 +109,10 @@ class AuthRepository {
     );
   }
 
+  Future<void> resendVerificationEmail() async {
+    await _client.postJson('/auth/resend-verification');
+  }
+
   Future<void> saveFcmToken(String token) async {
     await _client.postJson('/users/me/fcm-token', body: {'token': token});
   }
