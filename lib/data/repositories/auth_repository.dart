@@ -42,6 +42,7 @@ class AuthRepository {
     required String password,
     required String name,
     required String username,
+    String? phone,
     required String role,
   }) async {
     final data = await _client.postJson(
@@ -52,6 +53,7 @@ class AuthRepository {
         'password_confirm': password,
         'name': name,
         'username': username,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
         'role': role,
       },
       auth: false,

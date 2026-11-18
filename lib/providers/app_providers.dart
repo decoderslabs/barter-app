@@ -213,6 +213,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
     required String name,
     required String username,
+    String? phone,
     required AppRole role,
   }) async {
     state = state.copyWith(isLoading: true, clearError: true);
@@ -222,6 +223,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         password: password,
         name: name,
         username: username,
+        phone: phone,
         role: role == AppRole.brand ? 'brand' : 'creator',
       );
       state = AuthState(user: user);

@@ -1,3 +1,4 @@
+import '../../../widgets/barter_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -33,14 +34,7 @@ class _CreateDropsCampaignScreenState extends State<CreateDropsCampaignScreen> {
           ),
           child: Icon(Symbols.token, color: bc.surface, fill: 1),
         ),
-        title: Text(
-          'BARTER',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: bc.primary,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
-              ),
-        ),
+        title: const BarterLogo(height: 28),
         actions: [
           IconButton(
             icon: Icon(Symbols.notifications, color: bc.onSurface),

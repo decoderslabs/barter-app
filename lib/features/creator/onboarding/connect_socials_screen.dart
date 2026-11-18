@@ -1,3 +1,4 @@
+import '../../../widgets/barter_logo.dart';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -199,14 +200,7 @@ class _ConnectSocialsScreenState extends ConsumerState<ConnectSocialsScreen> {
       backgroundColor: bc.background,
       appBar: AppBar(
         backgroundColor: bc.background,
-        title: Text(
-          'BARTER',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: bc.primary,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1,
-              ),
-        ),
+        title: const BarterLogo(height: 28),
         actions: [
           TextButton(
             onPressed: () => context.push('/help'),
@@ -413,14 +407,17 @@ class _SocialPlatformsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final crossAxisCount = width > 900 ? 3 : 2;
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 24,
-        mainAxisSpacing: 24,
-        childAspectRatio: 1.2,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 14,
+        mainAxisSpacing: 14,
+        childAspectRatio: 1.35,
       ),
       itemCount: platforms.length,
       itemBuilder: (context, index) {
@@ -788,7 +785,7 @@ class _ConnectCardState extends State<_ConnectCard> {
       onTapCancel: () => setState(() => _isHovered = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: _isHovered
               ? (isPrimary ? bc.primary : bc.tertiary)
@@ -796,67 +793,73 @@ class _ConnectCardState extends State<_ConnectCard> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: bc.onBackground.withValues(alpha: 0.06),
-              blurRadius: 40,
-              offset: const Offset(0, 10),
+              color: bc.onBackground.withValues(alpha: 0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: _isHovered
-                    ? bc.surface.withValues(alpha: 0.2)
-                    : bc.surfaceContainerLow,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                platform.icon,
-                color: _isHovered ? bc.surface : bc.onBackground,
-                size: 28,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              platform.name,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: _isHovered ? bc.surface : bc.onBackground,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: _isHovered
+                        ? bc.surface.withValues(alpha: 0.2)
+                        : bc.surfaceContainerLow,
+                    shape: BoxShape.circle,
                   ),
+                  child: Icon(
+                    platform.icon,
+                    color: _isHovered ? bc.surface : bc.onBackground,
+                    size: 20,
+                  ),
+                ),
+                Text(
+                  platform.name,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: _isHovered ? bc.surface : bc.onBackground,
+                      ),
+                ),
+              ],
             ),
-            const SizedBox(height: 4),
             Text(
               isPrimary
-                  ? 'Connect your channel for video content exchanges.'
-                  : 'Best for professional services and B2B creators.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  ? 'Connect channel for video content exchanges.'
+                  : 'Professional and B2B creator exchanges.',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: _isHovered
                         ? bc.surface.withValues(alpha: 0.8)
                         : bc.onSurfaceVariant,
+                    fontSize: 11,
                   ),
             ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: () => widget.onConnect(platform.id),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isHovered ? bc.surface : bc.onBackground,
-                foregroundColor: _isHovered
-                    ? (isPrimary ? bc.primary : bc.tertiary)
-                    : bc.surface,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-                minimumSize: const Size(double.infinity, 48),
-              ),
-              child: Text(
-                'Connect ${platform.name}',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
-                    ),
+            SizedBox(
+              width: double.infinity,
+              height: 34,
+              child: ElevatedButton(
+                onPressed: () => widget.onConnect(platform.id),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isHovered ? bc.surface : bc.onBackground,
+                  foregroundColor: _isHovered
+                      ? (isPrimary ? bc.primary : bc.tertiary)
+                      : bc.surface,
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                ),
+                child: Text(
+                  'Connect',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],

@@ -20,6 +20,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _password = TextEditingController();
   final _name = TextEditingController();
   final _username = TextEditingController();
+  final _phone = TextEditingController();
   bool _isRegister = false;
   AppRole _registerRole = AppRole.creator;
 
@@ -29,6 +30,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     _password.dispose();
     _name.dispose();
     _username.dispose();
+    _phone.dispose();
     super.dispose();
   }
 
@@ -43,11 +45,26 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   Future<void> _submit() async {
     final auth = ref.read(authProvider.notifier);
     if (_isRegister) {
+      final phone = _phone.text.trim();
+      final phoneRegex = RegExp(r'^\+[1-9]\d{7,14}$');
+      final normalizedPhone = phone.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+      if (phone.isEmpty || !phoneRegex.hasMatch(normalizedPhone)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Please enter a valid phone number with country code (e.g. +91 9876543210)'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+
       await auth.register(
         email: _email.text.trim(),
         password: _password.text,
         name: _name.text.trim(),
         username: _username.text.trim(),
+        phone: normalizedPhone,
         role: _registerRole,
       );
     } else {
@@ -122,6 +139,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 BarterLabeledField(
                   controller: _password,
                   label: 'Password',
+                  isPassword: true,
                 ),
                 if (_isRegister) ...[
                   const SizedBox(height: 16),
@@ -134,6 +152,13 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     controller: _username,
                     label: 'Username',
                     hint: '(ideally your instagram username)',
+                  ),
+                  const SizedBox(height: 16),
+                  BarterLabeledField(
+                    controller: _phone,
+                    label: 'Phone number',
+                    hint: '+91 9876543210',
+                    keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 16),
                   Row(

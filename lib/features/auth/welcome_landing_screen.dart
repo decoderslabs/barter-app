@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../theme/barter_colors.dart';
 import '../../theme/responsive_extension.dart';
 import '../../widgets/barter_buttons.dart';
+import '../../widgets/barter_logo.dart';
 import '../../widgets/barter_network_image.dart';
 
 class WelcomeLandingScreen extends StatelessWidget {
@@ -24,23 +25,7 @@ class WelcomeLandingScreen extends StatelessWidget {
             surfaceTintColor: Colors.transparent,
             title: Row(
               children: [
-                SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: BarterNetworkImage(
-                    url:
-                        'https://lh3.googleusercontent.com/aida-public/AB6AXuAPHMZ7MydIjr5uT3bpufh2GNllTy-RqbpVLDB8FJJPTnMlIh-RfY5uYtlA2aCBCe9Hsb9qRTbM83P28Z3AcEKgDbak6mwGuRt7Axr4yfCLMCBBO_ccCznkFJ4bXGjNvclBSa2D--R8QaBIfuob9bJf7XkVrLezAQHUSqgWISHYjejktGMZ9LSSZ33G3l3A3UOqIu0wc_Dg6Ps-tGtrKyt90kngHJGwNEXUCB6liAYIRJRRaizi8nGIjQgcj3r7ZVRtNsZlgXIN2Fg',
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'BARTER',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -1,
-                        color: bc.onBackground,
-                      ),
-                ),
+                const BarterLogo(height: 32),
                 const Spacer(),
                 if (isWide) ...[
                   TextButton(

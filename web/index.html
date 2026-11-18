@@ -19,6 +19,7 @@
   <style>
     body { margin: 0; background: #ffffff; }
   </style>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     window.deferredPwaPrompt = null;
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -37,6 +38,51 @@
     };
     window.isPwaInstalled = function() {
       return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    };
+
+    // OneSignal & Push Notifications Bridge
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.initOneSignal = function(appId) {
+      if (!appId) return;
+      window.OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: appId,
+          notifyButton: { enable: false },
+          allowLocalhostAsSecureOrigin: true,
+        });
+      });
+    };
+
+    window.requestNotificationPermission = async function() {
+      try {
+        if (window.OneSignalDeferred) {
+          return new Promise((resolve) => {
+            window.OneSignalDeferred.push(async function(OneSignal) {
+              await OneSignal.Notifications.requestPermission();
+              const subId = OneSignal.User.PushSubscription.id;
+              resolve(subId || '');
+            });
+          });
+        } else if ('Notification' in window) {
+          const perm = await Notification.requestPermission();
+          return perm === 'granted';
+        }
+      } catch (e) {
+        console.error('Error requesting notification permission:', e);
+      }
+      return '';
+    };
+
+    window.getOneSignalPlayerId = async function() {
+      try {
+        return new Promise((resolve) => {
+          window.OneSignalDeferred.push(async function(OneSignal) {
+            resolve(OneSignal.User.PushSubscription.id || '');
+          });
+        });
+      } catch (e) {
+        return '';
+      }
     };
   </script>
 </head>

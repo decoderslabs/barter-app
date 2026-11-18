@@ -1,3 +1,4 @@
+import '../../widgets/barter_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,14 +23,7 @@ class BrandOnboardingScreen extends ConsumerWidget {
       backgroundColor: bc.background,
       appBar: AppBar(
         backgroundColor: bc.background,
-        title: Text(
-          'BARTER',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1,
-                color: bc.primary,
-              ),
-        ),
+        title: const BarterLogo(height: 28),
         actions: [
           switch (cfgAsync) {
             AsyncData(:final value) => Padding(

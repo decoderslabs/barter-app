@@ -1,3 +1,4 @@
+import '../../../widgets/barter_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,14 +45,7 @@ class _BrandIdentityScreenState extends State<BrandIdentityScreen> {
       appBar: AppBar(
         backgroundColor: bc.background,
         leading: const SizedBox.shrink(),
-        title: Text(
-          'BARTER',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: bc.primary,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1,
-              ),
-        ),
+        title: const BarterLogo(height: 28),
         actions: [
           Consumer(builder: (context, ref, child) {
             final cfgAsync = ref.watch(onboardingConfigProvider);

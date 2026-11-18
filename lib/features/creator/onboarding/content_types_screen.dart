@@ -1,3 +1,4 @@
+import '../../../widgets/barter_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -146,14 +147,7 @@ class _ContentTypesScreenState extends ConsumerState<ContentTypesScreen> {
           icon: Icon(Symbols.arrow_back, color: bc.primary),
           onPressed: () => context.pop(),
         ),
-        title: Text(
-          'BARTER',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: bc.primary,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1,
-              ),
-        ),
+        title: const BarterLogo(height: 28),
         actions: [
           TextButton(
             onPressed: () => context.push('/help'),
@@ -363,25 +357,21 @@ class _ContentTypesGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final crossAxisCount = width > 900 ? 4 : (width > 600 ? 3 : 2);
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 1.1,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 1.45,
       ),
       itemCount: contentTypes.length,
       itemBuilder: (context, index) {
         final contentType = contentTypes[index];
-        if (contentType.isFullWidth) {
-          return _FullWidthCard(
-            contentType: contentType,
-            onToggle: onToggle,
-            bc: bc,
-          );
-        }
         return _ContentTypeCard(
           contentType: contentType,
           onToggle: onToggle,
@@ -410,13 +400,13 @@ class _ContentTypeCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => onToggle(contentType.id),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? bc.surfaceContainerLowest : bc.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? bc.primary : Colors.transparent,
-            width: 2,
+            width: 1.5,
           ),
         ),
         child: Column(
@@ -428,7 +418,7 @@ class _ContentTypeCard extends StatelessWidget {
               children: [
                 Icon(
                   contentType.icon,
-                  size: 32,
+                  size: 22,
                   color: isSelected ? bc.primary : bc.onSurface,
                 ),
                 if (isSelected)
@@ -436,29 +426,35 @@ class _ContentTypeCard extends StatelessWidget {
                     Symbols.check_circle,
                     color: bc.primary,
                     fill: 1,
-                    size: 20,
+                    size: 18,
                   ),
               ],
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   contentType.name,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: isSelected ? bc.onSurface : bc.onSurface,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: bc.onSurface,
                         fontWeight: FontWeight.bold,
+                        fontSize: 13,
                       ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  contentType.subcategory ?? '',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: bc.onSurfaceVariant,
-                        letterSpacing: 1,
-                    fontSize: 11,
-                      ),
-                ),
+                if (contentType.subcategory != null)
+                  Text(
+                    contentType.subcategory!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: bc.onSurfaceVariant,
+                          letterSpacing: 0.5,
+                          fontSize: 10,
+                        ),
+                  ),
               ],
             ),
           ],

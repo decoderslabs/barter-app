@@ -1,3 +1,4 @@
+import '../../../widgets/barter_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -221,14 +222,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           icon: Icon(Symbols.arrow_back, color: bc.primary),
           onPressed: () => context.pop(),
         ),
-        title: Text(
-          'BARTER',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: bc.primary,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1,
-              ),
-        ),
+        title: const BarterLogo(height: 28),
         actions: [
           TextButton(
             onPressed: () => context.push('/help'),

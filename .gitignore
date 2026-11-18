@@ -24,3 +24,4 @@ build/
 
 # Misc
 .DS_Store
+.vercel

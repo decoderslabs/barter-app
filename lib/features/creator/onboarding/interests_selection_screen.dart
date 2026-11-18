@@ -1,3 +1,4 @@
+import '../../../widgets/barter_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -136,14 +137,7 @@ class _InterestsSelectionScreenState extends ConsumerState<InterestsSelectionScr
           icon: Icon(Symbols.arrow_back, color: bc.primary),
           onPressed: () => context.pop(),
         ),
-        title: Text(
-          'BARTER',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: bc.primary,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1,
-              ),
-        ),
+        title: const BarterLogo(height: 28),
         actions: [
           TextButton(
             onPressed: () => context.push('/help'),
@@ -350,14 +344,17 @@ class _InterestsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final crossAxisCount = width > 900 ? 4 : (width > 600 ? 3 : 2);
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.1,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 1.45,
       ),
       itemCount: interests.length,
       itemBuilder: (context, index) {
@@ -390,60 +387,70 @@ class _InterestCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => onToggle(interest.id),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? bc.primary : bc.surfaceContainerLow,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? bc.primary : bc.primary.withValues(alpha: 0.2),
+            color: isSelected ? bc.primary : bc.primary.withValues(alpha: 0.15),
             width: isSelected ? 2 : 1,
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: bc.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     interest.icon,
                     color: bc.primary,
-                    size: 24,
+                    size: 18,
                   ),
                 ),
                 if (isSelected)
                   Icon(
                     Symbols.check_circle,
-                    color: bc.primary,
+                    color: bc.onPrimary,
                     fill: 1,
-                    size: 20,
+                    size: 18,
                   ),
               ],
             ),
-            const Spacer(),
-            Text(
-              interest.name,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: isSelected ? bc.onPrimary : bc.onSurface,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              interest.subcategory,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: isSelected
-                        ? bc.onPrimary.withValues(alpha: 0.8)
-                        : bc.onSurfaceVariant,
-                    letterSpacing: 1,
-                    fontSize: 11,
-                  ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  interest.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: isSelected ? bc.onPrimary : bc.onSurface,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                ),
+                Text(
+                  interest.subcategory,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: isSelected
+                            ? bc.onPrimary.withValues(alpha: 0.8)
+                            : bc.onSurfaceVariant,
+                        letterSpacing: 0.5,
+                        fontSize: 10,
+                      ),
+                ),
+              ],
             ),
           ],
         ),

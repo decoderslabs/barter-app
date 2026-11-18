@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../theme/barter_colors.dart';
+import 'barter_logo.dart';
 import 'barter_network_image.dart';
 
 class BarterAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -37,15 +38,7 @@ class BarterAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: centerTitle,
       leading: leading,
       title: showBrandTitle
-          ? Text(
-              title ?? 'BARTER',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    fontStyle: FontStyle.italic,
-                    color: bc.primary,
-                    letterSpacing: -1,
-                  ),
-            )
+          ? const BarterLogo(height: 28)
           : title != null
               ? Text(
                   title!,

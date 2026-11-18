@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'dart:js' as js;
 
+import '../../../core/config/api_config.dart';
+import '../../../providers/api_providers.dart';
 import '../../../theme/barter_colors.dart';
 
 class InstallAppScreen extends ConsumerStatefulWidget {
@@ -20,15 +22,24 @@ class _InstallAppScreenState extends ConsumerState<InstallAppScreen> {
   @override
   void initState() {
     super.initState();
-    _checkIfInstalled();
+    _initPushAndCheckInstall();
   }
 
-  void _checkIfInstalled() {
+  void _initPushAndCheckInstall() {
     if (kIsWeb) {
+      try {
+        js.context.callMethod('initOneSignal', [ApiConfig.oneSignalAppId]);
+      } catch (_) {}
+
       try {
         final result = js.context.callMethod('isPwaInstalled');
         if (result == true) {
           setState(() => _isInstalled = true);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              context.go('/creator/onboarding/profile');
+            }
+          });
         }
       } catch (_) {}
     }
@@ -36,6 +47,20 @@ class _InstallAppScreenState extends ConsumerState<InstallAppScreen> {
 
   Future<void> _handleInstall() async {
     if (kIsWeb) {
+      // 1. Request notification permission alongside PWA install and save player ID
+      try {
+        js.context.callMethod('requestNotificationPermission');
+        Future.delayed(const Duration(seconds: 2), () async {
+          try {
+            final playerId = js.context.callMethod('getOneSignalPlayerId');
+            if (playerId is String && playerId.isNotEmpty) {
+              await ref.read(notificationRepositoryProvider).saveOneSignalPlayerId(playerId);
+            }
+          } catch (_) {}
+        });
+      } catch (_) {}
+
+      // 2. Trigger native 1-click PWA install prompt
       try {
         final accepted = js.context.callMethod('triggerPwaInstall');
         if (accepted == true) {
@@ -47,7 +72,7 @@ class _InstallAppScreenState extends ConsumerState<InstallAppScreen> {
       } catch (_) {}
     }
 
-    // Fallback modal with OS-specific instructions
+    // Fallback: if browser has no native install prompt available (e.g. iOS Safari)
     if (mounted) {
       _showInstallInstructions(context);
     }

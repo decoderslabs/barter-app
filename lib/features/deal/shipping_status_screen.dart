@@ -7,6 +7,7 @@ import '../../core/routing/deal_route.dart';
 import '../../data/models/deal_room_model.dart';
 import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
+import '../../widgets/barter_logo.dart';
 import '../../widgets/barter_network_image.dart';
 
 class ShippingStatusScreen extends ConsumerWidget {
@@ -32,18 +33,10 @@ class ShippingStatusScreen extends ConsumerWidget {
                 letterSpacing: -0.5,
               ),
         ),
-        actions: [
+        actions: const [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Text(
-              'BARTER',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: bc.primary,
-                    fontWeight: FontWeight.w900,
-                    fontStyle: FontStyle.italic,
-                    letterSpacing: -1,
-                  ),
-            ),
+            padding: EdgeInsets.only(right: 16),
+            child: BarterLogo(height: 24),
           ),
         ],
       ),

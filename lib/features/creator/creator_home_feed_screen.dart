@@ -1,3 +1,4 @@
+import '../../widgets/barter_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -74,14 +75,7 @@ class _CreatorHomeFeedScreenState extends ConsumerState<CreatorHomeFeedScreen> {
               onPressed: () => context.push('/creator/profile'),
             ),
           ),
-          title: Text(
-            'BARTER',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  fontStyle: FontStyle.italic,
-                  color: bc.primary,
-                ),
-          ),
+          title: const BarterLogo(height: 28),
           actions: [
             IconButton(
               icon: Icon(Symbols.notifications, color: bc.onSurface),

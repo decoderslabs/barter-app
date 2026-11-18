@@ -46,7 +46,7 @@ class BarterSearchField extends StatelessWidget {
   }
 }
 
-class BarterLabeledField extends StatelessWidget {
+class BarterLabeledField extends StatefulWidget {
   const BarterLabeledField({
     super.key,
     required this.label,
@@ -54,6 +54,7 @@ class BarterLabeledField extends StatelessWidget {
     this.hint,
     this.maxLines = 1,
     this.keyboardType,
+    this.isPassword = false,
   });
 
   final String label;
@@ -61,6 +62,20 @@ class BarterLabeledField extends StatelessWidget {
   final String? hint;
   final int maxLines;
   final TextInputType? keyboardType;
+  final bool isPassword;
+
+  @override
+  State<BarterLabeledField> createState() => _BarterLabeledFieldState();
+}
+
+class _BarterLabeledFieldState extends State<BarterLabeledField> {
+  late bool _obscureText;
+
+  @override
+  void initState() {
+    super.initState();
+    _obscureText = widget.isPassword;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +86,7 @@ class BarterLabeledField extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 6),
           child: Text(
-            label,
+            widget.label,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   fontSize: 11,
                   letterSpacing: 2,
@@ -80,15 +95,30 @@ class BarterLabeledField extends StatelessWidget {
           ),
         ),
         TextField(
-          controller: controller,
-          maxLines: maxLines,
-          keyboardType: keyboardType,
+          controller: widget.controller,
+          maxLines: widget.isPassword ? 1 : widget.maxLines,
+          obscureText: widget.isPassword ? _obscureText : false,
+          keyboardType: widget.keyboardType,
           style: Theme.of(context).textTheme.bodyMedium,
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: widget.hint,
             hintStyle: TextStyle(
               color: bc.onSurfaceVariant.withValues(alpha: 0.35),
             ),
+            suffixIcon: widget.isPassword
+                ? IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                      color: bc.onSurfaceVariant.withValues(alpha: 0.6),
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
+                    },
+                  )
+                : null,
           ),
         ),
       ],

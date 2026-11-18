@@ -1,3 +1,4 @@
+import '../../../widgets/barter_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -161,14 +162,7 @@ class _NicheSelectionScreenState extends ConsumerState<NicheSelectionScreen> {
           icon: Icon(Symbols.arrow_back, color: bc.primary),
           onPressed: () => context.pop(),
         ),
-        title: Text(
-          'BARTER',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: bc.primary,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1,
-              ),
-        ),
+        title: const BarterLogo(height: 28),
         actions: [
           TextButton(
             onPressed: () => context.push('/help'),
@@ -366,14 +360,17 @@ class _NicheGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final crossAxisCount = width > 900 ? 4 : (width > 600 ? 3 : 2);
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.2,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 1.45,
       ),
       itemCount: niches.length,
       itemBuilder: (context, index) {
@@ -406,14 +403,14 @@ class _NicheCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => onToggle(niche.id),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? bc.primary : bc.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(16),
           border: niche.isDashed
               ? Border.all(
                   color: bc.outlineVariant.withValues(alpha: 0.3),
-                  width: 2,
+                  width: 1.5,
                 )
               : null,
         ),
@@ -423,29 +420,35 @@ class _NicheCard extends StatelessWidget {
           children: [
             Icon(
               niche.icon,
-              size: 32,
+              size: 24,
               color: isSelected ? bc.onPrimary : bc.primary,
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   niche.category,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: isSelected
                             ? bc.onPrimary.withValues(alpha: 0.8)
                             : bc.onSurfaceVariant,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
-                        fontSize: 10,
+                        letterSpacing: 1.2,
+                        fontSize: 9,
                       ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   niche.name,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: isSelected ? bc.onPrimary : bc.onSurface,
                         fontWeight: FontWeight.bold,
+                        fontSize: 13,
                       ),
                 ),
               ],

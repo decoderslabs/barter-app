@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../theme/barter_colors.dart';
+import '../../../widgets/barter_logo.dart';
 import '../../../widgets/barter_network_image.dart';
 
 class ShippingAddressEntryScreen extends StatelessWidget {
@@ -20,14 +21,7 @@ class ShippingAddressEntryScreen extends StatelessWidget {
           icon: Icon(Symbols.arrow_back, color: bc.onBackground),
           onPressed: () => context.pop(),
         ),
-        title: Text(
-          'BARTER',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: bc.primary,
-                fontWeight: FontWeight.w900,
-                fontStyle: FontStyle.italic,
-              ),
-        ),
+        title: const BarterLogo(height: 26),
         actions: [
           Container(
             width: 32,
