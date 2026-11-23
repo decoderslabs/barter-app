@@ -367,7 +367,7 @@ class _CreatorCard extends StatelessWidget {
             children: [
               _StatPill(value: _formatFollowers(creator.totalFollowers), label: 'followers', bc: bc),
               const SizedBox(width: 8),
-              _StatPill(value: '${creator.avgEngagementRate}%', label: 'eng.', bc: bc),
+              _StatPill(value: '${creator.avgEngagementRate.toStringAsFixed(1)}%', label: 'eng.', bc: bc),
               const SizedBox(width: 8),
               _StatPill(value: '${creator.barterScore}', label: 'score', bc: bc, highlight: true),
             ],

@@ -55,64 +55,27 @@ class _BarterNetworkImageState extends State<BarterNetworkImage> {
         fit: widget.fit,
         frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
           if (wasSynchronouslyLoaded || frame != null) {
-            // Image loaded - fade it in
-            return AnimatedOpacity(
-              opacity: _isLoading ? 0 : 1,
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOut,
-              onEnd: () => setState(() => _isLoading = false),
-              child: child,
-            );
+            return child;
           }
           // Still loading
           return Container(
             color: bc.surfaceContainerLow,
             alignment: Alignment.center,
             child: SizedBox(
-              width: 24,
-              height: 24,
+              width: 18,
+              height: 18,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: bc.primary.withValues(alpha: 0.5),
-              ),
-            ),
-          );
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && _isLoading) {
-                setState(() => _isLoading = false);
-              }
-            });
-            return child;
-          }
-          return Container(
-            color: bc.surfaceContainerLow,
-            alignment: Alignment.center,
-            child: SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: bc.primary.withValues(alpha: 0.5),
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                    : null,
+                color: bc.primary.withValues(alpha: 0.4),
               ),
             ),
           );
         },
         errorBuilder: (context, error, stackTrace) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && !_hasError) {
-              setState(() => _hasError = true);
-            }
-          });
           return Container(
             color: bc.surfaceContainerLow,
             alignment: Alignment.center,
-            child: Icon(Icons.person_outline, color: bc.onSurfaceVariant.withValues(alpha: 0.5), size: 48),
+            child: Icon(Icons.person, color: bc.onSurfaceVariant.withValues(alpha: 0.5), size: 28),
           );
         },
       );

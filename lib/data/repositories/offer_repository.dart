@@ -37,9 +37,10 @@ class OfferRepository {
   }
 
   Future<List<OfferListItemDto>> myOffers() async {
-    final data = await _client.getJson('/offers/my');
-    final page = PaginatedResponse.fromJson(data, OfferListItemDto.fromJson);
-    return page.results;
+    final list = await _client.getJsonList('/offers/my');
+    return list
+        .map((e) => OfferListItemDto.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<OnboardingConfig> getOnboardingConfig() async {

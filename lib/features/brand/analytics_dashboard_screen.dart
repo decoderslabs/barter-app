@@ -173,8 +173,11 @@ class _KpiTile extends StatelessWidget {
         children: [
           Text(
             kpi.label.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   fontSize: 10,
+                  letterSpacing: 0.8,
                   color: bc.onSurfaceVariant.withValues(alpha: 0.55),
                 ),
           ),
