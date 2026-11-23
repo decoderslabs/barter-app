@@ -1,7 +1,4 @@
-import 'package:dio/dio.dart';
-
 import '../../core/auth/token_storage.dart';
-import '../../core/config/api_config.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/network/barter_api_client.dart';
 import '../dto/user_dto.dart';
@@ -98,6 +95,12 @@ class AuthRepository {
     required String companyName,
     required String website,
     String? industry,
+    String? category,
+    String? city,
+    String? bio,
+    String? instagram,
+    String? logoUrl,
+    bool? requestVerification,
   }) async {
     // WordPress custom endpoint uses POST not PATCH.
     // TODO(django-cutover): change back to patchJson.
@@ -107,6 +110,12 @@ class AuthRepository {
         'company_name': companyName,
         'website': website,
         if (industry != null) 'industry': industry,
+        if (category != null) 'category': category,
+        if (city != null) 'city': city,
+        if (bio != null) 'bio': bio,
+        if (instagram != null) 'instagram': instagram,
+        if (logoUrl != null) 'logo_url': logoUrl,
+        if (requestVerification == true) 'verified_request': true,
       },
     );
   }

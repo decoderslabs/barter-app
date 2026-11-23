@@ -5,18 +5,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../providers/api_providers.dart';
 import '../../../providers/app_providers.dart';
 import '../../../theme/barter_colors.dart';
 import '../../../widgets/barter_image_picker.dart';
 
-class BrandIdentityScreen extends StatefulWidget {
+class BrandIdentityScreen extends ConsumerStatefulWidget {
   const BrandIdentityScreen({super.key});
 
   @override
-  State<BrandIdentityScreen> createState() => _BrandIdentityScreenState();
+  ConsumerState<BrandIdentityScreen> createState() => _BrandIdentityScreenState();
 }
 
-class _BrandIdentityScreenState extends State<BrandIdentityScreen> {
+class _BrandIdentityScreenState extends ConsumerState<BrandIdentityScreen> {
   final TextEditingController _companyController = TextEditingController();
   final TextEditingController _websiteController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
@@ -25,6 +26,8 @@ class _BrandIdentityScreenState extends State<BrandIdentityScreen> {
   final TextEditingController _tiktokController = TextEditingController();
   String _selectedIndustry = 'Select Category';
   XFile? _pickedLogo;
+  bool _requestVerification = false;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -35,6 +38,40 @@ class _BrandIdentityScreenState extends State<BrandIdentityScreen> {
     _instagramController.dispose();
     _tiktokController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleNext() async {
+    final company = _companyController.text.trim();
+    if (company.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your Company / Brand Name'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      await ref.read(authRepositoryProvider).updateBrandProfile(
+        companyName: company,
+        website: _websiteController.text.trim(),
+        industry: _selectedIndustry != 'Select Category' ? _selectedIndustry : null,
+        city: _locationController.text.trim(),
+        bio: _bioController.text.trim(),
+        instagram: _instagramController.text.trim(),
+        requestVerification: _requestVerification,
+      );
+      await ref.read(authProvider.notifier).refreshUser();
+    } catch (_) {
+      // Proceed even on network hiccup during testing
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        context.push('/brand/onboarding/offer-types');
+      }
+    }
   }
 
   @override
@@ -149,14 +186,17 @@ class _BrandIdentityScreenState extends State<BrandIdentityScreen> {
               children: [
                 Expanded(
                   child: _DropdownField(
-                    label: 'Industry',
+                    label: 'Category',
                     value: _selectedIndustry,
                     items: const [
                       'Select Category',
+                      'Café & Restaurant',
+                      'D2C & Product Brand',
+                      'Events & Experiences',
                       'Fashion & Apparel',
                       'Beauty & Skincare',
-                      'Home Decor',
                       'Tech & Gadgets',
+                      'Other',
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -169,9 +209,9 @@ class _BrandIdentityScreenState extends State<BrandIdentityScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: _TextField(
-                    label: 'Location',
+                    label: 'City / Region',
                     controller: _locationController,
-                    placeholder: 'London, UK',
+                    placeholder: 'e.g. Gurugram, Delhi NCR',
                     bc: bc,
                   ),
                 ),
@@ -197,22 +237,67 @@ class _BrandIdentityScreenState extends State<BrandIdentityScreen> {
             const SizedBox(height: 12),
             _SocialField(
               icon: Symbols.language,
-              placeholder: 'Instagram handle',
+              placeholder: 'Instagram handle (@brand)',
               controller: _instagramController,
               bc: bc,
             ),
             const SizedBox(height: 12),
             _SocialField(
               icon: Symbols.link,
-              placeholder: 'TikTok URL',
+              placeholder: 'TikTok URL / Other',
               controller: _tiktokController,
               bc: bc,
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: bc.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: bc.outlineVariant.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: _requestVerification,
+                    activeColor: bc.primary,
+                    onChanged: (val) => setState(() => _requestVerification = val ?? false),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Request Verified Badge',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(width: 6),
+                            Icon(Symbols.verified, size: 16, color: bc.primary),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Optional. Flags your account for manual trust review by the Barter team.',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: bc.onSurfaceVariant,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => context.push('/brand/onboarding/offer-types'),
+                onPressed: _isSubmitting ? null : _handleNext,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: bc.primary,
                   foregroundColor: bc.onPrimary,
@@ -223,7 +308,7 @@ class _BrandIdentityScreenState extends State<BrandIdentityScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Next Step'),
+                    Text(_isSubmitting ? 'Saving...' : 'Next Step'),
                     const SizedBox(width: 8),
                     Icon(Symbols.arrow_forward, color: bc.onPrimary),
                   ],

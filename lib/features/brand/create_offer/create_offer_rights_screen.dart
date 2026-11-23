@@ -14,10 +14,17 @@ class CreateOfferRightsScreen extends StatefulWidget {
 }
 
 class _CreateOfferRightsScreenState extends State<CreateOfferRightsScreen> {
-  String _contentRights = 'Standard';
+  String _contentRights = 'Tier 2: Organic Reshare';
+  final TextEditingController _customTermsController = TextEditingController();
   String _proposalDeadline = '2024-05-24';
   String _maxProposals = '25 Proposals';
   String _selectedValue = '25 Proposals';
+
+  @override
+  void dispose() {
+    _customTermsController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +103,12 @@ class _CreateOfferRightsScreenState extends State<CreateOfferRightsScreen> {
             const SizedBox(height: 32),
             _ValueEngineTip(bc: bc),
             const SizedBox(height: 32),
-            _ContentRightsSection(bc: bc),
+            _ContentRightsSection(
+              bc: bc,
+              selectedRights: _contentRights,
+              onRightsChanged: (val) => setState(() => _contentRights = val),
+              customTermsController: _customTermsController,
+            ),
             const SizedBox(height: 32),
             _DealSettingsSection(bc: bc),
             const SizedBox(height: 100),
@@ -214,9 +226,17 @@ class _ValueEngineTip extends StatelessWidget {
 }
 
 class _ContentRightsSection extends StatelessWidget {
-  const _ContentRightsSection({required this.bc});
+  const _ContentRightsSection({
+    required this.bc,
+    required this.selectedRights,
+    required this.onRightsChanged,
+    required this.customTermsController,
+  });
 
   final BarterColors bc;
+  final String selectedRights;
+  final ValueChanged<String> onRightsChanged;
+  final TextEditingController customTermsController;
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +248,7 @@ class _ContentRightsSection extends StatelessWidget {
             Icon(Symbols.gavel, color: bc.primary, size: 20),
             const SizedBox(width: 8),
             Text(
-              'Content Rights',
+              'Content Rights Framework',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -237,25 +257,69 @@ class _ContentRightsSection extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         _RightsOption(
-          label: 'Standard',
-          desc: 'Usage for organic social media posts only. Rights expire after 12 months.',
-          isSelected: true,
-          badge: 'Recommended',
+          label: 'Tier 1: No Rights',
+          desc: 'Creator retains all rights. Brand may reshare with creator credit/tag only.',
+          isSelected: selectedRights == 'Tier 1: No Rights',
+          onTap: () => onRightsChanged('Tier 1: No Rights'),
           bc: bc,
         ),
         const SizedBox(height: 12),
         _RightsOption(
-          label: 'Extended',
-          desc: 'Organic & Paid social usage. Rights expire after 24 months.',
-          isSelected: false,
+          label: 'Tier 2: Organic Reshare',
+          desc: 'Usage for brand-owned social media channels for 6 months.',
+          isSelected: selectedRights == 'Tier 2: Organic Reshare',
+          badge: 'Default (Cafés & Experiences)',
+          onTap: () => onRightsChanged('Tier 2: Organic Reshare'),
           bc: bc,
         ),
         const SizedBox(height: 12),
         _RightsOption(
-          label: 'Full Buyout',
-          desc: 'Perpetual rights for all digital and print media worldwide.',
-          isSelected: false,
+          label: 'Tier 3: Paid Usage License',
+          desc: 'Organic & Paid ad usage (Meta, TikTok) for 12 months.',
+          isSelected: selectedRights == 'Tier 3: Paid Usage License',
+          badge: 'Recommended for D2C & Drops',
+          onTap: () => onRightsChanged('Tier 3: Paid Usage License'),
           bc: bc,
+        ),
+        const SizedBox(height: 12),
+        _RightsOption(
+          label: 'Tier 4: Full Buyout',
+          desc: 'Perpetual commercial rights & full copyright buyout across all digital & print media.',
+          isSelected: selectedRights == 'Tier 4: Full Buyout',
+          onTap: () => onRightsChanged('Tier 4: Full Buyout'),
+          bc: bc,
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Custom Terms & Additional Clauses (Optional)',
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: bc.onSurfaceVariant,
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: customTermsController,
+          maxLines: 3,
+          style: TextStyle(color: bc.onSurface, fontSize: 14),
+          decoration: InputDecoration(
+            hintText: 'Enter any specific stipulations (e.g., exclusivity window, whitelisting, brand tag requirements)...',
+            hintStyle: TextStyle(color: bc.onSurfaceVariant.withValues(alpha: 0.6)),
+            filled: true,
+            fillColor: bc.surfaceContainerLow,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: bc.outlineVariant.withValues(alpha: 0.3)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: bc.outlineVariant.withValues(alpha: 0.3)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: bc.primary, width: 2),
+            ),
+          ),
         ),
       ],
     );
@@ -269,6 +333,7 @@ class _RightsOption extends StatelessWidget {
     required this.isSelected,
     required this.bc,
     this.badge,
+    this.onTap,
   });
 
   final String label;
@@ -276,60 +341,69 @@ class _RightsOption extends StatelessWidget {
   final bool isSelected;
   final BarterColors bc;
   final String? badge;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return BarterCard(
-      borderRadius: 16,
-      padding: const EdgeInsets.all(20),
-      backgroundColor: isSelected ? bc.surfaceContainerLowest : bc.surfaceContainerLow,
-      borderColor: isSelected ? bc.primary : Colors.transparent,
-      borderWidth: 2,
-      child: Row(
-        children: [
-          if (isSelected)
-            Icon(Symbols.check_circle, color: bc.primary, fill: 1)
-          else
-            Icon(Symbols.radio_button_unchecked, color: bc.outline),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: onTap,
+      child: BarterCard(
+        borderRadius: 16,
+        padding: const EdgeInsets.all(20),
+        backgroundColor: isSelected ? bc.surfaceContainerLowest : bc.surfaceContainerLow,
+        borderColor: isSelected ? bc.primary : Colors.transparent,
+        borderWidth: 2,
+        child: Row(
+          children: [
+            if (isSelected)
+              Icon(Symbols.check_circle, color: bc.primary, fill: 1)
+            else
+              Icon(Symbols.radio_button_unchecked, color: bc.outline),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        label,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  desc,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: bc.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
-          ),
-          if (badge != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: bc.primaryFixed,
-                borderRadius: BorderRadius.circular(999),
+                      if (badge != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: bc.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            badge!,
+                            style: TextStyle(
+                              color: bc.primary,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    desc,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: bc.onSurfaceVariant,
+                        ),
+                  ),
+                ],
               ),
-              child: Text(
-                badge ?? '',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: bc.onPrimaryFixedVariant,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                      fontSize: 10,
-                    ),
-              ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -451,7 +451,7 @@ class _ProfilePhotoSection extends StatelessWidget {
   final BarterColors bc;
   final String avatarUrl;
   final String displayName;
-  final ValueChanged<XFile>? onImagePicked;
+  final ValueChanged<XFile?>? onImagePicked;
 
   @override
   Widget build(BuildContext context) {

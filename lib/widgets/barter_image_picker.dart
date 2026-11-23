@@ -33,7 +33,7 @@ class BarterImagePicker extends StatefulWidget {
   final String? initialUrl;
 
   /// Callback when an image is picked. Returns the File (mobile) or XFile (web)
-  final ValueChanged<XFile>? onImagePicked;
+  final ValueChanged<XFile?>? onImagePicked;
 
   /// Size of the image container (width/height)
   final double size;
@@ -164,9 +164,7 @@ class _BarterImagePickerState extends State<BarterImagePicker> {
 
   void _removeImage() {
     setState(() => _pickedFile = null);
-    // Call callback with null to indicate removal
-    // ignore: null_check_always_fails
-    widget.onImagePicked?.call(null as XFile);
+    widget.onImagePicked?.call(null);
   }
 
   void _showImageOptions() {

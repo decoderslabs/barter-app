@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/barter_colors.dart';
@@ -29,7 +28,6 @@ class BarterNetworkImage extends StatefulWidget {
 
 class _BarterNetworkImageState extends State<BarterNetworkImage> {
   bool _hasError = false;
-  bool _isLoading = true;
 
   @override
   Widget build(BuildContext context) {
