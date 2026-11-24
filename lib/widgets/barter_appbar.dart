@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../theme/barter_colors.dart';
@@ -68,7 +69,13 @@ class BarterBackButton extends StatelessWidget {
     final bc = context.barter;
     return IconButton(
       icon: Icon(Symbols.arrow_back, color: color ?? bc.onBackground),
-      onPressed: onPressed ?? () => Navigator.of(context).pop(),
+      onPressed: onPressed ?? () {
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        } else {
+          context.go('/brand/campaigns');
+        }
+      },
     );
   }
 }
@@ -88,7 +95,13 @@ class BarterCloseButton extends StatelessWidget {
     final bc = context.barter;
     return IconButton(
       icon: Icon(Symbols.close, color: color ?? bc.onSurface),
-      onPressed: onPressed ?? () => Navigator.of(context).pop(),
+      onPressed: onPressed ?? () {
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        } else {
+          context.go('/brand/campaigns');
+        }
+      },
     );
   }
 }

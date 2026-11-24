@@ -219,10 +219,12 @@ GoRouter createRouter() {
         routes: [
           GoRoute(
             path: 'requirements',
+            parentNavigatorKey: _rootNavigatorKey,
             builder: (context, state) => const CreateOfferRequirementsScreen(),
           ),
           GoRoute(
             path: 'rights',
+            parentNavigatorKey: _rootNavigatorKey,
             builder: (context, state) => const CreateOfferRightsScreen(),
           ),
         ],
