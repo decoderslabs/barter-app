@@ -129,7 +129,114 @@ class _DealRoomBodyState extends ConsumerState<_DealRoomBody> {
                     ),
                   ),
                   Icon(Symbols.info, color: bc.onSurface),
-                  Icon(Symbols.more_vert, color: bc.onSurface),
+                  PopupMenuButton<String>(
+                    icon: Icon(Symbols.more_vert, color: bc.onSurface),
+                    onSelected: (value) async {
+                      if (value == 'dispute') {
+                        final reasonController = TextEditingController();
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Raise Dispute'),
+                            content: TextField(
+                              controller: reasonController,
+                              decoration: const InputDecoration(
+                                labelText: 'Reason for dispute',
+                                hintText: 'Describe the issue encountered',
+                              ),
+                              maxLines: 3,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Submit Dispute'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed == true && context.mounted) {
+                          try {
+                            await ref.read(dealRepositoryProvider).disputeDeal(
+                              widget.dealId,
+                              reasonController.text.trim().isNotEmpty
+                                  ? reasonController.text.trim()
+                                  : 'Dispute raised by user',
+                            );
+                            ref.invalidate(dealRoomProvider(widget.dealId));
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Dispute raised. Status frozen.')),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Failed to raise dispute: $e')),
+                              );
+                            }
+                          }
+                        }
+                      } else if (value == 'cancel') {
+                        final reasonController = TextEditingController();
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Cancel Deal'),
+                            content: TextField(
+                              controller: reasonController,
+                              decoration: const InputDecoration(
+                                labelText: 'Cancellation reason',
+                                hintText: 'Reason for cancelling collaboration',
+                              ),
+                              maxLines: 2,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Keep Deal'),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: bc.error,
+                                  foregroundColor: bc.onError,
+                                ),
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Cancel Deal'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed == true && context.mounted) {
+                          try {
+                            await ref.read(dealRepositoryProvider).cancelDeal(
+                              widget.dealId,
+                              reason: reasonController.text.trim(),
+                            );
+                            ref.invalidate(dealRoomProvider(widget.dealId));
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Deal cancelled.')),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Failed to cancel deal: $e')),
+                              );
+                            }
+                          }
+                        }
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(value: 'dispute', child: Text('Report Problem / Dispute')),
+                      const PopupMenuItem(value: 'cancel', child: Text('Cancel Deal')),
+                    ],
+                  ),
                 ],
               ),
             ),

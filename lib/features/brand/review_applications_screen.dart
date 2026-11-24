@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../data/dto/proposal_dto.dart';
+import '../../providers/api_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../theme/responsive_extension.dart';
@@ -193,7 +194,7 @@ class _HeaderLabel extends StatelessWidget {
   }
 }
 
-class _ApplicationCard extends StatelessWidget {
+class _ApplicationCard extends ConsumerWidget {
   const _ApplicationCard({
     required this.name,
     required this.handle,
@@ -215,7 +216,7 @@ class _ApplicationCard extends StatelessWidget {
   final String? proposalId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final wide = context.isWide;
     return BarterCard(
       padding: const EdgeInsets.all(20),
@@ -268,7 +269,13 @@ class _ApplicationCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  onPressed: () => context.push('/brand/review/proposal'),
+                  onPressed: () {
+                    if (proposalId != null && proposalId!.isNotEmpty) {
+                      context.push('/brand/review/proposal?id=$proposalId');
+                    } else {
+                      context.push('/brand/review/proposal');
+                    }
+                  },
                   icon: Icon(Symbols.check, color: bc.success),
                   style: IconButton.styleFrom(
                     backgroundColor: bc.success.withValues(alpha: 0.1),
@@ -276,10 +283,28 @@ class _ApplicationCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Application declined')),
-                    );
+                  onPressed: () async {
+                    if (proposalId != null && proposalId!.isNotEmpty) {
+                      try {
+                        await ref.read(proposalRepositoryProvider).declineProposal(proposalId!);
+                        ref.invalidate(proposalsListProvider);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Proposal declined')),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to decline: $e')),
+                          );
+                        }
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Proposal declined')),
+                      );
+                    }
                   },
                   icon: Icon(Symbols.close, color: bc.error),
                   style: IconButton.styleFrom(

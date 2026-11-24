@@ -1,13 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../providers/api_providers.dart';
 import '../../../theme/barter_colors.dart';
 import '../../../widgets/barter_logo.dart';
 import '../../../widgets/barter_network_image.dart';
 
-class ShippingAddressEntryScreen extends StatelessWidget {
-  const ShippingAddressEntryScreen({super.key});
+class ShippingAddressEntryScreen extends ConsumerStatefulWidget {
+  const ShippingAddressEntryScreen({super.key, this.dealId});
+
+  final String? dealId;
+
+  @override
+  ConsumerState<ShippingAddressEntryScreen> createState() => _ShippingAddressEntryScreenState();
+}
+
+class _ShippingAddressEntryScreenState extends ConsumerState<ShippingAddressEntryScreen> {
+  final TextEditingController _fullNameController = TextEditingController(text: 'Alex Rivers');
+  final TextEditingController _address1Controller = TextEditingController(text: '742 Evergreen Terrace');
+  final TextEditingController _address2Controller = TextEditingController(text: 'Apt 4B');
+  final TextEditingController _cityController = TextEditingController(text: 'New York');
+  final TextEditingController _stateController = TextEditingController(text: 'NY');
+  final TextEditingController _postalCodeController = TextEditingController(text: '10001');
+  String _country = 'United States';
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _address1Controller.dispose();
+    _address2Controller.dispose();
+    _cityController.dispose();
+    _stateController.dispose();
+    _postalCodeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +75,17 @@ class ShippingAddressEntryScreen extends StatelessWidget {
           children: [
             _HeaderSection(bc: bc),
             const SizedBox(height: 32),
-            _FormSection(bc: bc),
+            _FormSection(
+              bc: bc,
+              fullNameController: _fullNameController,
+              address1Controller: _address1Controller,
+              address2Controller: _address2Controller,
+              cityController: _cityController,
+              stateController: _stateController,
+              postalCodeController: _postalCodeController,
+              selectedCountry: _country,
+              onCountryChanged: (val) => setState(() => _country = val),
+            ),
             const SizedBox(height: 24),
             _SecurityNote(bc: bc),
             const SizedBox(height: 140),
@@ -68,10 +107,45 @@ class ShippingAddressEntryScreen extends StatelessWidget {
         ),
         child: Center(
           child: ElevatedButton.icon(
-            onPressed: () => context.pop(),
-            icon: Icon(Symbols.chevron_right, color: bc.onPrimary),
+            onPressed: _isSubmitting ? null : () async {
+              setState(() => _isSubmitting = true);
+              try {
+                if (widget.dealId != null && widget.dealId!.isNotEmpty) {
+                  await ref.read(dealRepositoryProvider).saveShippingAddress(
+                    dealId: widget.dealId!,
+                    fullName: _fullNameController.text.trim(),
+                    addressLine1: _address1Controller.text.trim(),
+                    addressLine2: _address2Controller.text.trim(),
+                    city: _cityController.text.trim(),
+                    state: _stateController.text.trim(),
+                    postalCode: _postalCodeController.text.trim(),
+                    country: _country,
+                  );
+                }
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Shipping address saved!')),
+                  );
+                  context.pop();
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to save shipping address: $e')),
+                  );
+                  setState(() => _isSubmitting = false);
+                }
+              }
+            },
+            icon: _isSubmitting
+                ? SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: bc.onPrimary),
+                  )
+                : Icon(Symbols.chevron_right, color: bc.onPrimary),
             label: Text(
-              'Save Shipping Address',
+              _isSubmitting ? 'Saving Address...' : 'Save Shipping Address',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -165,9 +239,27 @@ class _HeaderSection extends StatelessWidget {
 }
 
 class _FormSection extends StatelessWidget {
-  const _FormSection({required this.bc});
+  const _FormSection({
+    required this.bc,
+    required this.fullNameController,
+    required this.address1Controller,
+    required this.address2Controller,
+    required this.cityController,
+    required this.stateController,
+    required this.postalCodeController,
+    required this.selectedCountry,
+    required this.onCountryChanged,
+  });
 
   final BarterColors bc;
+  final TextEditingController fullNameController;
+  final TextEditingController address1Controller;
+  final TextEditingController address2Controller;
+  final TextEditingController cityController;
+  final TextEditingController stateController;
+  final TextEditingController postalCodeController;
+  final String selectedCountry;
+  final ValueChanged<String> onCountryChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -177,18 +269,21 @@ class _FormSection extends StatelessWidget {
         _TextField(
           label: 'Full Name',
           placeholder: 'Alex Rivers',
+          controller: fullNameController,
           bc: bc,
         ),
         const SizedBox(height: 24),
         _TextField(
           label: 'Address Line 1',
           placeholder: 'Street name and number',
+          controller: address1Controller,
           bc: bc,
         ),
         const SizedBox(height: 24),
         _TextField(
           label: 'Address Line 2 (Optional)',
           placeholder: 'Suite, apartment, or unit',
+          controller: address2Controller,
           bc: bc,
         ),
         const SizedBox(height: 24),
@@ -198,6 +293,7 @@ class _FormSection extends StatelessWidget {
               child: _TextField(
                 label: 'City',
                 placeholder: 'New York',
+                controller: cityController,
                 bc: bc,
               ),
             ),
@@ -206,6 +302,7 @@ class _FormSection extends StatelessWidget {
               child: _TextField(
                 label: 'State/Emirate',
                 placeholder: 'NY',
+                controller: stateController,
                 bc: bc,
               ),
             ),
@@ -218,6 +315,7 @@ class _FormSection extends StatelessWidget {
               child: _TextField(
                 label: 'Postal Code',
                 placeholder: '10001',
+                controller: postalCodeController,
                 bc: bc,
               ),
             ),
@@ -225,6 +323,8 @@ class _FormSection extends StatelessWidget {
             Expanded(
               child: _DropdownField(
                 label: 'Country',
+                selectedCountry: selectedCountry,
+                onCountryChanged: onCountryChanged,
                 bc: bc,
               ),
             ),
@@ -240,11 +340,13 @@ class _TextField extends StatelessWidget {
     required this.label,
     required this.placeholder,
     required this.bc,
+    this.controller,
   });
 
   final String label;
   final String placeholder;
   final BarterColors bc;
+  final TextEditingController? controller;
 
   @override
   Widget build(BuildContext context) {
@@ -261,6 +363,7 @@ class _TextField extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         TextField(
+          controller: controller,
           decoration: InputDecoration(
             hintText: placeholder,
             hintStyle: TextStyle(color: bc.onSurfaceVariant.withValues(alpha: 0.4)),
@@ -282,10 +385,14 @@ class _DropdownField extends StatelessWidget {
   const _DropdownField({
     required this.label,
     required this.bc,
+    required this.selectedCountry,
+    required this.onCountryChanged,
   });
 
   final String label;
   final BarterColors bc;
+  final String selectedCountry;
+  final ValueChanged<String> onCountryChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -302,6 +409,7 @@ class _DropdownField extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
+          value: selectedCountry,
           decoration: InputDecoration(
             filled: true,
             fillColor: bc.surfaceContainerLow,
@@ -312,12 +420,15 @@ class _DropdownField extends StatelessWidget {
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
           items: const [
-            DropdownMenuItem(value: 'us', child: Text('United States')),
-            DropdownMenuItem(value: 'ae', child: Text('United Arab Emirates')),
-            DropdownMenuItem(value: 'uk', child: Text('United Kingdom')),
-            DropdownMenuItem(value: 'ca', child: Text('Canada')),
+            DropdownMenuItem(value: 'United States', child: Text('United States')),
+            DropdownMenuItem(value: 'United Arab Emirates', child: Text('United Arab Emirates')),
+            DropdownMenuItem(value: 'United Kingdom', child: Text('United Kingdom')),
+            DropdownMenuItem(value: 'Canada', child: Text('Canada')),
+            DropdownMenuItem(value: 'India', child: Text('India')),
           ],
-          onChanged: (value) {},
+          onChanged: (value) {
+            if (value != null) onCountryChanged(value);
+          },
         ),
       ],
     );

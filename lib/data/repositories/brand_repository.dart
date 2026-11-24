@@ -121,4 +121,34 @@ class BrandRepository {
     );
     return list.cast<Map<String, dynamic>>();
   }
+
+  Future<void> inviteCreator(String offerId, String creatorId) async {
+    await _client.postJson(
+      '/offers/$offerId/invite',
+      body: {'creator_id': int.tryParse(creatorId) ?? creatorId},
+    );
+  }
+
+  Future<void> reportUser({
+    required String targetUserId,
+    required String reason,
+    String? details,
+    String? dealId,
+  }) async {
+    await _client.postJson(
+      '/users/$targetUserId/report',
+      body: {
+        'reason': reason,
+        if (details != null) 'details': details,
+        if (dealId != null) 'deal_id': int.tryParse(dealId) ?? dealId,
+      },
+    );
+  }
+
+  Future<void> blockUser(String targetUserId) async {
+    await _client.postJson(
+      '/users/$targetUserId/block',
+      body: {},
+    );
+  }
 }

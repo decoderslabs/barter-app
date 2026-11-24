@@ -1,5 +1,7 @@
+import '../../../providers/api_providers.dart';
 import '../../../widgets/barter_logo.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -7,15 +9,60 @@ import '../../../theme/barter_colors.dart';
 import '../../../theme/responsive_extension.dart';
 import '../../../widgets/barter_network_image.dart';
 
-class CreateDropsCampaignScreen extends StatefulWidget {
+class CreateDropsCampaignScreen extends ConsumerStatefulWidget {
   const CreateDropsCampaignScreen({super.key});
 
   @override
-  State<CreateDropsCampaignScreen> createState() => _CreateDropsCampaignScreenState();
+  ConsumerState<CreateDropsCampaignScreen> createState() => _CreateDropsCampaignScreenState();
 }
 
-class _CreateDropsCampaignScreenState extends State<CreateDropsCampaignScreen> {
+class _CreateDropsCampaignScreenState extends ConsumerState<CreateDropsCampaignScreen> {
   int _slotCount = 100;
+  final TextEditingController _nameController = TextEditingController(text: 'Summer Essentials 2024');
+  final TextEditingController _deadlineController = TextEditingController(text: '2024-06-30');
+  String _selectedGoal = 'Product Launch';
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _deadlineController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLaunch() async {
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
+    try {
+      final name = _nameController.text.trim().isNotEmpty
+          ? _nameController.text.trim()
+          : 'Summer Essentials 2024';
+      final deadline = _deadlineController.text.trim().isNotEmpty
+          ? _deadlineController.text.trim()
+          : '2024-06-30';
+      final payload = {
+        'name': name,
+        'goal': _selectedGoal,
+        'total_slots': _slotCount,
+        'approval_mode': 'manual',
+        'application_deadline': deadline,
+      };
+      await ref.read(dropsRepositoryProvider).createCampaign(payload);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Drops campaign launched successfully!')),
+        );
+        context.go('/brand/drops');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to launch campaign: $e')),
+        );
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +106,13 @@ class _CreateDropsCampaignScreenState extends State<CreateDropsCampaignScreen> {
       body: Builder(builder: (context) {
         final wide = context.isWide;
         final mainContent = [
-          _CampaignIdentitySection(bc: bc),
+          _CampaignIdentitySection(
+            nameController: _nameController,
+            deadlineController: _deadlineController,
+            selectedGoal: _selectedGoal,
+            onGoalChanged: (val) => setState(() => _selectedGoal = val),
+            bc: bc,
+          ),
           const SizedBox(height: 24),
           _DropMechanicsSection(
             slotCount: _slotCount,
@@ -67,7 +120,11 @@ class _CreateDropsCampaignScreenState extends State<CreateDropsCampaignScreen> {
             bc: bc,
           ),
           const SizedBox(height: 24),
-          _NavigationSection(bc: bc),
+          _NavigationSection(
+            bc: bc,
+            onContinue: _handleLaunch,
+            isSubmitting: _isSubmitting,
+          ),
         ];
         final sideContent = [
           _ValueEngineTip(bc: bc),
@@ -268,9 +325,19 @@ class _Step extends StatelessWidget {
 }
 
 class _CampaignIdentitySection extends StatelessWidget {
-  const _CampaignIdentitySection({required this.bc});
+  const _CampaignIdentitySection({
+    required this.bc,
+    required this.nameController,
+    required this.deadlineController,
+    required this.selectedGoal,
+    required this.onGoalChanged,
+  });
 
   final BarterColors bc;
+  final TextEditingController nameController;
+  final TextEditingController deadlineController;
+  final String selectedGoal;
+  final ValueChanged<String> onGoalChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -304,6 +371,7 @@ class _CampaignIdentitySection extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           TextField(
+            controller: nameController,
             decoration: InputDecoration(
               labelText: 'Campaign Name',
               hintText: 'e.g. Summer Essentials 2024',
@@ -335,6 +403,7 @@ class _CampaignIdentitySection extends StatelessWidget {
   }
 
   Widget _goalField(BarterColors bc) => DropdownButtonFormField<String>(
+        value: selectedGoal,
         decoration: InputDecoration(
           labelText: 'Goal',
           filled: true,
@@ -343,17 +412,20 @@ class _CampaignIdentitySection extends StatelessWidget {
           contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         ),
         items: const [
-          DropdownMenuItem(value: 'launch', child: Text('Product Launch')),
-          DropdownMenuItem(value: 'awareness', child: Text('Brand Awareness')),
-          DropdownMenuItem(value: 'ugc', child: Text('User Generated Content')),
-          DropdownMenuItem(value: 'seasonal', child: Text('Seasonal Push')),
+          DropdownMenuItem(value: 'Product Launch', child: Text('Product Launch')),
+          DropdownMenuItem(value: 'Brand Awareness', child: Text('Brand Awareness')),
+          DropdownMenuItem(value: 'User Generated Content', child: Text('User Generated Content')),
+          DropdownMenuItem(value: 'Seasonal Push', child: Text('Seasonal Push')),
         ],
-        onChanged: (value) {},
+        onChanged: (value) {
+          if (value != null) onGoalChanged(value);
+        },
       );
 
   Widget _deadlineField(BarterColors bc) => TextField(
+        controller: deadlineController,
         decoration: InputDecoration(
-          labelText: 'Application Deadline',
+          labelText: 'Application Deadline (YYYY-MM-DD)',
           filled: true,
           fillColor: bc.surfaceContainerLow,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -577,15 +649,21 @@ class _DropMechanicsSection extends StatelessWidget {
 }
 
 class _NavigationSection extends StatelessWidget {
-  const _NavigationSection({required this.bc});
+  const _NavigationSection({
+    required this.bc,
+    required this.onContinue,
+    this.isSubmitting = false,
+  });
 
   final BarterColors bc;
+  final VoidCallback onContinue;
+  final bool isSubmitting;
 
   @override
   Widget build(BuildContext context) {
     final wide = context.isWide;
     final cancelBtn = OutlinedButton(
-      onPressed: () => context.canPop() ? context.pop() : context.go('/brand/drops'),
+      onPressed: isSubmitting ? null : () => context.canPop() ? context.pop() : context.go('/brand/drops'),
       style: OutlinedButton.styleFrom(
         foregroundColor: bc.secondary,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -593,10 +671,8 @@ class _NavigationSection extends StatelessWidget {
       ),
       child: Text('Cancel Draft', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)),
     );
-    final continueBtn = ElevatedButton.icon(
-      onPressed: () => context.go('/brand/drops'),
-      icon: const Icon(Symbols.arrow_forward),
-      label: Text('Continue', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)),
+    final continueBtn = ElevatedButton(
+      onPressed: isSubmitting ? null : onContinue,
       style: ElevatedButton.styleFrom(
         backgroundColor: bc.primary,
         foregroundColor: bc.onPrimary,
@@ -604,6 +680,24 @@ class _NavigationSection extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         elevation: 10,
         shadowColor: bc.primary.withValues(alpha: 0.2),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isSubmitting) ...[
+            SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2, color: bc.onPrimary),
+            ),
+            const SizedBox(width: 12),
+            Text('Launching...', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: bc.onPrimary)),
+          ] else ...[
+            Text('Continue', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: bc.onPrimary)),
+            const SizedBox(width: 8),
+            Icon(Symbols.arrow_forward, color: bc.onPrimary),
+          ],
+        ],
       ),
     );
     if (!wide) {

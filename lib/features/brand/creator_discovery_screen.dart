@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../data/models/brand_dashboard_model.dart';
+import '../../providers/api_providers.dart';
 import '../../providers/app_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../theme/responsive_extension.dart';
@@ -305,7 +306,7 @@ class _FilterChipWidget extends StatelessWidget {
   }
 }
 
-class _CreatorCard extends StatelessWidget {
+class _CreatorCard extends ConsumerWidget {
   const _CreatorCard({required this.creator, required this.bc});
   final DiscoveryCreator creator;
   final BarterColors bc;
@@ -317,7 +318,7 @@ class _CreatorCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return BarterCard(
       borderRadius: 20,
       padding: const EdgeInsets.all(20),
@@ -407,7 +408,45 @@ class _CreatorCard extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    try {
+                      final offers = await ref.read(offerRepositoryProvider).myOffers();
+                      if (!context.mounted) return;
+                      if (offers.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please create an offer before inviting creators.')),
+                        );
+                        return;
+                      }
+                      final selectedOffer = await showDialog<String>(
+                        context: context,
+                        builder: (ctx) => SimpleDialog(
+                          title: Text('Invite ${creator.name} to Offer'),
+                          children: offers.map((o) => SimpleDialogOption(
+                            onPressed: () => Navigator.pop(ctx, o.id),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text(o.title),
+                            ),
+                          )).toList(),
+                        ),
+                      );
+                      if (selectedOffer != null && context.mounted) {
+                        await ref.read(brandRepositoryProvider).inviteCreator(selectedOffer, creator.id);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Invitation sent to ${creator.name}!')),
+                          );
+                        }
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Failed to send invite: $e')),
+                        );
+                      }
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: bc.primary,
                     foregroundColor: bc.onPrimary,

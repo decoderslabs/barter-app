@@ -297,7 +297,9 @@ GoRouter createRouter() {
           ),
           GoRoute(
             path: 'rate-colleague',
-            builder: (context, state) => const RateColleagueScreen(),
+            builder: (context, state) => RateColleagueScreen(
+              dealId: state.pathParameters['id'],
+            ),
           ),
           GoRoute(
             path: 'counter-offer',
@@ -309,7 +311,9 @@ GoRouter createRouter() {
           ),
           GoRoute(
             path: 'shipping-address',
-            builder: (context, state) => const ShippingAddressEntryScreen(),
+            builder: (context, state) => ShippingAddressEntryScreen(
+              dealId: state.pathParameters['id'],
+            ),
           ),
         ],
       ),

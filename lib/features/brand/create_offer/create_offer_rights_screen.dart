@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../../providers/api_providers.dart';
 import '../../../theme/barter_colors.dart';
 import '../../../widgets/barter_appbar.dart';
 import '../../../widgets/barter_card.dart';
+import 'create_offer_wizard_provider.dart';
 
-class CreateOfferRightsScreen extends StatefulWidget {
+class CreateOfferRightsScreen extends ConsumerStatefulWidget {
   const CreateOfferRightsScreen({super.key});
 
   @override
-  State<CreateOfferRightsScreen> createState() => _CreateOfferRightsScreenState();
+  ConsumerState<CreateOfferRightsScreen> createState() => _CreateOfferRightsScreenState();
 }
 
-class _CreateOfferRightsScreenState extends State<CreateOfferRightsScreen> {
+class _CreateOfferRightsScreenState extends ConsumerState<CreateOfferRightsScreen> {
   String _contentRights = 'Tier 2: Organic Reshare';
   final TextEditingController _customTermsController = TextEditingController();
   String _proposalDeadline = '2024-05-24';
   String _maxProposals = '25 Proposals';
   String _selectedValue = '25 Proposals';
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -122,19 +126,47 @@ class _CreateOfferRightsScreenState extends State<CreateOfferRightsScreen> {
         ),
         child: Row(
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: bc.surfaceContainerLow,
-                shape: BoxShape.circle,
+            InkWell(
+              onTap: () => context.pop(),
+              borderRadius: BorderRadius.circular(999),
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: bc.surfaceContainerLow,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Symbols.arrow_back, color: bc.onSurface),
               ),
-              child: Icon(Symbols.arrow_back, color: bc.onSurface),
             ),
             const SizedBox(width: 24),
             Expanded(
               child: ElevatedButton(
-                onPressed: () => context.go('/brand/campaigns'),
+                onPressed: _isSubmitting ? null : () async {
+                  setState(() => _isSubmitting = true);
+                  try {
+                    ref.read(createOfferWizardProvider.notifier).updateRights(
+                      rightsTier: _contentRights,
+                      customTerms: _customTermsController.text,
+                    );
+                    final payload = ref.read(createOfferWizardProvider).toJson();
+                    await ref.read(offerRepositoryProvider).createOffer(payload);
+                    ref.read(createOfferWizardProvider.notifier).reset();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Offer created and published successfully!')),
+                      );
+                      context.go('/brand/campaigns');
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to publish offer: $e')),
+                      );
+                      setState(() => _isSubmitting = false);
+                    }
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: bc.primary,
                   foregroundColor: bc.onPrimary,
@@ -145,9 +177,22 @@ class _CreateOfferRightsScreenState extends State<CreateOfferRightsScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Preview & Publish'),
-                    const SizedBox(width: 8),
-                    Icon(Symbols.rocket_launch, color: bc.onPrimary),
+                    if (_isSubmitting) ...[
+                      SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: bc.onPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text('Publishing...'),
+                    ] else ...[
+                      const Text('Preview & Publish'),
+                      const SizedBox(width: 8),
+                      Icon(Symbols.rocket_launch, color: bc.onPrimary),
+                    ],
                   ],
                 ),
               ),

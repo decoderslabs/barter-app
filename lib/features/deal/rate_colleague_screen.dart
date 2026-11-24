@@ -1,29 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../providers/api_providers.dart';
 import '../../theme/barter_colors.dart';
 import '../../widgets/barter_network_image.dart';
 
-class RateColleagueScreen extends StatefulWidget {
-  const RateColleagueScreen({super.key});
+class RateColleagueScreen extends ConsumerStatefulWidget {
+  const RateColleagueScreen({super.key, this.dealId});
+
+  final String? dealId;
 
   @override
-  State<RateColleagueScreen> createState() => _RateColleagueScreenState();
+  ConsumerState<RateColleagueScreen> createState() => _RateColleagueScreenState();
 }
 
-class _RateColleagueScreenState extends State<RateColleagueScreen> {
-  int _rating = 4;
-  final TextEditingController _reviewController = TextEditingController(text: 'Sarah was an absolute pleasure to work with. Her attention to detail on the campaign strategy was exceptional and she delivered ahead of schedule.');
-  int _charCount = 124;
-  static const int _maxLength = 280;
-
-  @override
-  void dispose() {
-    _reviewController.dispose();
-    super.dispose();
-  }
-
+class _RateColleagueScreenState extends ConsumerState<RateColleagueScreen> {
   @override
   Widget build(BuildContext context) {
     final bc = context.barter;
@@ -85,7 +78,7 @@ class _RateColleagueScreenState extends State<RateColleagueScreen> {
             const SizedBox(height: 32),
             _ProfileCard(bc: bc),
             const SizedBox(height: 32),
-            _RatingSection(bc: bc),
+            _RatingSection(bc: bc, dealId: widget.dealId),
           ],
         ),
       ),
@@ -192,20 +185,22 @@ class _ProfileCard extends StatelessWidget {
   }
 }
 
-class _RatingSection extends StatefulWidget {
-  const _RatingSection({required this.bc});
+class _RatingSection extends ConsumerStatefulWidget {
+  const _RatingSection({required this.bc, this.dealId});
 
   final BarterColors bc;
+  final String? dealId;
 
   @override
-  State<_RatingSection> createState() => _RatingSectionState();
+  ConsumerState<_RatingSection> createState() => _RatingSectionState();
 }
 
-class _RatingSectionState extends State<_RatingSection> {
+class _RatingSectionState extends ConsumerState<_RatingSection> {
   int _rating = 4;
   final TextEditingController _controller = TextEditingController(text: 'Sarah was an absolute pleasure to work with. Her attention to detail on the campaign strategy was exceptional and she delivered ahead of schedule.');
   int _charCount = 124;
   static const int _maxLength = 280;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -349,7 +344,30 @@ class _RatingSectionState extends State<_RatingSection> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () => context.push('/deal/rating-confirmation'),
+            onPressed: _isSubmitting ? null : () async {
+              setState(() => _isSubmitting = true);
+              try {
+                if (widget.dealId != null && widget.dealId!.isNotEmpty) {
+                  await ref.read(dealRepositoryProvider).rateDeal(
+                    widget.dealId!,
+                    {
+                      'stars': _rating,
+                      'review_text': _controller.text.trim(),
+                    },
+                  );
+                }
+                if (context.mounted) {
+                  context.push('/deal/rating-confirmation');
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to submit rating: $e')),
+                  );
+                  setState(() => _isSubmitting = false);
+                }
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: widget.bc.primary,
               foregroundColor: widget.bc.onPrimary,
@@ -361,9 +379,19 @@ class _RatingSectionState extends State<_RatingSection> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Submit Rating'),
-                const SizedBox(width: 12),
-                Icon(Symbols.send, color: widget.bc.onPrimary),
+                if (_isSubmitting) ...[
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: widget.bc.onPrimary),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text('Submitting...'),
+                ] else ...[
+                  const Text('Submit Rating'),
+                  const SizedBox(width: 12),
+                  Icon(Symbols.send, color: widget.bc.onPrimary),
+                ],
               ],
             ),
           ),

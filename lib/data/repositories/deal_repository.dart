@@ -33,10 +33,71 @@ class DealRepository {
     await _client.postJson('/deals/$dealId/messages', body: {'body': body});
   }
 
-  Future<void> shipDeal(String dealId, Map<String, dynamic> shippingAddress) async {
+  /// Dispatches tracking information to mark the deal as shipped.
+  Future<void> shipDeal(
+    String dealId, {
+    required String trackingNumber,
+    String? carrier,
+    String? estimatedDelivery,
+  }) async {
     await _client.postJson(
       '/deals/$dealId/ship',
-      body: {'shipping_address': shippingAddress},
+      body: {
+        'tracking_number': trackingNumber,
+        if (carrier != null) 'carrier': carrier,
+        if (estimatedDelivery != null) 'estimated_delivery': estimatedDelivery,
+      },
+    );
+  }
+
+  /// Submits the creator's encrypted physical shipping address.
+  Future<void> saveShippingAddress({
+    required String dealId,
+    required String fullName,
+    required String addressLine1,
+    String? addressLine2,
+    required String city,
+    required String state,
+    required String postalCode,
+    required String country,
+  }) async {
+    await _client.postJson(
+      '/deals/$dealId/shipping-address',
+      body: {
+        'full_name': fullName,
+        'address_line1': addressLine1,
+        'address_line2': addressLine2 ?? '',
+        'city': city,
+        'state': state,
+        'postal_code': postalCode,
+        'country': country,
+      },
+    );
+  }
+
+  /// Confirms creator receipt of physical goods.
+  Future<void> confirmReceipt(String dealId) async {
+    await _client.postJson(
+      '/deals/$dealId/confirm-receipt',
+      body: {},
+    );
+  }
+
+  /// Raises a dispute on a deal, freezing state mutations.
+  Future<void> disputeDeal(String dealId, String reason) async {
+    await _client.postJson(
+      '/deals/$dealId/dispute',
+      body: {'reason': reason},
+    );
+  }
+
+  /// Cancels an active or pending deal prior to completion.
+  Future<void> cancelDeal(String dealId, {String? reason}) async {
+    await _client.postJson(
+      '/deals/$dealId/cancel',
+      body: {
+        if (reason != null) 'reason': reason,
+      },
     );
   }
 
